@@ -12,9 +12,12 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "ksnip",
         "width": 800,
-        "height": 600
+        "height": 600,
+        "resizable": true,
+        "decorations": true
       }
     ],
     "security": {
