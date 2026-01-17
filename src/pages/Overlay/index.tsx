@@ -1,21 +1,18 @@
-import { Button } from "@/components/ui/button";
-import { ButtonGroup } from "@/components/ui/button-group";
-import { invoke } from "@tauri-apps/api/core";
 import {
     currentMonitor,
     getCurrentWindow,
     Monitor,
 } from "@tauri-apps/api/window";
 import { debug, error } from "@tauri-apps/plugin-log";
-import { CheckIcon, X } from "lucide-react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import CropToolbar from "./components/CropToolbar";
 
 interface Point {
     x: number;
     y: number;
 }
 
-interface Rectangle {
+export interface Rectangle {
     left: number;
     top: number;
     width: number;
@@ -188,10 +185,10 @@ export default function OverlayPage() {
                 />
                 {cropArea && (
                     <rect
-                        x={cropArea.left - 2}
-                        y={cropArea.top - 2}
-                        width={cropArea.width + 4}
-                        height={cropArea.height + 4}
+                        x={cropArea.left - 1}
+                        y={cropArea.top - 1}
+                        width={cropArea.width + 2}
+                        height={cropArea.height + 2}
                         stroke="red"
                         strokeWidth="2"
                         fill="none"
@@ -208,51 +205,12 @@ export default function OverlayPage() {
                             transform: "translateX(-100%)",
                         }}
                     >
-                        <ButtonGroup
-                            onMouseDown={(e: React.MouseEvent) => {
-                                e.stopPropagation();
-                            }}
-                        >
-                            <Button
-                                variant="outline"
-                                size="icon-sm"
-                                onClick={() => {
-                                    if (!monitor.current) {
-                                        error(
-                                            `[OverlayPage] monitor.current is null`,
-                                        );
-                                        return;
-                                    }
-                                    invoke("screenshots_take", {
-                                        param: {
-                                            left: cropArea.left,
-                                            top: cropArea.top,
-                                            width: cropArea.width,
-                                            height: cropArea.height,
-                                            screenX: monitor.current.position.x,
-                                            screenY: monitor.current.position.y,
-                                        },
-                                    })
-                                        .then(closeOverlayPage)
-                                        .catch((e: Error) => {
-                                            error(
-                                                `[OverlayPage] failed to call screenshots_take: ${e}`,
-                                            );
-                                        });
-                                }}
-                            >
-                                <CheckIcon />
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="icon-sm"
-                                onClick={() => {
-                                    cancelCrop();
-                                }}
-                            >
-                                <X />
-                            </Button>
-                        </ButtonGroup>
+                        <CropToolbar
+                            cropArea={cropArea}
+                            monitor={monitor}
+                            onConfirmSuccess={closeOverlayPage}
+                            onCancel={cancelCrop}
+                        />
                     </div>
                 </>
             )}
