@@ -7,9 +7,17 @@ interface SelectionOverlayProps {
   onCancel: () => void;
 }
 
-export default function SelectionOverlay({ screenshot, onComplete, onCancel }: SelectionOverlayProps) {
-  const [startPos, setStartPos] = useState<{ x: number; y: number } | null>(null);
-  const [currentPos, setCurrentPos] = useState<{ x: number; y: number } | null>(null);
+export default function SelectionOverlay({
+  screenshot,
+  onComplete,
+  onCancel,
+}: SelectionOverlayProps) {
+  const [startPos, setStartPos] = useState<{ x: number; y: number } | null>(
+    null,
+  );
+  const [currentPos, setCurrentPos] = useState<{ x: number; y: number } | null>(
+    null,
+  );
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setStartPos({ x: e.clientX, y: e.clientY });
@@ -54,12 +62,15 @@ export default function SelectionOverlay({ screenshot, onComplete, onCancel }: S
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onCancel]);
 
-  const selectionStyle = startPos && currentPos ? {
-    left: Math.min(startPos.x, currentPos.x),
-    top: Math.min(startPos.y, currentPos.y),
-    width: Math.abs(startPos.x - currentPos.x),
-    height: Math.abs(startPos.y - currentPos.y),
-  } : null;
+  const selectionStyle =
+    startPos && currentPos
+      ? {
+          left: Math.min(startPos.x, currentPos.x),
+          top: Math.min(startPos.y, currentPos.y),
+          width: Math.abs(startPos.x - currentPos.x),
+          height: Math.abs(startPos.y - currentPos.y),
+        }
+      : null;
 
   return (
     <div
