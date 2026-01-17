@@ -1,5 +1,5 @@
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { info } from "@tauri-apps/plugin-log";
+import { error, info } from "@tauri-apps/plugin-log";
 
 export default function MainPage() {
     const handleCutMe = () => {
@@ -16,7 +16,7 @@ export default function MainPage() {
         })
 
         overlayWindow.once('tauri://error', (e) => {
-            info(`[MainPage] overlayWindow error: ${e.payload}`)
+            error(`[MainPage] overlayWindow error: ${e.payload}`)
         })
     }
     return (
