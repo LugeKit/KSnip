@@ -20,7 +20,7 @@ export default function MainPage() {
     });
   };
   return (
-    <main className="m-0 h-screen flex flex-col justify-center items-center text-center bg-gray-100 dark:bg-[#2f2f2f] text-[#0f0f0f] dark:text-[#f6f6f6] font-sans antialiased text-base leading-6">
+    <main className="h-screen flex flex-col justify-center items-center text-center antialiased leading-6">
       <div className="space-y-4">
         <h1 className="text-4xl font-bold text-gray-800 dark:text-gray-100">
           ksnip
