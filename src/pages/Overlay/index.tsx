@@ -23,7 +23,7 @@ interface Rectangle {
 }
 
 enum MouseMoveType {
-    Ignore,
+    NotPressed,
     Cropping,
     Dragging,
 }
@@ -45,7 +45,7 @@ export default function OverlayPage() {
     const [startPosition, setStartPosition] = useState<Point | null>(null);
     const [cropArea, setCropArea] = useState<Rectangle | null>(null);
     const [mouseMoveType, setMouseMoveType] = useState<MouseMoveType>(
-        MouseMoveType.Ignore,
+        MouseMoveType.NotPressed,
     );
     const monitor = useRef<Monitor | null>(null);
     useEffect(() => {
@@ -67,7 +67,7 @@ export default function OverlayPage() {
     // cancelCrop cancels the current crop area
     const cancelCrop = () => {
         setCropArea(null);
-        setMouseMoveType(MouseMoveType.Ignore);
+        setMouseMoveType(MouseMoveType.NotPressed);
         setStartPosition(null);
     };
 
@@ -94,7 +94,7 @@ export default function OverlayPage() {
     const handleMouseDown = (e: React.MouseEvent) => {
         debug(`[OverlayPage] handleMouseDown: ${e.clientX}, ${e.clientY}`);
 
-        const downPoint = { x: e.screenX, y: e.screenY };
+        const downPoint = { x: e.clientX, y: e.clientY };
 
         // dragging the crop area
         if (cropArea && isInRectangle(downPoint, cropArea)) {
@@ -118,8 +118,8 @@ export default function OverlayPage() {
 
         switch (mouseMoveType) {
             case MouseMoveType.Cropping: {
-                const x = e.screenX;
-                const y = e.screenY;
+                const x = e.clientX;
+                const y = e.clientY;
                 const width = Math.abs(startPosition.x - x);
                 const height = Math.abs(startPosition.y - y);
                 if (width <= 0 || height <= 0) {
@@ -139,8 +139,8 @@ export default function OverlayPage() {
                     return;
                 }
 
-                const newLeft = e.screenX - startPosition.x;
-                const newTop = e.screenY - startPosition.y;
+                const newLeft = e.clientX - startPosition.x;
+                const newTop = e.clientY - startPosition.y;
                 setCropArea({
                     left: newLeft,
                     top: newTop,
@@ -155,7 +155,7 @@ export default function OverlayPage() {
     };
 
     const handleMouseUp = (e: React.MouseEvent) => {
-        setMouseMoveType(MouseMoveType.Ignore);
+        setMouseMoveType(MouseMoveType.NotPressed);
     };
 
     return (
@@ -188,22 +188,22 @@ export default function OverlayPage() {
                 />
                 {cropArea && (
                     <rect
-                        x={cropArea.left}
-                        y={cropArea.top}
-                        width={cropArea.width}
-                        height={cropArea.height}
+                        x={cropArea.left - 2}
+                        y={cropArea.top - 2}
+                        width={cropArea.width + 4}
+                        height={cropArea.height + 4}
                         stroke="red"
                         strokeWidth="2"
                         fill="none"
                     />
                 )}
             </svg>
-            {cropArea && mouseMoveType === MouseMoveType.Ignore && (
+            {cropArea && mouseMoveType === MouseMoveType.NotPressed && (
                 <>
                     <div
                         className="absolute"
                         style={{
-                            top: cropArea.top + cropArea.height + 2,
+                            top: cropArea.top + cropArea.height + 6,
                             left: cropArea.left + cropArea.width,
                             transform: "translateX(-100%)",
                         }}
@@ -217,24 +217,28 @@ export default function OverlayPage() {
                                 variant="outline"
                                 size="icon-sm"
                                 onClick={() => {
+                                    if (!monitor.current) {
+                                        error(
+                                            `[OverlayPage] monitor.current is null`,
+                                        );
+                                        return;
+                                    }
                                     invoke("screenshots_take", {
                                         param: {
                                             left: cropArea.left,
                                             top: cropArea.top,
                                             width: cropArea.width,
                                             height: cropArea.height,
-                                            screenX:
-                                                monitor.current?.position.x ??
-                                                0,
-                                            screenY:
-                                                monitor.current?.position.y ??
-                                                0,
+                                            screenX: monitor.current.position.x,
+                                            screenY: monitor.current.position.y,
                                         },
-                                    }).catch((e: Error) => {
-                                        error(
-                                            `[OverlayPage] failed to call screenshots_take: ${e}`,
-                                        );
-                                    });
+                                    })
+                                        .then(closeOverlayPage)
+                                        .catch((e: Error) => {
+                                            error(
+                                                `[OverlayPage] failed to call screenshots_take: ${e}`,
+                                            );
+                                        });
                                 }}
                             >
                                 <CheckIcon />
