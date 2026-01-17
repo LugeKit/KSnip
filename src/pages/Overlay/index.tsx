@@ -25,6 +25,8 @@ enum MouseMoveType {
     Dragging,
 }
 
+const CROP_AREA_STROKE_WIDTH = 1;
+
 function isInRectangle(point: Point | null, rectangle: Rectangle | null) {
     if (!point || !rectangle) {
         return false;
@@ -185,12 +187,12 @@ export default function OverlayPage() {
                 />
                 {cropArea && (
                     <rect
-                        x={cropArea.left - 1}
-                        y={cropArea.top - 1}
-                        width={cropArea.width + 2}
-                        height={cropArea.height + 2}
+                        x={cropArea.left - CROP_AREA_STROKE_WIDTH}
+                        y={cropArea.top - CROP_AREA_STROKE_WIDTH}
+                        width={cropArea.width + 2 * CROP_AREA_STROKE_WIDTH}
+                        height={cropArea.height + 2 * CROP_AREA_STROKE_WIDTH}
                         stroke="red"
-                        strokeWidth="1"
+                        strokeWidth={CROP_AREA_STROKE_WIDTH}
                         fill="none"
                     />
                 )}
