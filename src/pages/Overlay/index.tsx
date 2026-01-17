@@ -1,10 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { invoke } from "@tauri-apps/api/core";
-import { getCurrentWindow } from "@tauri-apps/api/window";
+import {
+    currentMonitor,
+    getCurrentWindow,
+    Monitor,
+} from "@tauri-apps/api/window";
 import { debug, error } from "@tauri-apps/plugin-log";
 import { CheckIcon, X } from "lucide-react";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 interface Point {
     x: number;
@@ -43,6 +47,16 @@ export default function OverlayPage() {
     const [mouseMoveType, setMouseMoveType] = useState<MouseMoveType>(
         MouseMoveType.Ignore,
     );
+    const monitor = useRef<Monitor | null>(null);
+    useEffect(() => {
+        currentMonitor()
+            .then((m) => {
+                monitor.current = m;
+            })
+            .catch((e) => {
+                error(`[OverlayPage] currentMonitor error: ${e}`);
+            });
+    }, []);
 
     // closeOverlayPage closes the overlay page
     const closeOverlayPage = useCallback(() => {
@@ -209,7 +223,12 @@ export default function OverlayPage() {
                                             top: cropArea.top,
                                             width: cropArea.width,
                                             height: cropArea.height,
-                                            screenId: 0,
+                                            screenX:
+                                                monitor.current?.position.x ??
+                                                0,
+                                            screenY:
+                                                monitor.current?.position.y ??
+                                                0,
                                         },
                                     }).catch((e: Error) => {
                                         error(
