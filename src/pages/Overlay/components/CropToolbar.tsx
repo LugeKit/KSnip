@@ -5,7 +5,7 @@ import { Monitor } from "@tauri-apps/api/window";
 import { error } from "@tauri-apps/plugin-log";
 import { CheckIcon, X } from "lucide-react";
 import React from "react";
-import { Rectangle } from "../index";
+import { Rectangle } from "../types";
 
 interface CropToolbarProps {
     cropArea: Rectangle;

@@ -1,5 +1,5 @@
 import React from "react";
-import { Rectangle } from "../index";
+import { Rectangle } from "../types";
 
 const CROP_AREA_STROKE_WIDTH = 1;
 
