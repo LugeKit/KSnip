@@ -1,5 +1,8 @@
+import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { info } from "@tauri-apps/plugin-log";
+import { CheckIcon, X } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 
 interface Point {
@@ -46,19 +49,32 @@ export default function OverlayPage() {
         appWindow.close();
     }, []);
 
+    // cancelCrop cancels the current crop area
+    const cancelCrop = () => {
+        setCropArea(null);
+        setMouseMoveType(MouseMoveType.Ignore);
+        setStartPosition(null);
+    };
+
     // register global keydown event listener to close overlay page
-    // press "Esc" to close the overlay page
+    // 1. no crop area: press "Esc" to close the overlay page
+    // 2. crop area: press "Esc" to cancel the crop
     useEffect(() => {
         const handleGlobalKeyDown = (e: KeyboardEvent) => {
             if (e.key === "Escape") {
+                if (cropArea) {
+                    cancelCrop();
+                    return;
+                }
                 closeOverlayPage();
             }
         };
+
         window.addEventListener("keydown", handleGlobalKeyDown);
         return () => {
             window.removeEventListener("keydown", handleGlobalKeyDown);
         };
-    }, [closeOverlayPage]);
+    }, [closeOverlayPage, cropArea]);
 
     const handleMouseDown = (e: React.MouseEvent) => {
         info(`[OverlayPage] handleMouseDown: ${e.clientX}, ${e.clientY}`);
@@ -158,10 +174,40 @@ export default function OverlayPage() {
                 />
             </svg>
             {cropArea && (
-                <div
-                    className="absolute border-2 border-red-500 bg-transparent"
-                    style={{ ...cropArea }}
-                />
+                <>
+                    <div
+                        className="absolute border-2 border-red-500 bg-transparent"
+                        style={{ ...cropArea }}
+                    />
+                    {mouseMoveType === MouseMoveType.Ignore && (
+                        <div
+                            className="absolute"
+                            style={{
+                                top: cropArea.top + cropArea.height + 2,
+                                left: cropArea.left,
+                            }}
+                        >
+                            <ButtonGroup
+                                onMouseDown={(e: React.MouseEvent) => {
+                                    e.stopPropagation();
+                                }}
+                            >
+                                <Button variant="outline" size="icon-sm">
+                                    <CheckIcon />
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="icon-sm"
+                                    onClick={() => {
+                                        cancelCrop();
+                                    }}
+                                >
+                                    <X />
+                                </Button>
+                            </ButtonGroup>
+                        </div>
+                    )}
+                </>
             )}
         </div>
     );
