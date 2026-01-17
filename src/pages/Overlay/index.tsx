@@ -172,41 +172,47 @@ export default function OverlayPage() {
                     fill="rgba(31, 41, 55, 0.7)"
                     mask="url(#crop-mask)"
                 />
+                {cropArea && (
+                    <rect
+                        x={cropArea.left}
+                        y={cropArea.top}
+                        width={cropArea.width}
+                        height={cropArea.height}
+                        stroke="red"
+                        strokeWidth="2"
+                        fill="none"
+                    />
+                )}
             </svg>
-            {cropArea && (
+            {cropArea && mouseMoveType === MouseMoveType.Ignore && (
                 <>
                     <div
-                        className="absolute border-2 border-red-500 bg-transparent"
-                        style={{ ...cropArea }}
-                    />
-                    {mouseMoveType === MouseMoveType.Ignore && (
-                        <div
-                            className="absolute"
-                            style={{
-                                top: cropArea.top + cropArea.height + 2,
-                                left: cropArea.left,
+                        className="absolute"
+                        style={{
+                            top: cropArea.top + cropArea.height + 2,
+                            left: cropArea.left + cropArea.width,
+                            transform: "translateX(-100%)",
+                        }}
+                    >
+                        <ButtonGroup
+                            onMouseDown={(e: React.MouseEvent) => {
+                                e.stopPropagation();
                             }}
                         >
-                            <ButtonGroup
-                                onMouseDown={(e: React.MouseEvent) => {
-                                    e.stopPropagation();
+                            <Button variant="outline" size="icon-sm">
+                                <CheckIcon />
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="icon-sm"
+                                onClick={() => {
+                                    cancelCrop();
                                 }}
                             >
-                                <Button variant="outline" size="icon-sm">
-                                    <CheckIcon />
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="icon-sm"
-                                    onClick={() => {
-                                        cancelCrop();
-                                    }}
-                                >
-                                    <X />
-                                </Button>
-                            </ButtonGroup>
-                        </div>
-                    )}
+                                <X />
+                            </Button>
+                        </ButtonGroup>
+                    </div>
                 </>
             )}
         </div>
