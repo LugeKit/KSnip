@@ -190,7 +190,7 @@ export default function OverlayPage() {
                         width={cropArea.width + 2}
                         height={cropArea.height + 2}
                         stroke="red"
-                        strokeWidth="2"
+                        strokeWidth="1"
                         fill="none"
                     />
                 )}
