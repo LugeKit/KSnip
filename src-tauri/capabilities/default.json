@@ -3,7 +3,8 @@
   "identifier": "default",
   "description": "Capability for the main window",
   "windows": [
-    "main"
+    "main",
+    "screenshot-overlay"
   ],
   "permissions": [
     "core:default",
@@ -13,7 +14,7 @@
     "core:window:allow-show",
     "core:window:allow-set-focus",
     "core:window:allow-set-always-on-top",
-    "core:window:allow-create",
+    "core:webview:allow-create-webview-window",
     "core:window:allow-close",
     "log:default"
   ]
