@@ -5,6 +5,7 @@ import {
 } from "@tauri-apps/api/window";
 import { debug, error } from "@tauri-apps/plugin-log";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import CropArea from "./components/CropArea";
 import CropToolbar from "./components/CropToolbar";
 
 interface Point {
@@ -24,8 +25,6 @@ enum MouseMoveType {
     Cropping,
     Dragging,
 }
-
-const CROP_AREA_STROKE_WIDTH = 1;
 
 function isInRectangle(point: Point | null, rectangle: Rectangle | null) {
     if (!point || !rectangle) {
@@ -164,39 +163,7 @@ export default function OverlayPage() {
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
         >
-            <svg className="absolute inset-0 w-full h-full pointer-events-none">
-                <defs>
-                    <mask id="crop-mask">
-                        <rect width="100%" height="100%" fill="white" />
-                        {cropArea && (
-                            <rect
-                                x={cropArea.left}
-                                y={cropArea.top}
-                                width={cropArea.width}
-                                height={cropArea.height}
-                                fill="black"
-                            />
-                        )}
-                    </mask>
-                </defs>
-                <rect
-                    width="100%"
-                    height="100%"
-                    fill="rgba(31, 41, 55, 0.7)"
-                    mask="url(#crop-mask)"
-                />
-                {cropArea && (
-                    <rect
-                        x={cropArea.left - CROP_AREA_STROKE_WIDTH}
-                        y={cropArea.top - CROP_AREA_STROKE_WIDTH}
-                        width={cropArea.width + 2 * CROP_AREA_STROKE_WIDTH}
-                        height={cropArea.height + 2 * CROP_AREA_STROKE_WIDTH}
-                        stroke="red"
-                        strokeWidth={CROP_AREA_STROKE_WIDTH}
-                        fill="none"
-                    />
-                )}
-            </svg>
+            <CropArea cropArea={cropArea} />
             {cropArea && mouseMoveType === MouseMoveType.NotPressed && (
                 <>
                     <div
