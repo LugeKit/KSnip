@@ -1,8 +1,8 @@
 [package]
 name = "ksnip"
 version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
+description = "Simple screen capture tool"
+authors = ["LugeK1t"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

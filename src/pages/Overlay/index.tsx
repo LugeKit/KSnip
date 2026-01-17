@@ -154,7 +154,7 @@ export default function OverlayPage() {
         }
     };
 
-    const handleMouseUp = (e: React.MouseEvent) => {
+    const handleMouseUp = (_: React.MouseEvent) => {
         setMouseMoveType(MouseMoveType.NotPressed);
     };
 
