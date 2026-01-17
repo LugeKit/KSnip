@@ -1,35 +1,46 @@
 use arboard::{Clipboard, ImageData};
-use base64::{engine::general_purpose, Engine as _};
+use image::codecs::jpeg::JpegEncoder;
 use image::DynamicImage;
 use screenshots::Screen;
-use std::io::Cursor;
 use std::sync::Mutex;
+use std::time::Instant;
+use tauri_plugin_log::log::info;
 
 struct AppState {
     screenshot: Mutex<Option<DynamicImage>>,
 }
 
 #[tauri::command]
-fn capture_screen(state: tauri::State<'_, AppState>) -> Result<String, String> {
+fn capture_screen(state: tauri::State<'_, AppState>) -> Result<Vec<u8>, String> {
+    let start = Instant::now();
+    info!("[R] Start capturing: {}", start.elapsed().as_millis());
+
     let screens = Screen::all().map_err(|e| e.to_string())?;
+    info!("[R] Get screens: {}", start.elapsed().as_millis());
+
     if let Some(screen) = screens.first() {
         let image = screen.capture().map_err(|e| e.to_string())?;
+        info!("[R] Get screen capture: {}", start.elapsed().as_millis());
 
         // Convert to DynamicImage for later cropping
         let dynamic_image = DynamicImage::ImageRgba8(image);
+        info!("[R] Get dynamic image: {}", start.elapsed().as_millis());
+
+        // Convert to JPEG for faster encoding and smaller transfer size
+        // Pre-allocate buffer to avoid multiple reallocations (approx 1MB for 4K JPEG)
+        let mut bytes = Vec::with_capacity(1_000_000);
+        let encoder = JpegEncoder::new_with_quality(&mut bytes, 60);
+        dynamic_image
+            .write_with_encoder(encoder)
+            .map_err(|e| e.to_string())?;
+        info!("[R] convert to jpeg: {}", start.elapsed().as_millis());
 
         // Store in state
         let mut state_image = state.screenshot.lock().unwrap();
-        *state_image = Some(dynamic_image.clone());
+        *state_image = Some(dynamic_image);
+        info!("[R] save to state: {}", start.elapsed().as_millis());
 
-        // Convert to base64 for frontend display
-        let mut buffer = Cursor::new(Vec::new());
-        dynamic_image
-            .write_to(&mut buffer, image::ImageFormat::Png)
-            .map_err(|e| e.to_string())?;
-        let base64_image = general_purpose::STANDARD.encode(buffer.into_inner());
-
-        Ok(format!("data:image/png;base64,{}", base64_image))
+        Ok(bytes)
     } else {
         Err("No screens found".to_string())
     }

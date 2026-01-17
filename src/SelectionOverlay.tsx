@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { useEffect, useState } from "react";
 
 interface SelectionOverlayProps {
   screenshot: string;
@@ -10,7 +10,6 @@ interface SelectionOverlayProps {
 export default function SelectionOverlay({ screenshot, onComplete, onCancel }: SelectionOverlayProps) {
   const [startPos, setStartPos] = useState<{ x: number; y: number } | null>(null);
   const [currentPos, setCurrentPos] = useState<{ x: number; y: number } | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setStartPos({ x: e.clientX, y: e.clientY });
@@ -64,8 +63,7 @@ export default function SelectionOverlay({ screenshot, onComplete, onCancel }: S
 
   return (
     <div
-      ref={containerRef}
-      className="fixed inset-0 z-[9999] cursor-crosshair overflow-hidden"
+      className="fixed inset-0 z-9999 cursor-crosshair overflow-hidden"
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
