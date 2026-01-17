@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
+import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { info } from "@tauri-apps/plugin-log";
+import { debug, error } from "@tauri-apps/plugin-log";
 import { CheckIcon, X } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 
@@ -77,7 +78,7 @@ export default function OverlayPage() {
     }, [closeOverlayPage, cropArea]);
 
     const handleMouseDown = (e: React.MouseEvent) => {
-        info(`[OverlayPage] handleMouseDown: ${e.clientX}, ${e.clientY}`);
+        debug(`[OverlayPage] handleMouseDown: ${e.clientX}, ${e.clientY}`);
 
         const downPoint = { x: e.screenX, y: e.screenY };
 
@@ -140,7 +141,6 @@ export default function OverlayPage() {
     };
 
     const handleMouseUp = (e: React.MouseEvent) => {
-        info(`[OverlayPage] handleMouseUp: ${e.clientX}, ${e.clientY}`);
         setMouseMoveType(MouseMoveType.Ignore);
     };
 
@@ -199,7 +199,25 @@ export default function OverlayPage() {
                                 e.stopPropagation();
                             }}
                         >
-                            <Button variant="outline" size="icon-sm">
+                            <Button
+                                variant="outline"
+                                size="icon-sm"
+                                onClick={() => {
+                                    invoke("screenshots_take", {
+                                        param: {
+                                            left: cropArea.left,
+                                            top: cropArea.top,
+                                            width: cropArea.width,
+                                            height: cropArea.height,
+                                            screenId: 0,
+                                        },
+                                    }).catch((e: Error) => {
+                                        error(
+                                            `[OverlayPage] failed to call screenshots_take: ${e}`,
+                                        );
+                                    });
+                                }}
+                            >
                                 <CheckIcon />
                             </Button>
                             <Button
