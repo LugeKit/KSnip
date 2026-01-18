@@ -9,7 +9,7 @@ export default function AppHeader() {
     const [isMaximized, setMaxmized] = useState(false);
 
     return (
-        <div className="fixed top-0 left-0 w-full flex justify-end">
+        <div className="absolute top-0 left-0 w-full flex justify-end">
             <div className="absolute inset-0" data-tauri-drag-region />
             <ButtonGroup className="relative z-1 h-full">
                 <Button
