@@ -1,5 +1,5 @@
 import { debug } from "@tauri-apps/plugin-log";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { MouseMoveType, Point, Rectangle } from "../types";
 
 function isInRectangle(point: Point | null, rectangle: Rectangle | null) {
@@ -89,11 +89,11 @@ export function useCrop() {
         setMouseMoveType(MouseMoveType.NotPressed);
     };
 
-    const cancelCrop = () => {
+    const cancelCrop = useCallback(() => {
         setCropArea(null);
         setMouseMoveType(MouseMoveType.NotPressed);
         setStartPosition(null);
-    };
+    }, []);
 
     return {
         cropArea,

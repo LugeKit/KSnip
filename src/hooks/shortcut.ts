@@ -1,3 +1,5 @@
+import { register, unregister } from "@tauri-apps/plugin-global-shortcut";
+import { debug, error } from "@tauri-apps/plugin-log";
 import { useEffect } from "react";
 
 /**
@@ -6,12 +8,13 @@ import { useEffect } from "react";
  * @param callback The callback function to execute when the key is pressed
  * @param deps The dependencies for the useEffect hook
  */
-export const useWindowShortcut = (
+export function useWindowShortcut(
     keys: string[],
     callback: () => void,
     deps: any[] = [],
-) => {
+) {
     useEffect(() => {
+        debug(`[shortcut] registering window shortcut: ${keys}`);
         if (keys.length === 0) {
             return;
         }
@@ -60,4 +63,27 @@ export const useWindowShortcut = (
             window.removeEventListener("keydown", handleKeyDown);
         };
     }, [keys, ...deps]);
-};
+}
+
+export function useGlobalShortcut(
+    keys: string,
+    callback: () => void,
+    deps: any[] = [],
+) {
+    useEffect(() => {
+        debug(`[shortcut] registering global shortcut: ${keys}`);
+        register(keys, (event) => {
+            if (event.state === "Pressed") {
+                callback();
+            }
+        }).catch((e) => {
+            error(`[shortcut] failed to register global shortcut: ${e}`);
+        });
+
+        return () => {
+            unregister(keys).catch((e) => {
+                error(`[shortcut] failed to unregister global shortcut: ${e}`);
+            });
+        };
+    }, [keys, ...deps]);
+}
