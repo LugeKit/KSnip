@@ -1,6 +1,6 @@
 import { register, unregister } from "@tauri-apps/plugin-global-shortcut";
 import { debug, error } from "@tauri-apps/plugin-log";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 /**
  * useShortCut is a custom hook to register a global keydown event listener
@@ -10,9 +10,14 @@ import { useEffect } from "react";
  */
 export function useWindowShortcut(
     keys: string[],
-    callback: () => void,
-    deps: any[] = [],
+    callback: () => void | Promise<void>,
 ) {
+    const callbackRef = useRef(callback);
+    useEffect(() => {
+        debug(`[shortcut] reassign window shortcut callback for ${keys}`);
+        callbackRef.current = callback;
+    }, [callback]);
+
     useEffect(() => {
         debug(`[shortcut] registering window shortcut: ${keys}`);
         if (keys.length === 0) {
@@ -21,7 +26,7 @@ export function useWindowShortcut(
 
         const lowerKeys = keys.map((key) => key.toLowerCase());
 
-        const handleKeyDown = (e: KeyboardEvent) => {
+        const handleKeyDown = async (e: KeyboardEvent) => {
             for (let i = 0; i < lowerKeys.length - 1; i++) {
                 switch (lowerKeys[i]) {
                     case "option":
@@ -55,35 +60,56 @@ export function useWindowShortcut(
                 return;
             }
 
-            callback();
+            try {
+                await callbackRef.current();
+            } catch (e) {
+                error(
+                    `[shortcut] failed to execute window shortcut callback ${keys}, error: ${e}`,
+                );
+            }
         };
 
         window.addEventListener("keydown", handleKeyDown);
         return () => {
             window.removeEventListener("keydown", handleKeyDown);
         };
-    }, [keys, ...deps]);
+    }, [keys]);
 }
 
 export function useGlobalShortcut(
     keys: string,
-    callback: () => void,
-    deps: any[] = [],
+    callback: () => void | Promise<void>,
 ) {
+    const callbackRef = useRef(callback);
+    useEffect(() => {
+        debug(`[shortcut] reassign global shortcut callback for ${keys}`);
+        callbackRef.current = callback;
+    }, [callback]);
+
     useEffect(() => {
         debug(`[shortcut] registering global shortcut: ${keys}`);
-        register(keys, (event) => {
+        register(keys, async (event) => {
             if (event.state === "Pressed") {
-                callback();
+                try {
+                    await callbackRef.current();
+                } catch (e) {
+                    error(
+                        `[shortcut] failed to execute global shortcut callback ${keys}, error: ${e}`,
+                    );
+                }
             }
         }).catch((e) => {
-            error(`[shortcut] failed to register global shortcut: ${e}`);
+            error(
+                `[shortcut] failed to register global shortcut ${keys}, error: ${e}`,
+            );
         });
 
         return () => {
             unregister(keys).catch((e) => {
-                error(`[shortcut] failed to unregister global shortcut: ${e}`);
+                error(
+                    `[shortcut] failed to unregister global shortcut ${keys}, error: ${e}`,
+                );
             });
         };
-    }, [keys, ...deps]);
+    }, [keys]);
 }

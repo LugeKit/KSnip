@@ -25,7 +25,6 @@ export default function MainPage() {
     useGlobalShortcut(
         useMemo(() => "Alt+A", []),
         startCut,
-        [startCut],
     );
 
     return (

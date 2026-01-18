@@ -1,13 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
+import { useGlobalShortcut } from "@/hooks/shortcut";
 import { invoke } from "@tauri-apps/api/core";
-import { Monitor } from "@tauri-apps/api/window";
-import { error } from "@tauri-apps/plugin-log";
-import { CheckIcon, X } from "lucide-react";
-import React from "react";
+import { Monitor, Window } from "@tauri-apps/api/window";
+import { debug, error } from "@tauri-apps/plugin-log";
+import { CheckIcon, Disc, X } from "lucide-react";
+import React, { useMemo } from "react";
 import { Rectangle } from "../types";
 
 interface CropToolbarProps {
+    window: Window;
     cropArea: Rectangle;
     monitor: React.RefObject<Monitor | null>;
     onConfirmSuccess: () => void;
@@ -15,50 +17,75 @@ interface CropToolbarProps {
 }
 
 const CropToolbar: React.FC<CropToolbarProps> = ({
+    window,
     cropArea,
     monitor,
     onConfirmSuccess,
     onCancel,
 }) => {
+    const takeScreenshot = () => {
+        if (!monitor.current) {
+            error(`[CropToolbar] monitor.current is null`);
+            return;
+        }
+        invoke("screenshots_take", {
+            param: {
+                left: cropArea.left,
+                top: cropArea.top,
+                width: cropArea.width,
+                height: cropArea.height,
+                screenX: monitor.current.position.x,
+                screenY: monitor.current.position.y,
+            },
+        })
+            .then(onConfirmSuccess)
+            .catch((e: Error) => {
+                error(`[CropToolbar] failed to call screenshots_take: ${e}`);
+            });
+    };
+
+    const takeGif = async () => {
+        debug("[CropToolbar] take gif is called");
+        try {
+            await window.setFocusable(false);
+            await window.setIgnoreCursorEvents(true);
+            useGlobalShortcut(
+                useMemo(() => "Shift+Escape", []),
+                async () => {
+                    try {
+                        await window.setFocusable(true);
+                        await window.setIgnoreCursorEvents(false);
+                    } catch (e) {
+                        error(`[CropToolbar] failed to set focusable: ${e}`);
+                    }
+                },
+            );
+        } catch (e) {
+            error(`[CropToolbar] failed to take gif: ${e}`);
+        }
+    };
+
     return (
         <ButtonGroup
             onMouseDown={(e: React.MouseEvent) => {
                 e.stopPropagation();
             }}
         >
-            <Button
-                variant="outline"
-                size="icon-sm"
-                onClick={() => {
-                    if (!monitor.current) {
-                        error(`[OverlayPage] monitor.current is null`);
-                        return;
-                    }
-                    invoke("screenshots_take", {
-                        param: {
-                            left: cropArea.left,
-                            top: cropArea.top,
-                            width: cropArea.width,
-                            height: cropArea.height,
-                            screenX: monitor.current.position.x,
-                            screenY: monitor.current.position.y,
-                        },
-                    })
-                        .then(onConfirmSuccess)
-                        .catch((e: Error) => {
-                            error(
-                                `[OverlayPage] failed to call screenshots_take: ${e}`,
-                            );
-                        });
-                }}
-            >
+            <CommonButton onClick={takeScreenshot}>
                 <CheckIcon />
-            </Button>
-            <Button variant="outline" size="icon-sm" onClick={onCancel}>
+            </CommonButton>
+            <CommonButton onClick={takeGif}>
+                <Disc />
+            </CommonButton>
+            <CommonButton onClick={onCancel}>
                 <X />
-            </Button>
+            </CommonButton>
         </ButtonGroup>
     );
 };
+
+function CommonButton(props: React.ComponentProps<typeof Button>) {
+    return <Button variant="outline" size="icon-sm" {...props} />;
+}
 
 export default CropToolbar;
