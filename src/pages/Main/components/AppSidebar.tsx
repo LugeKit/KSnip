@@ -18,21 +18,25 @@ export enum MenuKey {
 }
 
 interface AppSidebarProps {
+    activeMenu: MenuKey;
     onMenuClick: (menuKey: MenuKey) => void;
 }
 
-export default function AppSidebar({ onMenuClick }: AppSidebarProps) {
+export default function AppSidebar({
+    activeMenu,
+    onMenuClick,
+}: AppSidebarProps) {
     const { toggleSidebar } = useSidebar();
     const items = [
         {
             title: "设置",
             icon: Settings,
-            onClick: () => onMenuClick(MenuKey.Settings),
+            key: MenuKey.Settings,
         },
         {
             title: "快捷键",
             icon: Keyboard,
-            onClick: () => onMenuClick(MenuKey.Shortcuts),
+            key: MenuKey.Shortcuts,
         },
     ];
 
@@ -59,7 +63,10 @@ export default function AppSidebar({ onMenuClick }: AppSidebarProps) {
                                 return (
                                     <SidebarMenuItem key={item.title}>
                                         <SidebarMenuButton
-                                            onClick={item.onClick}
+                                            onClick={() =>
+                                                onMenuClick(item.key)
+                                            }
+                                            isActive={activeMenu === item.key}
                                             asChild
                                         >
                                             <a className="select-none cursor-pointer">

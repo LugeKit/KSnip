@@ -20,6 +20,7 @@ export default function MainPage() {
             <div className="relative h-full w-full border rounded-md overflow-hidden bg-background shadow-md">
                 <SidebarProvider className="h-full">
                     <AppSidebar
+                        activeMenu={activeMenu}
                         onMenuClick={(menuKey) => setActiveMenu(menuKey)}
                     />
                     <div className="flex flex-col flex-1">
