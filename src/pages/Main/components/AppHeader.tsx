@@ -9,23 +9,19 @@ export default function AppHeader() {
     const appWindow = useMemo(() => getCurrentWindow(), []);
 
     return (
-        <div className="absolute top-0 left-0 h-12 w-full flex items-center justify-end bg-sidebar">
+        <div className="absolute top-0 left-0 h-(--header-height) w-full flex justify-end bg-sidebar">
+            <div className="absolute left-0 top-0 w-full h-full border-b border-border" />
             <div
                 className="absolute inset-0"
                 data-tauri-drag-region
                 onDoubleClick={() => appWindow.toggleMaximize()}
             />
-            <ButtonGroup className="relative z-1 h-full items-center">
-                <Button
-                    variant={"ghost"}
-                    size={"icon-lg"}
-                    onClick={() => appWindow.minimize()}
-                >
+            <ButtonGroup className="relative z-1 h-full [&>button]:aspect-square [&>button]:h-full">
+                <Button variant={"ghost"} onClick={() => appWindow.minimize()}>
                     <Minus />
                 </Button>
                 <Button
                     variant={"ghost"}
-                    size={"icon-lg"}
                     onClick={() => {
                         appWindow.toggleMaximize().catch((e) => {
                             error(`[AppHeader] toggleMaximize error: ${e}`);
@@ -36,7 +32,6 @@ export default function AppHeader() {
                 </Button>
                 <Button
                     variant={"ghost"}
-                    size={"icon-lg"}
                     className="hover:text-red-500"
                     onClick={() => appWindow.close()}
                 >
