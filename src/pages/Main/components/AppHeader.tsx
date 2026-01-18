@@ -9,7 +9,7 @@ export default function AppHeader() {
     const appWindow = useMemo(() => getCurrentWindow(), []);
 
     return (
-        <div className="absolute top-0 left-0 h-(--header-height) w-full flex justify-end bg-sidebar">
+        <div className="relative top-0 left-0 h-(--header-height) w-full flex justify-end bg-sidebar">
             <div className="absolute left-0 top-0 w-full h-full border-b border-border" />
             <div
                 className="absolute inset-0"

@@ -12,14 +12,16 @@ export default function MainPage() {
     }, [startSnip]);
 
     return (
-        <div className="relative h-svh overflow-hidden bg-background border rounded-md antialiased">
-            <SidebarProvider>
-                <AppSidebar />
-                <div className="flex flex-col flex-1">
-                    <AppHeader />
-                    <main className="flex-1"> </main>
-                </div>
-            </SidebarProvider>
+        <div className="relative h-screen w-screen antialiased p-2">
+            <div className="relative h-full w-full border rounded-md overflow-hidden bg-background shadow-md">
+                <SidebarProvider className="h-full">
+                    <AppSidebar />
+                    <div className="flex flex-col flex-1">
+                        <AppHeader />
+                        <main className="flex-1"> </main>
+                    </div>
+                </SidebarProvider>
+            </div>
         </div>
     );
 }
