@@ -1,8 +1,43 @@
+import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
+import { getCurrentWindow } from "@tauri-apps/api/window";
+import { Minus, RectangleEllipsis, X } from "lucide-react";
+import { useMemo, useState } from "react";
+
 export default function AppHeader() {
+    const appWindow = useMemo(() => getCurrentWindow(), []);
+    const [isMaximized, setMaxmized] = useState(false);
+
     return (
-        <div className="fixed w-full h-10" data-tauri-drag-region>
-            <div className="absolute w-full h-full bg-black z-999" data-tauri-drag-region/>
-            <div className="border-b w-full mt-10 ml-1 mr-1" />
+        <div className="fixed top-0 left-0 w-full flex justify-end">
+            <div className="absolute inset-0" data-tauri-drag-region />
+            <ButtonGroup className="relative z-1 h-full">
+                <Button
+                    variant={"ghost"}
+                    size={"icon-lg"}
+                    onClick={() => appWindow.minimize()}
+                >
+                    <Minus />
+                </Button>
+                <Button
+                    variant={"ghost"}
+                    size={"icon-lg"}
+                    onClick={() => {
+                        setMaxmized(!isMaximized);
+                        appWindow.maximize();
+                    }}
+                >
+                    <RectangleEllipsis />
+                </Button>
+                <Button
+                    variant={"ghost"}
+                    size={"icon-lg"}
+                    onClick={() => appWindow.close()}
+                >
+                    <X />
+                </Button>
+            </ButtonGroup>
+            <div className="absolute bottom-0 border-b w-full" />
         </div>
-    )
+    );
 }

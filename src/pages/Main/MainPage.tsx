@@ -3,8 +3,8 @@ import { registerGlobalShortcut } from "@/lib/utils";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { debug, error, info } from "@tauri-apps/plugin-log";
 import { useEffect } from "react";
-import AppSidebar from "./components/AppSidebar";
 import AppHeader from "./components/AppHeader";
+import AppSidebar from "./components/AppSidebar";
 
 export default function MainPage() {
     useEffect(() => {
@@ -12,11 +12,15 @@ export default function MainPage() {
     }, [startSnip]);
 
     return (
-        <SidebarProvider className="bg-background">
-            <AppSidebar />
-            <AppHeader />
-            <main> </main>
-        </SidebarProvider>
+        <div className="h-svh overflow-hidden bg-background border rounded-md">
+            <SidebarProvider className="min-h-0">
+                <AppSidebar />
+                <div className="flex-1">
+                    <AppHeader />
+                    <main> </main>
+                </div>
+            </SidebarProvider>
+        </div>
     );
 }
 
