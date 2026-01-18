@@ -32,21 +32,16 @@ export default function AppSidebar() {
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton
-                            size="lg"
-                            onClick={toggleSidebar}
-                            className="transition-colors group-data-[collapsible=icon]:h-12! px-0"
-                        >
-                            <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                        <SidebarMenuButton onClick={toggleSidebar} asChild>
+                            <a>
                                 <Scissors className="size-4" />
-                            </div>
-                            <div className="text-sm group-data-[collapsible=icon]:hidden">
-                                <span className="font-bold text-lg">ksnip</span>
-                            </div>
+                                <span className="font-bold">k-snip</span>
+                            </a>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarHeader>
+            <div className="border-b ml-3 mr-3" />
             <SidebarContent>
                 <SidebarGroup>
                     <SidebarGroupContent>
