@@ -5,7 +5,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { Monitor, Window } from "@tauri-apps/api/window";
 import { debug, error } from "@tauri-apps/plugin-log";
 import { CheckIcon, Disc, X } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 import { Rectangle } from "../types";
 
 interface CropToolbarProps {
@@ -23,6 +23,8 @@ const CropToolbar: React.FC<CropToolbarProps> = ({
     onConfirmSuccess,
     onCancel,
 }) => {
+    const [isRecording, setRecording] = useState(false);
+
     const takeScreenshot = () => {
         if (!monitor.current) {
             error(`[CropToolbar] monitor.current is null`);
@@ -44,8 +46,9 @@ const CropToolbar: React.FC<CropToolbarProps> = ({
             });
     };
 
-    const takeGif = async () => {
-        debug("[CropToolbar] take gif is called");
+    const recordRegion = async () => {
+        debug("[CropToolbar] record region is called");
+        setRecording(true);
         try {
             registerGlobalShortcut("Shift+Escape", async () => {
                 try {
@@ -55,6 +58,7 @@ const CropToolbar: React.FC<CropToolbarProps> = ({
                     error(`[CropToolbar] failed to complete take gif: ${e}`);
                 } finally {
                     unregisterGlobalShortcut("Shift+Escape");
+                    setRecording(false);
                 }
             });
             await window.setFocusable(false);
@@ -73,8 +77,8 @@ const CropToolbar: React.FC<CropToolbarProps> = ({
             <CommonButton onClick={takeScreenshot}>
                 <CheckIcon />
             </CommonButton>
-            <CommonButton onClick={takeGif}>
-                <Disc />
+            <CommonButton onClick={recordRegion}>
+                {isRecording ? <Disc className="text-red-500" /> : <Disc />}
             </CommonButton>
             <CommonButton onClick={onCancel}>
                 <X />
