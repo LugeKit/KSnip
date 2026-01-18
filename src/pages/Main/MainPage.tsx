@@ -1,4 +1,4 @@
-import { useShortCut } from "@/hooks/useShortCut";
+import { useWindowShortcut } from "@/hooks/shortcut";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { debug, error, info } from "@tauri-apps/plugin-log";
 import { useCallback } from "react";
@@ -22,7 +22,7 @@ export default function MainPage() {
         });
     }, []);
 
-    useShortCut("Alt+a", startCut, [startCut]);
+    useWindowShortcut(["Alt", "a"], startCut, [startCut]);
 
     return (
         <main className="h-screen flex flex-col justify-center items-center text-center antialiased leading-6">

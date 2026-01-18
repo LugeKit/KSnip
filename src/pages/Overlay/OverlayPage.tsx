@@ -7,8 +7,8 @@ import { error } from "@tauri-apps/plugin-log";
 import { useCallback, useEffect, useRef } from "react";
 import CropArea from "./components/CropArea";
 import CropToolbar from "./components/CropToolbar";
-import { useCrop } from "./hooks/useCrop";
-import { useShortCut } from "../../hooks/useShortCut";
+import { useCrop } from "./hooks/crop";
+import { useWindowShortcut } from "../../hooks/shortcut";
 import { MouseMoveType } from "./types";
 
 export default function OverlayPage() {
@@ -41,8 +41,8 @@ export default function OverlayPage() {
     // register global keydown event listener to close overlay page
     // 1. no crop area: press "Esc" to close the overlay page
     // 2. crop area: press "Esc" to cancel the crop
-    useShortCut(
-        "Escape",
+    useWindowShortcut(
+        ["Escape"],
         () => {
             if (cropArea) {
                 cancelCrop();
@@ -50,7 +50,7 @@ export default function OverlayPage() {
             }
             closeOverlayPage();
         },
-        [cropArea, cancelCrop, closeOverlayPage]
+        [cropArea, cancelCrop, closeOverlayPage],
     );
 
     return (
