@@ -2,23 +2,34 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { registerGlobalShortcut } from "@/lib/utils";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { debug, error, info } from "@tauri-apps/plugin-log";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import AppHeader from "./components/AppHeader";
-import AppSidebar from "./components/AppSidebar";
+import AppSidebar, { MenuKey } from "./components/AppSidebar";
+import Settings from "./components/Settings";
+import ShortcutSettings from "./components/ShortcutSettings";
 
 export default function MainPage() {
+    const [activeMenu, setActiveMenu] = useState<MenuKey>(MenuKey.Settings);
+
     useEffect(() => {
         registerGlobalShortcut("Alt+A", startSnip);
     }, [startSnip]);
 
     return (
-        <div className="relative h-screen w-screen antialiased p-2">
+        <div className="relative h-screen w-screen antialiased p-1">
             <div className="relative h-full w-full border rounded-md overflow-hidden bg-background shadow-md">
                 <SidebarProvider className="h-full">
-                    <AppSidebar />
+                    <AppSidebar
+                        onMenuClick={(menuKey) => setActiveMenu(menuKey)}
+                    />
                     <div className="flex flex-col flex-1">
                         <AppHeader />
-                        <main className="flex-1"> </main>
+                        <main className="flex-1">
+                            {activeMenu === MenuKey.Settings && <Settings />}
+                            {activeMenu === MenuKey.Shortcuts && (
+                                <ShortcutSettings />
+                            )}
+                        </main>
                     </div>
                 </SidebarProvider>
             </div>

@@ -12,18 +12,27 @@ import {
 } from "@/components/ui/sidebar";
 import { Keyboard, Scissors, Settings } from "lucide-react";
 
-export default function AppSidebar() {
+export enum MenuKey {
+    Settings = "settings",
+    Shortcuts = "shortcuts",
+}
+
+interface AppSidebarProps {
+    onMenuClick: (menuKey: MenuKey) => void;
+}
+
+export default function AppSidebar({ onMenuClick }: AppSidebarProps) {
     const { toggleSidebar } = useSidebar();
     const items = [
         {
             title: "设置",
             icon: Settings,
-            url: "#settings",
+            onClick: () => onMenuClick(MenuKey.Settings),
         },
         {
             title: "快捷键",
             icon: Keyboard,
-            url: "#shortcuts",
+            onClick: () => onMenuClick(MenuKey.Shortcuts),
         },
     ];
 
@@ -49,8 +58,11 @@ export default function AppSidebar() {
                             {items.map((item) => {
                                 return (
                                     <SidebarMenuItem key={item.title}>
-                                        <SidebarMenuButton asChild>
-                                            <a href={item.url}>
+                                        <SidebarMenuButton
+                                            onClick={item.onClick}
+                                            asChild
+                                        >
+                                            <a className="select-none cursor-pointer">
                                                 <item.icon />
                                                 {<span>{item.title}</span>}
                                             </a>
