@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { error } from "@tauri-apps/plugin-log";
 import { Minus, RectangleEllipsis, X } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -24,7 +25,9 @@ export default function AppHeader() {
                     size={"icon-lg"}
                     onClick={() => {
                         setMaxmized(!isMaximized);
-                        appWindow.maximize();
+                        appWindow.toggleMaximize().catch((e) => {
+                            error(`[AppHeader] toggleMaximize error: ${e}`);
+                        });
                     }}
                 >
                     <RectangleEllipsis />
@@ -37,7 +40,6 @@ export default function AppHeader() {
                     <X />
                 </Button>
             </ButtonGroup>
-            <div className="absolute bottom-0 border-b w-full" />
         </div>
     );
 }
