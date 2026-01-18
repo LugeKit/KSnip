@@ -61,7 +61,7 @@ export default function ShortcutSettings() {
     return (
         <div className="relative top-0 right-0 w-full h-full p-4">
             <Tabs defaultValue="basic" className="w-full">
-                <TabsList>
+                <TabsList className="gap-2">
                     {tabsState.map((tab) => (
                         <TabsTrigger key={tab.value} value={tab.value}>
                             {tab.label}
