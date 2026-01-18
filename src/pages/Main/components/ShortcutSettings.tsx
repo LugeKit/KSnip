@@ -45,10 +45,10 @@ export default function ShortcutSettings() {
                         </TabsTrigger>
                     ))}
                 </TabsList>
-                <div className="w-full border-border border-b left-0 mt-2" />
+                <div className="w-full border-border border-b left-0 mt-2 mb-2" />
                 {tabs.map((tab) => (
                     <TabsContent key={tab.value} value={tab.value}>
-                        <div className="[&_tr]:border-b-0 [&_tr]:hover:bg-transparent">
+                        <div className="[&_tr]:hover:bg-transparent bg-muted rounded-md pl-5 pr-5">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
