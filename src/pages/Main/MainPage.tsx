@@ -4,6 +4,7 @@ import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { debug, error, info } from "@tauri-apps/plugin-log";
 import { useEffect } from "react";
 import AppSidebar from "./components/AppSidebar";
+import AppHeader from "./components/AppHeader";
 
 export default function MainPage() {
     useEffect(() => {
@@ -11,9 +12,10 @@ export default function MainPage() {
     }, [startSnip]);
 
     return (
-        <SidebarProvider>
+        <SidebarProvider className="bg-background">
             <AppSidebar />
-            <main className="flex-1">{/* Content goes here */}</main>
+            <AppHeader />
+            <main> </main>
         </SidebarProvider>
     );
 }

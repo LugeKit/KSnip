@@ -6,18 +6,20 @@
     "permissions": [
         "core:default",
         "opener:default",
+        "log:default",
+        "core:window:default",
+        "core:window:allow-start-dragging",
         "core:window:allow-set-fullscreen",
         "core:window:allow-hide",
         "core:window:allow-show",
         "core:window:allow-set-focus",
         "core:window:allow-set-always-on-top",
-        "core:webview:allow-create-webview-window",
-        "core:window:allow-close",
-        "global-shortcut:allow-is-registered",
-        "global-shortcut:allow-register",
-        "global-shortcut:allow-unregister",
         "core:window:allow-set-focusable",
         "core:window:allow-set-ignore-cursor-events",
-        "log:default"
+        "core:window:allow-close",
+        "core:webview:allow-create-webview-window",
+        "global-shortcut:allow-is-registered",
+        "global-shortcut:allow-register",
+        "global-shortcut:allow-unregister"
     ]
 }
