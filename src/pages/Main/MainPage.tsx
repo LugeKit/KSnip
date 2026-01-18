@@ -12,7 +12,7 @@ export default function MainPage() {
     }, [startSnip]);
 
     return (
-        <div className="relative h-svh overflow-hidden bg-background border rounded-md">
+        <div className="relative h-svh overflow-hidden bg-background border rounded-md antialiased">
             <SidebarProvider>
                 <AppSidebar />
                 <div className="flex flex-col flex-1">

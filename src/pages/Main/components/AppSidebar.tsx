@@ -33,7 +33,7 @@ export default function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton onClick={toggleSidebar} asChild>
-                            <a>
+                            <a className="select-none cursor-pointer">
                                 <Scissors className="size-4" />
                                 <span className="font-bold">k-snip</span>
                             </a>
