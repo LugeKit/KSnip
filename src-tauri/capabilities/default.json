@@ -21,6 +21,11 @@
         "core:window:allow-maximize",
         "core:window:allow-toggle-maximize",
         "core:webview:allow-create-webview-window",
+        "store:allow-load",
+        "store:default",
+        "store:allow-get",
+        "store:allow-has",
+        "store:allow-save",
         "global-shortcut:allow-is-registered",
         "global-shortcut:allow-register",
         "global-shortcut:allow-unregister"

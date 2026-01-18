@@ -5,8 +5,8 @@ import { debug, error, info } from "@tauri-apps/plugin-log";
 import { useEffect, useState } from "react";
 import AppHeader from "./components/AppHeader";
 import AppSidebar, { MenuKey } from "./components/AppSidebar";
-import Settings from "./components/Settings";
-import ShortcutSettings from "./components/ShortcutSettings";
+import Setting from "./components/Setting";
+import ShortcutSetting from "./components/ShortcutSetting";
 
 export default function MainPage() {
     const [activeMenu, setActiveMenu] = useState<MenuKey>(MenuKey.Settings);
@@ -26,9 +26,9 @@ export default function MainPage() {
                     <div className="flex flex-col flex-1">
                         <AppHeader />
                         <main className="flex-1">
-                            {activeMenu === MenuKey.Settings && <Settings />}
+                            {activeMenu === MenuKey.Settings && <Setting />}
                             {activeMenu === MenuKey.Shortcuts && (
-                                <ShortcutSettings />
+                                <ShortcutSetting />
                             )}
                         </main>
                     </div>
