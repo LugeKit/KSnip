@@ -48,9 +48,18 @@ pub fn screenshots_take(param: LogicalParam) -> Result<(), String> {
         );
 
         let image = monitor
-            .capture_region(physical_param.left, physical_param.top, physical_param.width, physical_param.height)
+            .capture_region(
+                physical_param.left,
+                physical_param.top,
+                physical_param.width,
+                physical_param.height,
+            )
             .map_err(|e| e.to_string())?;
-        util::save_image_to_clipboard(physical_param.width as usize, physical_param.height as usize, image.into_raw())?;
+        util::save_image_to_clipboard(
+            physical_param.width as usize,
+            physical_param.height as usize,
+            image.into_raw(),
+        )?;
         return Ok(());
     };
 
