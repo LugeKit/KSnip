@@ -14,7 +14,7 @@ export default function MainPage() {
         <SidebarProvider>
             <AppSidebar />
             <main>
-                <SidebarTrigger />
+                <SidebarTrigger className="m-2" />
             </main>
         </SidebarProvider>
     );

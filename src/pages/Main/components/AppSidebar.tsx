@@ -2,6 +2,8 @@ import {
     Sidebar,
     SidebarContent,
     SidebarFooter,
+    SidebarGroup,
+    SidebarGroupContent,
     SidebarHeader,
     SidebarMenu,
     SidebarMenuButton,
@@ -20,27 +22,31 @@ export default function AppSidebar() {
             title: "快捷键",
             icon: Keyboard,
             url: "#shortcuts",
-        }
+        },
     ];
 
     return (
-        <Sidebar>
+        <Sidebar collapsible="icon">
             <SidebarHeader />
             <SidebarContent>
-                <SidebarMenu>
-                    {items.map((item) => {
-                        return (
-                            <SidebarMenuItem key={item.title}>
-                                <SidebarMenuButton asChild>
-                                    <a href={item.url}>
-                                        <item.icon />
-                                        {<span>{item.title}</span>}
-                                    </a>
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
-                        );
-                    })}
-                </SidebarMenu>
+                <SidebarGroup>
+                    <SidebarGroupContent>
+                        <SidebarMenu>
+                            {items.map((item) => {
+                                return (
+                                    <SidebarMenuItem key={item.title}>
+                                        <SidebarMenuButton asChild>
+                                            <a href={item.url}>
+                                                <item.icon />
+                                                {<span>{item.title}</span>}
+                                            </a>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                );
+                            })}
+                        </SidebarMenu>
+                    </SidebarGroupContent>
+                </SidebarGroup>
             </SidebarContent>
             <SidebarFooter />
         </Sidebar>
