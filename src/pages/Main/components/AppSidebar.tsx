@@ -8,10 +8,12 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    useSidebar,
 } from "@/components/ui/sidebar";
-import { Keyboard, Settings } from "lucide-react";
+import { Keyboard, Scissors, Settings } from "lucide-react";
 
 export default function AppSidebar() {
+    const { toggleSidebar } = useSidebar();
     const items = [
         {
             title: "设置",
@@ -27,7 +29,24 @@ export default function AppSidebar() {
 
     return (
         <Sidebar collapsible="icon">
-            <SidebarHeader />
+            <SidebarHeader>
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton
+                            size="lg"
+                            onClick={toggleSidebar}
+                            className="transition-colors group-data-[collapsible=icon]:h-12! px-0"
+                        >
+                            <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                                <Scissors className="size-4" />
+                            </div>
+                            <div className="text-sm group-data-[collapsible=icon]:hidden">
+                                <span className="font-bold text-lg">ksnip</span>
+                            </div>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
+            </SidebarHeader>
             <SidebarContent>
                 <SidebarGroup>
                     <SidebarGroupContent>

@@ -1,9 +1,9 @@
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { registerGlobalShortcut } from "@/lib/utils";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { debug, error, info } from "@tauri-apps/plugin-log";
 import { useEffect } from "react";
-import AppSidebar from "./components/AppSideBar";
+import AppSidebar from "./components/AppSidebar";
 
 export default function MainPage() {
     useEffect(() => {
@@ -13,9 +13,7 @@ export default function MainPage() {
     return (
         <SidebarProvider>
             <AppSidebar />
-            <main>
-                <SidebarTrigger className="m-2" />
-            </main>
+            <main className="flex-1">{/* Content goes here */}</main>
         </SidebarProvider>
     );
 }
