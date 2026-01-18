@@ -15,9 +15,9 @@ export default function MainPage() {
         <div className="relative h-svh overflow-hidden bg-background border rounded-md">
             <SidebarProvider>
                 <AppSidebar />
-                <div>
+                <div className="flex flex-col flex-1">
                     <AppHeader />
-                    <main> </main>
+                    <main className="flex-1"> </main>
                 </div>
             </SidebarProvider>
         </div>

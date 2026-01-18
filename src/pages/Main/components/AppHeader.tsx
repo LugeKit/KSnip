@@ -3,16 +3,19 @@ import { ButtonGroup } from "@/components/ui/button-group";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { error } from "@tauri-apps/plugin-log";
 import { Minus, RectangleEllipsis, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 export default function AppHeader() {
     const appWindow = useMemo(() => getCurrentWindow(), []);
-    const [isMaximized, setMaxmized] = useState(false);
 
     return (
-        <div className="absolute top-0 left-0 w-full flex justify-end">
-            <div className="absolute inset-0" data-tauri-drag-region />
-            <ButtonGroup className="relative z-1 h-full">
+        <div className="absolute top-0 left-0 h-12 w-full flex items-center justify-end bg-sidebar">
+            <div
+                className="absolute inset-0"
+                data-tauri-drag-region
+                onDoubleClick={() => appWindow.toggleMaximize()}
+            />
+            <ButtonGroup className="relative z-1 h-full items-center">
                 <Button
                     variant={"ghost"}
                     size={"icon-lg"}
@@ -24,7 +27,6 @@ export default function AppHeader() {
                     variant={"ghost"}
                     size={"icon-lg"}
                     onClick={() => {
-                        setMaxmized(!isMaximized);
                         appWindow.toggleMaximize().catch((e) => {
                             error(`[AppHeader] toggleMaximize error: ${e}`);
                         });
@@ -35,6 +37,7 @@ export default function AppHeader() {
                 <Button
                     variant={"ghost"}
                     size={"icon-lg"}
+                    className="hover:text-red-500"
                     onClick={() => appWindow.close()}
                 >
                     <X />
