@@ -22,7 +22,7 @@ export default function MainPage() {
         });
     }, []);
 
-    useWindowShortcut(["Alt", "a"], startCut, [startCut]);
+    useWindowShortcut(["Alt", "A"], startCut, [startCut]);
 
     return (
         <main className="h-screen flex flex-col justify-center items-center text-center antialiased leading-6">

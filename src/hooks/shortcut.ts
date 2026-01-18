@@ -16,27 +16,29 @@ export const useWindowShortcut = (
             return;
         }
 
+        const lowerKeys = keys.map((key) => key.toLowerCase());
+
         const handleKeyDown = (e: KeyboardEvent) => {
-            for (let i = 0; i < keys.length - 1; i++) {
-                switch (keys[i]) {
-                    case "Option":
-                    case "Alt":
+            for (let i = 0; i < lowerKeys.length - 1; i++) {
+                switch (lowerKeys[i]) {
+                    case "option":
+                    case "alt":
                         if (!e.altKey) {
                             return;
                         }
                         break;
-                    case "Control":
+                    case "ctrl":
                         if (!e.ctrlKey) {
                             return;
                         }
                         break;
-                    case "Shift":
+                    case "shift":
                         if (!e.shiftKey) {
                             return;
                         }
                         break;
-                    case "Cmd":
-                    case "Win":
+                    case "cmd":
+                    case "win":
                         if (!e.metaKey) {
                             return;
                         }
@@ -46,7 +48,7 @@ export const useWindowShortcut = (
                 }
             }
 
-            if (e.key !== keys[keys.length - 1]) {
+            if (e.key.toLowerCase() !== lowerKeys[lowerKeys.length - 1]) {
                 return;
             }
 
