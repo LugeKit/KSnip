@@ -1,4 +1,3 @@
-import { register, unregister } from "@tauri-apps/plugin-global-shortcut";
 import { debug, error } from "@tauri-apps/plugin-log";
 import { useEffect, useRef } from "react";
 
@@ -72,44 +71,6 @@ export function useWindowShortcut(
         window.addEventListener("keydown", handleKeyDown);
         return () => {
             window.removeEventListener("keydown", handleKeyDown);
-        };
-    }, [keys]);
-}
-
-export function useGlobalShortcut(
-    keys: string,
-    callback: () => void | Promise<void>,
-) {
-    const callbackRef = useRef(callback);
-    useEffect(() => {
-        debug(`[shortcut] reassign global shortcut callback for ${keys}`);
-        callbackRef.current = callback;
-    }, [callback]);
-
-    useEffect(() => {
-        debug(`[shortcut] registering global shortcut: ${keys}`);
-        register(keys, async (event) => {
-            if (event.state === "Pressed") {
-                try {
-                    await callbackRef.current();
-                } catch (e) {
-                    error(
-                        `[shortcut] failed to execute global shortcut callback ${keys}, error: ${e}`,
-                    );
-                }
-            }
-        }).catch((e) => {
-            error(
-                `[shortcut] failed to register global shortcut ${keys}, error: ${e}`,
-            );
-        });
-
-        return () => {
-            unregister(keys).catch((e) => {
-                error(
-                    `[shortcut] failed to unregister global shortcut ${keys}, error: ${e}`,
-                );
-            });
         };
     }, [keys]);
 }

@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
-import { useGlobalShortcut } from "@/hooks/shortcut";
+import { registerGlobalShortcut, unregisterGlobalShortcut } from "@/lib/utils";
 import { invoke } from "@tauri-apps/api/core";
 import { Monitor, Window } from "@tauri-apps/api/window";
 import { debug, error } from "@tauri-apps/plugin-log";
 import { CheckIcon, Disc, X } from "lucide-react";
-import React, { useMemo } from "react";
+import React from "react";
 import { Rectangle } from "../types";
 
 interface CropToolbarProps {
@@ -47,19 +47,18 @@ const CropToolbar: React.FC<CropToolbarProps> = ({
     const takeGif = async () => {
         debug("[CropToolbar] take gif is called");
         try {
+            registerGlobalShortcut("Shift+Escape", async () => {
+                try {
+                    await window.setFocusable(true);
+                    await window.setIgnoreCursorEvents(false);
+                } catch (e) {
+                    error(`[CropToolbar] failed to complete take gif: ${e}`);
+                } finally {
+                    unregisterGlobalShortcut("Shift+Escape");
+                }
+            });
             await window.setFocusable(false);
             await window.setIgnoreCursorEvents(true);
-            useGlobalShortcut(
-                useMemo(() => "Shift+Escape", []),
-                async () => {
-                    try {
-                        await window.setFocusable(true);
-                        await window.setIgnoreCursorEvents(false);
-                    } catch (e) {
-                        error(`[CropToolbar] failed to set focusable: ${e}`);
-                    }
-                },
-            );
         } catch (e) {
             error(`[CropToolbar] failed to take gif: ${e}`);
         }

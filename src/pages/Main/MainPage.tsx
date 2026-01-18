@@ -1,7 +1,7 @@
-import { useGlobalShortcut } from "@/hooks/shortcut";
+import { registerGlobalShortcut } from "@/lib/utils";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { debug, error, info } from "@tauri-apps/plugin-log";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect } from "react";
 
 export default function MainPage() {
     const startCut = useCallback(() => {
@@ -10,6 +10,7 @@ export default function MainPage() {
             url: "index.html#screenshot",
             fullscreen: true,
             transparent: true,
+            alwaysOnTop: true,
             decorations: false,
         });
 
@@ -22,10 +23,9 @@ export default function MainPage() {
         });
     }, []);
 
-    useGlobalShortcut(
-        useMemo(() => "Alt+A", []),
-        startCut,
-    );
+    useEffect(() => {
+        registerGlobalShortcut("Alt+A", startCut);
+    }, [startCut]);
 
     return (
         <main className="h-screen flex flex-col justify-center items-center text-center antialiased leading-6">
