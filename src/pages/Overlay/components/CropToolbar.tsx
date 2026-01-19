@@ -50,7 +50,7 @@ const CropToolbar: React.FC<CropToolbarProps> = ({
         debug("[CropToolbar] record region is called");
         setRecording(true);
         try {
-            registerGlobalShortcut("Shift+Escape", async () => {
+            registerGlobalShortcut(["Shift", "Escape"], async () => {
                 try {
                     await window.setFocusable(true);
                     await window.setIgnoreCursorEvents(false);

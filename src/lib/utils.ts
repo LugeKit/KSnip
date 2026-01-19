@@ -7,9 +7,9 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-export async function registerGlobalShortcut(keys: string, callback: () => void | Promise<void>) {
+export async function registerGlobalShortcut(keys: string[], callback: () => void | Promise<void>) {
     debug(`[util] registering global shortcut: ${keys}`);
-    await register(keys, async (event) => {
+    await register(keys.join("+"), async (event) => {
         if (event.state === "Pressed") {
             await callback();
         }

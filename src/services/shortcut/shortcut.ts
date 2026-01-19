@@ -5,6 +5,8 @@ import { DEFAULT_SHORTCUT_SETTING, GLOBAL_SHORTCUT_FUNCTION } from "./const";
 
 const SHORTCUT_SETTING_KEY = "shortcut_setting";
 
+let inited = false;
+
 export interface ShortcutSetting {
     shortcuts: Record<string, Shortcut>;
 }
@@ -20,6 +22,12 @@ export interface Shortcut {
 
 export async function initShortcut() {
     try {
+        if (inited) {
+            warn("[shortcut service] init shortcut called multiple times");
+            return;
+        }
+        inited = true;
+
         const store = await getLocalStore();
         let shortcutSetting = await store.get<ShortcutSetting>(SHORTCUT_SETTING_KEY);
         if (!shortcutSetting) {
@@ -28,6 +36,7 @@ export async function initShortcut() {
         await initGlobalShortcutRegister(shortcutSetting.shortcuts);
         await store.set(SHORTCUT_SETTING_KEY, shortcutSetting);
         await store.save();
+        debug(`[shortcut service] init shortcut: ${JSON.stringify(shortcutSetting)}`);
     } catch (e) {
         error(`[shortcut service] failed to init shortcut: ${e}`);
     }
@@ -35,6 +44,7 @@ export async function initShortcut() {
 
 async function initGlobalShortcutRegister(shortcuts: Record<string, Shortcut>) {
     for (const shortcut of Object.values(shortcuts)) {
+        debug(`[shortcut service] init global shortcut register: ${JSON.stringify(shortcut)}`);
         if (!shortcut.isGlobal || !shortcut.enabled) {
             continue;
         }
@@ -47,7 +57,7 @@ async function initGlobalShortcutRegister(shortcuts: Record<string, Shortcut>) {
         }
 
         try {
-            await registerGlobalShortcut(shortcut.keys.join("+"), f);
+            await registerGlobalShortcut(shortcut.keys, f);
         } catch (e) {
             error(`[shortcut service] failed to register global shortcut [${shortcut.keys}]: ${e}`);
             shortcut.enabled = false;
@@ -100,6 +110,7 @@ export async function updateShortcutEnabled(id: string, enabled: boolean) {
 
     // from diabled -> enabled, register the global shortcut
     if (enabled) {
+        debug(`[shortcut service] enabling shortcut [${shortcut.id}]`);
         const f = GLOBAL_SHORTCUT_FUNCTION[shortcut.id];
         if (!f) {
             warn(
@@ -109,8 +120,9 @@ export async function updateShortcutEnabled(id: string, enabled: boolean) {
         }
 
         try {
-            await registerGlobalShortcut(shortcut.keys.join("+"), f);
+            await registerGlobalShortcut(shortcut.keys, f);
             shortcut.enabled = enabled;
+            await saveShortcut(shortcutSetting);
         } catch (e) {
             error(`[shortcut service] failed to register global shortcut [${shortcut.keys}]: ${e}`);
         }
@@ -118,9 +130,11 @@ export async function updateShortcutEnabled(id: string, enabled: boolean) {
     }
 
     // for enabled -> disabled, unregister the global shortcut
+    debug(`[shortcut service] disabling shortcut [${shortcut.id}]`);
     try {
         await unregisterGlobalShortcut(shortcut.keys.join("+"));
         shortcut.enabled = enabled;
+        await saveShortcut(shortcutSetting);
     } catch (e) {
         error(`[shortcut service] failed to unregister global shortcut [${shortcut.keys}]: ${e}`);
     }
