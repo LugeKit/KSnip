@@ -2,7 +2,7 @@ import { debug } from "@tauri-apps/plugin-log";
 import { Store } from "@tauri-apps/plugin-store";
 
 export interface ShortcutSetting {
-    shortcuts: Map<string, Shortcut>;
+    shortcuts: Record<string, Shortcut>;
 }
 
 export interface Shortcut {
@@ -40,10 +40,10 @@ export async function getShortcut(
 ): Promise<Shortcut | undefined> {
     const shortcutSetting = await getShortcutSetting(store);
     debug(
-        `[shortcut service] shortcut [${id}] in store: ${shortcutSetting.shortcuts.get(id)}`,
+        `[shortcut service] shortcut [${id}] in store: ${shortcutSetting.shortcuts[id]}`,
     );
 
-    return shortcutSetting.shortcuts.get(id);
+    return shortcutSetting.shortcuts[id];
 }
 
 export async function updateShortcut(
@@ -54,36 +54,30 @@ export async function updateShortcut(
     debug(`[shortcut service] updating shortcut [${id}] in store: ${shortcut}`);
 
     const shortcutSetting = await getShortcutSetting(store);
-    shortcutSetting.shortcuts.set(id, shortcut);
+    shortcutSetting.shortcuts[id] = shortcut;
     await store.set(SHORTCUT_SETTING_KEY, shortcutSetting);
     await store.save();
 }
 
 function defaultSetting(): ShortcutSetting {
     return {
-        shortcuts: new Map([
-            [
-                "take_screenshot",
-                {
-                    id: "take_screenshot",
-                    command_name: "截图",
-                    setting_page_tab_value: "basic",
-                    isGlobal: true,
-                    keys: ["Alt", "A"],
-                    enabled: true,
-                },
-            ],
-            [
-                "test",
-                {
-                    id: "test",
-                    command_name: "测试",
-                    setting_page_tab_value: "basic",
-                    isGlobal: true,
-                    keys: ["Alt", "T"],
-                    enabled: false,
-                },
-            ],
-        ]),
+        shortcuts: {
+            take_screenshot: {
+                id: "take_screenshot",
+                command_name: "截图",
+                setting_page_tab_value: "basic",
+                isGlobal: true,
+                keys: ["Alt", "A"],
+                enabled: true,
+            },
+            test: {
+                id: "test",
+                command_name: "测试",
+                setting_page_tab_value: "basic",
+                isGlobal: true,
+                keys: ["Alt", "T"],
+                enabled: false,
+            },
+        },
     };
 }

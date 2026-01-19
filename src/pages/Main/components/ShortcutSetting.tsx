@@ -9,7 +9,11 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getShortcutSetting, Shortcut } from "@/services/shortcut";
+import {
+    getShortcutSetting,
+    Shortcut,
+    ShortcutSetting as ShortcutSettingData,
+} from "@/services/shortcut";
 import { getLocalStore } from "@/services/store";
 import { debug } from "@tauri-apps/plugin-log";
 import { useEffect, useMemo, useState } from "react";
@@ -25,41 +29,37 @@ interface ShortcutSettingTabBodyData {
 }
 
 export default function ShortcutSetting() {
-    const [tabsBody, setTabsBody] = useState<ShortcutSettingTabBodyData[]>([]);
+    const [setting, setSetting] = useState<ShortcutSettingData | null>(null);
+    const loadShortcutSetting = async () => {
+        try {
+            const store = await getLocalStore();
+            const shortcutSetting = await getShortcutSetting(store);
+            setSetting(shortcutSetting);
+        } catch (e) {
+            debug(`[ShortcutSetting] load shortcut setting failed: ${e}`);
+        }
+    };
+
     useEffect(() => {
-        const loadShortcutSetting = async () => {
-            try {
-                const store = await getLocalStore();
-                const setting = await getShortcutSetting(store);
-
-                const tabsBodyMap = new Map<
-                    string,
-                    ShortcutSettingTabBodyData
-                >();
-                for (const shortcut of setting.shortcuts.values()) {
-                    const value = shortcut.setting_page_tab_value;
-                    if (!tabsBodyMap.has(value)) {
-                        tabsBodyMap.set(value, {
-                            value: value,
-                            shortcuts: [shortcut],
-                        });
-                        continue;
-                    }
-
-                    tabsBodyMap.get(value)!.shortcuts.push(shortcut);
-                }
-
-                setTabsBody(Array.from(tabsBodyMap.values()));
-            } catch (e) {
-                debug(`[ShortcutSetting] load shortcut setting failed: ${e}`);
-            }
-        };
         loadShortcutSetting();
     }, []);
 
+    const [tabsBody, setTabsBody] = useState<ShortcutSettingTabBodyData[]>([]);
     useEffect(() => {
-        debug(`[ShortcutSetting] tabs body: ${JSON.stringify(tabsBody)}`);
-    }, [tabsBody]);
+        if (!setting) return;
+
+        const tabsBodyMap = new Map<string, ShortcutSettingTabBodyData>();
+        for (const shortcut of Object.values(setting.shortcuts)) {
+            const value = shortcut.setting_page_tab_value;
+            const shortcuts = tabsBodyMap.get(value)?.shortcuts || [];
+            if (shortcuts.length === 0) {
+                tabsBodyMap.set(value, { value: value, shortcuts: shortcuts });
+            }
+            shortcuts.push(shortcut);
+        }
+
+        setTabsBody(Array.from(tabsBodyMap.values()));
+    }, [setting]);
 
     const tabHeaders = useMemo(() => {
         return [
