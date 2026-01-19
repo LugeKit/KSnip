@@ -1,20 +1,14 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { KEYBOARD_SETTING_PAGE_TABS } from "@/services/shortcut/const";
 import {
     getShortcutSetting,
     Shortcut,
     ShortcutSetting as ShortcutSettingData,
-} from "@/services/shortcut";
-import { getLocalStore } from "@/services/store";
+    updateShortcutEnabled,
+} from "@/services/shortcut/shortcut";
 import { debug } from "@tauri-apps/plugin-log";
 import { useEffect, useMemo, useState } from "react";
 
@@ -32,8 +26,7 @@ export default function ShortcutSetting() {
     const [setting, setSetting] = useState<ShortcutSettingData | null>(null);
     const loadShortcutSetting = async () => {
         try {
-            const store = await getLocalStore();
-            const shortcutSetting = await getShortcutSetting(store);
+            const shortcutSetting = await getShortcutSetting();
             setSetting(shortcutSetting);
         } catch (e) {
             debug(`[ShortcutSetting] load shortcut setting failed: ${e}`);
@@ -62,17 +55,17 @@ export default function ShortcutSetting() {
     }, [setting]);
 
     const tabHeaders = useMemo(() => {
-        return [
-            {
-                value: "basic",
-                label: "全局热键",
-            },
-            {
-                value: "screenshot",
-                label: "截图界面",
-            },
-        ];
+        return KEYBOARD_SETTING_PAGE_TABS;
     }, []);
+
+    const onShortcutEnableChecked = async (id: string, checked: boolean) => {
+        try {
+            await updateShortcutEnabled(id, checked);
+            await loadShortcutSetting();
+        } catch (e) {
+            debug(`[ShortcutSetting] failed in shortcut enabled checked: ${e}`);
+        }
+    };
 
     return (
         <div className="relative top-0 right-0 w-full h-full p-4">
@@ -84,7 +77,7 @@ export default function ShortcutSetting() {
                         <div className="[&_tr]:hover:bg-transparent bg-muted rounded-md pl-5 pr-5">
                             <Table>
                                 <TabsContentHeader />
-                                <TabsContentBody shortcuts={tab.shortcuts} />
+                                <TabsContentBody shortcuts={tab.shortcuts} onChecked={onShortcutEnableChecked} />
                             </Table>
                         </div>
                     </TabsContent>
@@ -111,9 +104,7 @@ function TabsContentHeader() {
         <TableHeader>
             <TableRow>
                 <TableHead className="font-bold w-1/2">功能</TableHead>
-                <TableHead className="font-bold text-center whitespace-nowrap">
-                    快捷键
-                </TableHead>
+                <TableHead className="font-bold text-center whitespace-nowrap">快捷键</TableHead>
                 <TableHead className="text-right">
                     <Checkbox className="mr-1 border-black" checked={false} />
                 </TableHead>
@@ -122,7 +113,13 @@ function TabsContentHeader() {
     );
 }
 
-function TabsContentBody({ shortcuts }: { shortcuts: Shortcut[] }) {
+function TabsContentBody({
+    shortcuts,
+    onChecked,
+}: {
+    shortcuts: Shortcut[];
+    onChecked: (id: string, checked: boolean) => void;
+}) {
     return (
         <TableBody>
             {shortcuts.map((shortcut) => (
@@ -142,6 +139,7 @@ function TabsContentBody({ shortcuts }: { shortcuts: Shortcut[] }) {
                         <Checkbox
                             className="data-[state=checked]:bg-transparent data-[state=checked]:text-black border-black mr-1"
                             checked={shortcut.enabled}
+                            onClick={() => onChecked(shortcut.id, !shortcut.enabled)}
                         />
                     </TableCell>
                 </TableRow>
