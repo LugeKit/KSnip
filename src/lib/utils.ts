@@ -21,6 +21,6 @@ export async function unregisterGlobalShortcut(keys: string) {
     await unregister(keys);
 }
 
-export async function checkGlobalShortcutRegistration(keys: string) {
+export async function isGlobalShortcutRegistration(keys: string) {
     return await isRegistered(keys);
 }

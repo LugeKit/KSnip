@@ -1,17 +1,6 @@
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { debug, error, info } from "@tauri-apps/plugin-log";
 
-export const KEYBOARD_SETTING_PAGE_TABS = [
-    {
-        value: "basic",
-        label: "全局热键",
-    },
-    {
-        value: "screenshot",
-        label: "截图界面",
-    },
-];
-
 export const DEFAULT_SHORTCUT_SETTING = {
     shortcuts: {
         take_screenshot: {

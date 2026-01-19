@@ -2,15 +2,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { KEYBOARD_SETTING_PAGE_TABS } from "@/services/shortcut/const";
-import { getShortcutSetting, Shortcut, ShortcutSetting as ShortcutSettingData } from "@/services/shortcut/shortcut";
-import { debug } from "@tauri-apps/plugin-log";
+import { getShortcut, Shortcut, updateShortcutEnabled } from "@/services/shortcut/shortcut";
+import { warn } from "@tauri-apps/plugin-log";
 import { useEffect, useMemo, useState } from "react";
-
-interface ShortcutSettingTabHeaderData {
-    value: string;
-    label: string;
-}
 
 interface ShortcutSettingTabBodyData {
     value: string;
@@ -18,52 +12,41 @@ interface ShortcutSettingTabBodyData {
 }
 
 export default function ShortcutSetting() {
-    const [setting, setSetting] = useState<ShortcutSettingData | null>(null);
-    const loadShortcutSetting = async () => {
-        try {
-            const shortcutSetting = await getShortcutSetting();
-            setSetting(shortcutSetting);
-        } catch (e) {
-            debug(`[ShortcutSetting] load shortcut setting failed: ${e}`);
-        }
-    };
-
-    useEffect(() => {
-        loadShortcutSetting();
-    }, []);
-
-    const [tabBodys, setTabBodys] = useState<ShortcutSettingTabBodyData[]>([]);
-    useEffect(() => {
-        if (!setting) return;
-
-        const tabBodysMap = new Map<string, ShortcutSettingTabBodyData>();
-        for (const shortcut of Object.values(setting.shortcuts)) {
-            const value = shortcut.setting_page_tab_value;
-            const shortcuts = tabBodysMap.get(value)?.shortcuts || [];
-            if (shortcuts.length === 0) {
-                tabBodysMap.set(value, { value: value, shortcuts: shortcuts });
-            }
-            shortcuts.push(shortcut);
-        }
-
-        setTabBodys(Array.from(tabBodysMap.values()));
-    }, [setting]);
-
-    const tabHeaders = useMemo(() => {
-        return KEYBOARD_SETTING_PAGE_TABS;
+    const tabsData = useMemo(() => {
+        return [
+            {
+                value: "basic",
+                label: "全局热键",
+                shortcuts: [
+                    {
+                        id: "take_screenshot",
+                        name: "区域截图",
+                    },
+                    {
+                        id: "test",
+                        name: "测试",
+                    },
+                ],
+            },
+            {
+                value: "screenshot",
+                label: "截图界面",
+                shortcuts: [],
+            },
+        ];
     }, []);
 
     return (
         <div className="relative top-0 right-0 w-full h-full p-4">
             <Tabs defaultValue="basic" className="w-full">
-                <TabsHeaders headers={tabHeaders} />
+                <TabsHeaders headers={tabsData} />
                 <div className="w-full border-border border-b left-0 mt-2 mb-2" />
-                {tabBodys.map((tab) => (
+                {tabsData.map((tab) => (
                     <TabsContent key={tab.value} value={tab.value}>
                         <div className="[&_tr]:hover:bg-transparent bg-muted rounded-md pl-5 pr-5">
                             <Table>
                                 <TabsContentHeader />
-                                <TabsContentBody shortcuts={tab.shortcuts} />
+                                <TabsContentBody raw_shortcuts={tab.shortcuts} />
                             </Table>
                         </div>
                     </TabsContent>
@@ -73,7 +56,7 @@ export default function ShortcutSetting() {
     );
 }
 
-function TabsHeaders({ headers }: { headers: ShortcutSettingTabHeaderData[] }) {
+function TabsHeaders({ headers }: { headers: { value: string; label: string }[] }) {
     return (
         <TabsList className="gap-2">
             {headers.map((header) => (
@@ -91,21 +74,56 @@ function TabsContentHeader() {
             <TableRow>
                 <TableHead className="font-bold w-1/2">功能</TableHead>
                 <TableHead className="font-bold text-center whitespace-nowrap">快捷键</TableHead>
-                <TableHead className="text-right">
-                    <Checkbox className="mr-1 border-black" checked={false} />
-                </TableHead>
             </TableRow>
         </TableHeader>
     );
 }
 
-function TabsContentBody({ shortcuts }: { shortcuts: Shortcut[] }) {
+function TabsContentBody({ raw_shortcuts }: { raw_shortcuts: { id: string; name: string }[] }) {
+    const [shortcuts, setShortcuts] = useState<{ id: string; name: string; keys: string[]; enabled: boolean }[]>([]);
+    useEffect(() => {
+        setShortcuts(
+            raw_shortcuts
+                .map((raw_shortcut) => {
+                    const shortcut = getShortcut(raw_shortcut.id);
+                    if (!shortcut) {
+                        warn(`[ShortcutSetting] failed to get shortcut: ${raw_shortcut.id}`);
+                        return undefined;
+                    }
+                    return {
+                        ...raw_shortcut,
+                        ...shortcut,
+                    };
+                })
+                .filter((shortcut) => shortcut !== undefined),
+        );
+    }, [raw_shortcuts]);
+
+    const onChecked = async (id: string, enabled: boolean) => {
+        try {
+            await updateShortcutEnabled(id, enabled);
+            setShortcuts(
+                shortcuts.map((shortcut) => {
+                    if (shortcut.id === id) {
+                        return {
+                            ...shortcut,
+                            enabled,
+                        };
+                    }
+                    return shortcut;
+                }),
+            );
+        } catch (e) {
+            warn(`[ShortcutSetting] failed to update shortcut enabled: ${id}`);
+        }
+    };
+
     return (
         <TableBody>
             {shortcuts.map((shortcut) => (
                 <TableRow key={shortcut.id}>
                     {/* 功能列 */}
-                    <TableCell>{shortcut.command_name}</TableCell>
+                    <TableCell>{shortcut.name}</TableCell>
                     {/* 快捷键列 */}
                     <TableCell className="text-center">
                         <KbdGroup className="hover:bg-muted-foreground p-1 rounded-md">
@@ -119,6 +137,7 @@ function TabsContentBody({ shortcuts }: { shortcuts: Shortcut[] }) {
                         <Checkbox
                             className="data-[state=checked]:bg-transparent data-[state=checked]:text-black border-black mr-1"
                             checked={shortcut.enabled}
+                            onClick={() => onChecked(shortcut.id, !shortcut.enabled)}
                         />
                     </TableCell>
                 </TableRow>
