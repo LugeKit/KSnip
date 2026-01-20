@@ -86,6 +86,25 @@ async function getShortcutSetting(): Promise<ShortcutSetting | undefined> {
     return await store.get<ShortcutSetting>(SHORTCUT_SETTING_KEY);
 }
 
+export async function getAllShortcuts(): Promise<Record<string, Shortcut>> {
+    const setting = await getShortcutSetting();
+    if (!setting) {
+        warn(`[shortcut service] failed to get shortcuts: shortcuts is null`);
+        return {};
+    }
+
+    const shortcuts: Record<string, Shortcut> = {};
+    for (const [id, shortcut] of Object.entries(setting.shortcuts)) {
+        const enriched = enrichSavedShortcut(shortcut);
+        if (!enriched) {
+            continue;
+        }
+        shortcuts[id] = enriched;
+    }
+
+    return shortcuts;
+}
+
 export async function getShortcut(id: string): Promise<Shortcut | null> {
     const setting = await getShortcutSetting();
     if (!setting) {
