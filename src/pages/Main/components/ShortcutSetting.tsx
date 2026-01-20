@@ -3,7 +3,7 @@ import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getShortcut, updateShortcutEnabled } from "@/services/shortcut/shortcut";
-import { warn } from "@tauri-apps/plugin-log";
+import { debug, warn } from "@tauri-apps/plugin-log";
 import { useEffect, useMemo, useState } from "react";
 
 export default function ShortcutSetting() {
@@ -91,7 +91,9 @@ function TabsContentBody({ raw_shortcuts }: { raw_shortcuts: { id: string; name:
                     return undefined;
                 }
                 return {
-                    ...shortcut,
+                    id: shortcut.id,
+                    keys: shortcut.keys,
+                    enabled: shortcut.enabled,
                     name: raw_shortcut.name,
                 };
             }),
@@ -101,6 +103,7 @@ function TabsContentBody({ raw_shortcuts }: { raw_shortcuts: { id: string; name:
 
     useEffect(() => {
         mergeShortcuts(raw_shortcuts).then((merged_shortcuts) => {
+            debug(`[ShortcutSetting] merged shortcuts: ${JSON.stringify(merged_shortcuts)}`);
             setShortcuts(merged_shortcuts);
         });
     }, [raw_shortcuts]);
