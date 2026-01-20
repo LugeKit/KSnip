@@ -55,19 +55,24 @@ async function initGlobalShortcutRegister(shortcuts: Record<string, Shortcut>) {
     }
 }
 
-async function getAllShortcuts(): Promise<ShortcutSetting | undefined> {
+async function getShortcutSetting(): Promise<ShortcutSetting | undefined> {
     const store = await getLocalStore();
     return await store.get<ShortcutSetting>(SHORTCUT_SETTING_KEY);
 }
 
 export async function getShortcut(id: string): Promise<Shortcut | null> {
-    const shortcuts = await getAllShortcuts();
-    if (!shortcuts) {
+    const setting = await getShortcutSetting();
+    if (!setting) {
         warn(`[shortcut service] failed to get shortcut: shortcuts is null`);
         return null;
     }
 
-    return { ...shortcuts.shortcuts[id] };
+    if (!setting.shortcuts[id]) {
+        warn(`[shortcut service] failed to get shortcut: shortcut [${id}] not found`);
+        return null;
+    }
+
+    return { ...setting.shortcuts[id] };
 }
 
 export async function updateShortcutEnabled(id: string, enabled: boolean) {
@@ -128,7 +133,7 @@ export async function updateShortcut(id: string, shortcut: Shortcut): Promise<vo
 
 async function saveShortcut(shortcut: Shortcut) {
     const store = await getLocalStore();
-    const shortcuts = await getAllShortcuts();
+    const shortcuts = await getShortcutSetting();
     if (!shortcuts) {
         warn(`[shortcut service] failed to save shortcut: shortcuts is null`);
         return;
