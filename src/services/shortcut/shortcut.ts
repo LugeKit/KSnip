@@ -164,10 +164,14 @@ async function saveShortcut(shortcut: Shortcut) {
 }
 
 function enrichSavedShortcut(shortcut: Shortcut) {
+    if (!shortcut || !shortcut.id) {
+        return null;
+    }
+
     const defaultShortcut = DEFAULT_SHORTCUT_SETTING.shortcuts[shortcut.id];
     if (!defaultShortcut) {
         return null;
     }
     shortcut.globalF = defaultShortcut.globalF;
-    return shortcut;
+    return shortcut as Shortcut;
 }
