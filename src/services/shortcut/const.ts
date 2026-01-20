@@ -5,21 +5,25 @@ export const DEFAULT_SHORTCUT_SETTING = {
     shortcuts: {
         take_screenshot: {
             id: "take_screenshot",
-            command_name: "截图",
-            setting_page_tab_value: "basic",
-            isGlobal: true,
             keys: ["Alt", "A"],
             enabled: true,
         },
         test: {
             id: "test",
-            command_name: "测试",
-            setting_page_tab_value: "basic",
-            isGlobal: true,
             keys: ["Alt", "T"],
             enabled: true,
         },
+        screenshot_exit: {
+            id: "screenshot_exit",
+            keys: ["Escape"],
+            enabled: true,
+        },
     },
+};
+
+export const GLOBAL_SHORTCUT_ID: Record<string, boolean> = {
+    take_screenshot: true,
+    test: true,
 };
 
 export const GLOBAL_SHORTCUT_FUNCTION: Record<string, () => void> = {

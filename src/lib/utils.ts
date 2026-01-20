@@ -16,11 +16,11 @@ export async function registerGlobalShortcut(keys: string[], callback: () => voi
     });
 }
 
-export async function unregisterGlobalShortcut(keys: string) {
+export async function unregisterGlobalShortcut(keys: string[]) {
     debug(`[util] unregistering global shortcut: ${keys}`);
-    await unregister(keys);
+    await unregister(keys.join("+"));
 }
 
-export async function isGlobalShortcutRegistration(keys: string) {
-    return await isRegistered(keys);
+export async function isGlobalShortcutRegistration(keys: string[]) {
+    return await isRegistered(keys.join("+"));
 }

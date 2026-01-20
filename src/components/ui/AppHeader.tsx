@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
-import { getLocalStore } from "@/services/store";
+import { initShortcut } from "@/services/shortcut/shortcut";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { error } from "@tauri-apps/plugin-log";
 import { Heart, Minus, RectangleEllipsis, X } from "lucide-react";
@@ -17,8 +17,7 @@ export default function AppHeader() {
                 <Button
                     variant={"ghost"}
                     onClick={async () => {
-                        const store = await getLocalStore();
-                        await store.clear();
+                        await initShortcut();
                     }}
                 >
                     <Heart />

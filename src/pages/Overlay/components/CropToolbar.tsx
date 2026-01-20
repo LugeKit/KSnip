@@ -16,13 +16,7 @@ interface CropToolbarProps {
     onCancel: () => void;
 }
 
-const CropToolbar: React.FC<CropToolbarProps> = ({
-    window,
-    cropArea,
-    monitor,
-    onConfirmSuccess,
-    onCancel,
-}) => {
+const CropToolbar: React.FC<CropToolbarProps> = ({ window, cropArea, monitor, onConfirmSuccess, onCancel }) => {
     const [isRecording, setRecording] = useState(false);
 
     const takeScreenshot = () => {
@@ -57,7 +51,7 @@ const CropToolbar: React.FC<CropToolbarProps> = ({
                 } catch (e) {
                     error(`[CropToolbar] failed to complete take gif: ${e}`);
                 } finally {
-                    unregisterGlobalShortcut("Shift+Escape");
+                    unregisterGlobalShortcut(["Shift", "Escape"]);
                     setRecording(false);
                 }
             });

@@ -1,7 +1,7 @@
 import { isGlobalShortcutRegistration, registerGlobalShortcut, unregisterGlobalShortcut } from "@/lib/utils";
 import { debug, error, warn } from "@tauri-apps/plugin-log";
 import { getLocalStore } from "../store";
-import { DEFAULT_SHORTCUT_SETTING, GLOBAL_SHORTCUT_FUNCTION } from "./const";
+import { DEFAULT_SHORTCUT_SETTING, GLOBAL_SHORTCUT_FUNCTION, GLOBAL_SHORTCUT_ID } from "./const";
 
 const SHORTCUT_SETTING_KEY = "shortcut_setting";
 
@@ -12,34 +12,61 @@ export interface ShortcutSetting {
 export interface Shortcut {
     id: string;
     keys: string[];
-    isGlobal: boolean;
     enabled: boolean;
 }
 
 export async function initShortcut() {
     try {
         const store = await getLocalStore();
-        let shortcutSetting = await store.get<ShortcutSetting>(SHORTCUT_SETTING_KEY);
-        if (!shortcutSetting) {
-            shortcutSetting = DEFAULT_SHORTCUT_SETTING;
-        }
-        await initGlobalShortcutRegister(shortcutSetting.shortcuts);
-        await store.set(SHORTCUT_SETTING_KEY, shortcutSetting);
+        let setting = await store.get<ShortcutSetting>(SHORTCUT_SETTING_KEY);
+        setting = mergeWithDefault(setting);
+        await initGlobalShortcutRegister(setting.shortcuts);
+        await store.set(SHORTCUT_SETTING_KEY, setting);
         await store.save();
-        debug(`[shortcut service] init shortcut: ${JSON.stringify(shortcutSetting)}`);
+        debug(`[shortcut service] init shortcut: ${JSON.stringify(setting)}`);
     } catch (e) {
         error(`[shortcut service] failed to init shortcut: ${e}`);
     }
 }
 
+function mergeWithDefault(setting: ShortcutSetting | undefined) {
+    if (!setting) {
+        return DEFAULT_SHORTCUT_SETTING;
+    }
+
+    const shortcuts: Record<string, Shortcut> = {};
+    for (const [id, shortcut] of Object.entries(DEFAULT_SHORTCUT_SETTING.shortcuts)) {
+        const saved = setting.shortcuts[id];
+        if (!saved) {
+            shortcuts[id] = shortcut;
+            continue;
+        }
+
+        shortcuts[id] = {
+            id: saved.id,
+            keys: saved.keys,
+            enabled: saved.enabled,
+        };
+    }
+
+    return {
+        shortcuts: shortcuts,
+    };
+}
+
+function isGlobalShortcut(id: string) {
+    return GLOBAL_SHORTCUT_ID[id] ? true : false;
+}
+
 async function initGlobalShortcutRegister(shortcuts: Record<string, Shortcut>) {
     for (const shortcut of Object.values(shortcuts)) {
         debug(`[shortcut service] init global shortcut register: ${JSON.stringify(shortcut)}`);
-        if (!shortcut.isGlobal || !shortcut.enabled) {
+        if (!isGlobalShortcut(shortcut.id) || !shortcut.enabled) {
             continue;
         }
 
         const f = GLOBAL_SHORTCUT_FUNCTION[shortcut.id];
+        // global function not found
         if (!f) {
             warn(`[shortcut service] function for shortcut [${shortcut.id}] not found`);
             shortcut.enabled = false;
@@ -47,6 +74,11 @@ async function initGlobalShortcutRegister(shortcuts: Record<string, Shortcut>) {
         }
 
         try {
+            // check if the shortcut is already registered
+            if (await isGlobalShortcutRegistration(shortcut.keys)) {
+                // shortcut is already registered, unregister it first
+                await unregisterGlobalShortcut(shortcut.keys);
+            }
             await registerGlobalShortcut(shortcut.keys, f);
         } catch (e) {
             error(`[shortcut service] failed to register global shortcut [${shortcut.keys}]: ${e}`);
@@ -72,7 +104,7 @@ export async function getShortcut(id: string): Promise<Shortcut | null> {
         return null;
     }
 
-    return { ...setting.shortcuts[id] };
+    return setting.shortcuts[id];
 }
 
 export async function updateShortcutEnabled(id: string, enabled: boolean) {
@@ -84,13 +116,13 @@ export async function updateShortcutEnabled(id: string, enabled: boolean) {
 
     // for non-global shortcut, just update the enabled status
     // the shortcut registration will only happen when the window is open
-    if (!shortcut.isGlobal) {
+    if (!isGlobalShortcut(shortcut.id)) {
         await saveShortcut({ ...shortcut, enabled });
         return;
     }
 
     // no need for update
-    if (enabled === (await isGlobalShortcutRegistration(shortcut.keys.join("+")))) {
+    if (enabled === (await isGlobalShortcutRegistration(shortcut.keys))) {
         await saveShortcut({ ...shortcut, enabled });
         return;
     }
@@ -119,7 +151,7 @@ export async function updateShortcutEnabled(id: string, enabled: boolean) {
     // for enabled -> disabled, unregister the global shortcut
     debug(`[shortcut service] disabling shortcut [${shortcut.id}]`);
     try {
-        await unregisterGlobalShortcut(shortcut.keys.join("+"));
+        await unregisterGlobalShortcut(shortcut.keys);
         await saveShortcut({ ...shortcut, enabled });
     } catch (e) {
         error(`[shortcut service] failed to unregister global shortcut [${shortcut.keys}]: ${e}`);
@@ -139,7 +171,11 @@ async function saveShortcut(shortcut: Shortcut) {
         return;
     }
 
-    shortcuts.shortcuts[shortcut.id] = { ...shortcut };
+    shortcuts.shortcuts[shortcut.id] = {
+        id: shortcut.id,
+        keys: shortcut.keys,
+        enabled: shortcut.enabled,
+    };
     await store.set(SHORTCUT_SETTING_KEY, shortcuts);
     await store.save();
 }
