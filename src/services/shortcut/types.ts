@@ -15,7 +15,7 @@ export class Shortcut {
         this.globalF = globalF;
     }
 
-    toJson() {
+    toJSON() {
         return {
             id: this.id,
             keys: this.keys,
