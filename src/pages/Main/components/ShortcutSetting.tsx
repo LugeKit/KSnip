@@ -26,7 +26,12 @@ export default function ShortcutSetting() {
             {
                 value: "screenshot",
                 label: "截图界面",
-                shortcuts: [],
+                shortcuts: [
+                    {
+                        id: "screenshot_exit",
+                        name: "取消截图",
+                    },
+                ],
             },
         ];
     }, []);

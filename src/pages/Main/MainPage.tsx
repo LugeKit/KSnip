@@ -2,7 +2,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { initShortcut } from "@/services/shortcut/shortcut";
 import { error, info } from "@tauri-apps/plugin-log";
 import { useEffect, useState } from "react";
-import AppHeader from "./components/AppHeader";
+import AppHeader from "../../components/ui/AppHeader";
 import AppSidebar, { MenuKey } from "./components/AppSidebar";
 import Setting from "./components/Setting";
 import ShortcutSetting from "./components/ShortcutSetting";
