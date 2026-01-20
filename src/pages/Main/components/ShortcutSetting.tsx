@@ -2,14 +2,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getShortcut, Shortcut, updateShortcutEnabled } from "@/services/shortcut/shortcut";
+import { getShortcut, updateShortcutEnabled } from "@/services/shortcut/shortcut";
 import { warn } from "@tauri-apps/plugin-log";
 import { useEffect, useMemo, useState } from "react";
-
-interface ShortcutSettingTabBodyData {
-    value: string;
-    shortcuts: Shortcut[];
-}
 
 export default function ShortcutSetting() {
     const tabsData = useMemo(() => {
@@ -81,22 +76,28 @@ function TabsContentHeader() {
 
 function TabsContentBody({ raw_shortcuts }: { raw_shortcuts: { id: string; name: string }[] }) {
     const [shortcuts, setShortcuts] = useState<{ id: string; name: string; keys: string[]; enabled: boolean }[]>([]);
-    useEffect(() => {
-        setShortcuts(
-            raw_shortcuts
-                .map((raw_shortcut) => {
-                    const shortcut = getShortcut(raw_shortcut.id);
-                    if (!shortcut) {
-                        warn(`[ShortcutSetting] failed to get shortcut: ${raw_shortcut.id}`);
-                        return undefined;
-                    }
-                    return {
-                        ...raw_shortcut,
-                        ...shortcut,
-                    };
-                })
-                .filter((shortcut) => shortcut !== undefined),
+
+    const mergeShortcuts = async (raw_shortcuts: { id: string; name: string }[]) => {
+        const merged = await Promise.all(
+            raw_shortcuts.map(async (raw_shortcut) => {
+                const shortcut = await getShortcut(raw_shortcut.id);
+                if (!shortcut) {
+                    warn(`[ShortcutSetting] failed to get shortcut: ${raw_shortcut.id}`);
+                    return undefined;
+                }
+                return {
+                    ...shortcut,
+                    name: raw_shortcut.name,
+                };
+            }),
         );
+        return merged.filter((shortcut) => shortcut !== undefined);
+    };
+
+    useEffect(() => {
+        mergeShortcuts(raw_shortcuts).then((merged_shortcuts) => {
+            setShortcuts(merged_shortcuts);
+        });
     }, [raw_shortcuts]);
 
     const onChecked = async (id: string, enabled: boolean) => {
@@ -114,7 +115,7 @@ function TabsContentBody({ raw_shortcuts }: { raw_shortcuts: { id: string; name:
                 }),
             );
         } catch (e) {
-            warn(`[ShortcutSetting] failed to update shortcut enabled: ${id}`);
+            warn(`[ShortcutSetting] failed to update shortcut to enabled[${enabled}]: ${id}, error: ${e}`);
         }
     };
 
@@ -128,7 +129,9 @@ function TabsContentBody({ raw_shortcuts }: { raw_shortcuts: { id: string; name:
                     <TableCell className="text-center">
                         <KbdGroup className="hover:bg-muted-foreground p-1 rounded-md">
                             {shortcut.keys.map((key) => (
-                                <Kbd className="bg-white">{key}</Kbd>
+                                <Kbd className="bg-white" key={shortcut.id + key}>
+                                    {key}
+                                </Kbd>
                             ))}
                         </KbdGroup>
                     </TableCell>
@@ -137,7 +140,7 @@ function TabsContentBody({ raw_shortcuts }: { raw_shortcuts: { id: string; name:
                         <Checkbox
                             className="data-[state=checked]:bg-transparent data-[state=checked]:text-black border-black mr-1"
                             checked={shortcut.enabled}
-                            onClick={() => onChecked(shortcut.id, !shortcut.enabled)}
+                            onCheckedChange={(checked) => onChecked(shortcut.id, !!checked)}
                         />
                     </TableCell>
                 </TableRow>
