@@ -41,6 +41,10 @@ export default function ShortcutSetting() {
                         id: "screenshot_exit",
                         name: "取消截图",
                     },
+                    {
+                        id: "screenshot_confirm",
+                        name: "确认截图",
+                    },
                 ],
             },
         ];

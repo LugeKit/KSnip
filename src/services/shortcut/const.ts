@@ -7,6 +7,7 @@ export const DEFAULT_SHORTCUT_SETTING: ShortcutSetting = {
         take_screenshot: new Shortcut("take_screenshot", ["Alt", "A"], true, take_screenshot),
         test: new Shortcut("test", ["Alt", "T"], false, test),
         screenshot_exit: new Shortcut("screenshot_exit", ["Escape"], true, null),
+        screenshot_confirm: new Shortcut("screenshot_confirm", ["Enter"], true, null),
     },
 };
 
