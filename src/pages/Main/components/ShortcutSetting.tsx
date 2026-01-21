@@ -31,7 +31,6 @@ export default function ShortcutSetting() {
     }, []);
 
     const [shortcutItems, setShortcutItems] = useState<Record<string, ShortcutItem[]>>({});
-    const [isLoaded, setIsLoaded] = useState(false);
 
     useEffect(() => {
         const loadShortcuts = async () => {
@@ -44,7 +43,6 @@ export default function ShortcutSetting() {
                 {} as Record<string, ShortcutItem[]>,
             );
             setShortcutItems(shortcutsByPage);
-            setIsLoaded(true);
         };
 
         loadShortcuts();
@@ -73,17 +71,7 @@ export default function ShortcutSetting() {
                             <div className="[&_tr]:hover:bg-transparent bg-muted rounded-md pl-5 pr-5">
                                 <Table>
                                     <TabsContentHeader />
-                                    {isLoaded ? (
-                                        <TabsContentBody shortcuts={shortcuts} onChecked={onChecked(page)} />
-                                    ) : (
-                                        <TableBody>
-                                            <TableRow>
-                                                <TableCell colSpan={3} className="text-center h-24">
-                                                    加载中...
-                                                </TableCell>
-                                            </TableRow>
-                                        </TableBody>
-                                    )}
+                                    <TabsContentBody shortcuts={shortcuts} onChecked={onChecked(page)} />
                                 </Table>
                             </div>
                         </TabsContent>
