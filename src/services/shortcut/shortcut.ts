@@ -19,7 +19,6 @@ export async function initShortcut() {
             setting = mergeWithDefault(setting);
             await initGlobalShortcutRegister(setting.shortcuts);
             await store.set(SHORTCUT_SETTING_KEY, setting);
-            await store.save();
             debug(`[shortcut service] init shortcut: ${JSON.stringify(setting)}`);
         } catch (e) {
             error(`[shortcut service] failed to init shortcut: ${e}`);
@@ -179,7 +178,6 @@ async function saveShortcut(shortcut: Shortcut) {
 
     setting.shortcuts[shortcut.id] = shortcut;
     await store.set(SHORTCUT_SETTING_KEY, setting);
-    await store.save();
 }
 
 function enrichSavedShortcut(shortcut: Shortcut) {
