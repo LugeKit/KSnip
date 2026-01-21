@@ -143,8 +143,7 @@ export async function updateShortcutEnabled(id: string, enabled: boolean) {
             await safeRegister(shortcut);
             await saveShortcut(newShortcut);
         } catch (e) {
-            error(`[shortcut service] failed to register global shortcut [${shortcut.keys}]: ${e}`);
-            throw Error("failed to enable shortcut");
+            throw Error(`failed to enable shortcut [${shortcut.id}], error: ${e}`);
         }
         return;
     }
@@ -155,9 +154,14 @@ export async function updateShortcutEnabled(id: string, enabled: boolean) {
         await unregisterGlobalShortcut(shortcut.keys);
         await saveShortcut(newShortcut);
     } catch (e) {
-        error(`[shortcut service] failed to unregister global shortcut [${shortcut.keys}]: ${e}`);
-        throw Error("failed to disable shortcut");
+        throw Error(`failed to disable shortcut [${shortcut.id}], error: ${e}`);
     }
+}
+
+async function getConflictKeyInSamePage(shortcut: Shortcut): Promise<Shortcut | undefined> {
+    const shortcuts = await getAllShortcuts();
+    const keys = shortcut.keys.join(",");
+    return Object.values(shortcuts).find((s) => s.page === shortcut.page && s.keys.join(",") === keys);
 }
 
 export async function updateShortcutKey(id: string, keys: string[]): Promise<void> {
@@ -165,7 +169,12 @@ export async function updateShortcutKey(id: string, keys: string[]): Promise<voi
 
     const shortcut = await getShortcut(id);
     if (!shortcut) {
-        throw Error("shortcut not found");
+        throw Error(`shortcut [${id}] not found`);
+    }
+
+    const conflicted = await getConflictKeyInSamePage(shortcut);
+    if (conflicted) {
+        throw Error(`shortcut key [${keys}] is already used by [${conflicted.id}]`);
     }
 
     const newShortcut = newShortcutByOld(shortcut, keys, shortcut.enabled);
@@ -183,8 +192,7 @@ export async function updateShortcutKey(id: string, keys: string[]): Promise<voi
         await safeRegister(newShortcut);
         await saveShortcut(newShortcut);
     } catch (e) {
-        error(`[shortcut service] failed to update global shortcut key [${id}] to [${keys}]: ${e}`);
-        throw e;
+        throw Error(`failed to update shortcut key [${id}] to [${keys}], error: ${e}`);
     }
 }
 

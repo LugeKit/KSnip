@@ -3,7 +3,7 @@ import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getAllShortcuts, updateShortcutEnabled } from "@/services/shortcut/shortcut";
-import { warn } from "@tauri-apps/plugin-log";
+import { debug, warn } from "@tauri-apps/plugin-log";
 import { useEffect, useMemo, useState } from "react";
 
 type ShortcutState = {
@@ -120,7 +120,10 @@ function TabsContentBody({
                     <TableCell>{shortcut.name}</TableCell>
                     {/* 快捷键列 */}
                     <TableCell className="text-center">
-                        <KbdGroup className="hover:bg-muted-foreground p-1 rounded-md">
+                        <KbdGroup
+                            className="hover:bg-muted-foreground p-1 rounded-md"
+                            onClick={() => debug(`[ShortcutSetting] click shortcut key: ${shortcut.keys.join("+")}`)}
+                        >
                             {shortcut.keys.map((key) => (
                                 <Kbd className="bg-white" key={shortcut.id + key}>
                                     {key}
