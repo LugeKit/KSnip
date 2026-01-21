@@ -121,11 +121,16 @@ export async function updateShortcutEnabled(id: string, enabled: boolean) {
         return;
     }
 
-    const newShortcut = new Shortcut(shortcut.id, shortcut.keys, enabled, shortcut.globalF);
+    const newShortcut = newShortcutByOld(shortcut, shortcut.keys, enabled);
 
     // for non-global shortcut, just update the enabled status
     // the shortcut registration will only happen when the window is open
     if (!shortcut.globalF) {
+        await saveShortcut(newShortcut);
+        return;
+    }
+
+    if (enabled == (await isGlobalShortcutRegistration(shortcut.keys))) {
         await saveShortcut(newShortcut);
         return;
     }
@@ -136,7 +141,7 @@ export async function updateShortcutEnabled(id: string, enabled: boolean) {
 
         try {
             await safeRegister(shortcut);
-            await saveShortcut(new Shortcut(shortcut.id, shortcut.keys, enabled, shortcut.globalF));
+            await saveShortcut(newShortcut);
         } catch (e) {
             error(`[shortcut service] failed to register global shortcut [${shortcut.keys}]: ${e}`);
             throw Error("failed to enable shortcut");
@@ -148,7 +153,7 @@ export async function updateShortcutEnabled(id: string, enabled: boolean) {
     debug(`[shortcut service] disabling shortcut [${shortcut.id}]`);
     try {
         await unregisterGlobalShortcut(shortcut.keys);
-        await saveShortcut(new Shortcut(shortcut.id, shortcut.keys, enabled, shortcut.globalF));
+        await saveShortcut(newShortcut);
     } catch (e) {
         error(`[shortcut service] failed to unregister global shortcut [${shortcut.keys}]: ${e}`);
         throw Error("failed to disable shortcut");
@@ -163,7 +168,7 @@ export async function updateShortcutKey(id: string, keys: string[]): Promise<voi
         throw Error("shortcut not found");
     }
 
-    const newShortcut = new Shortcut(shortcut.id, keys, shortcut.enabled, shortcut.globalF);
+    const newShortcut = newShortcutByOld(shortcut, keys, shortcut.enabled);
     // for non-global shortcut, just update the keys
     if (!shortcut.globalF) {
         await saveShortcut(newShortcut);
@@ -172,6 +177,9 @@ export async function updateShortcutKey(id: string, keys: string[]): Promise<voi
 
     // for global shortcut, unregister the old one and register the new one
     try {
+        try {
+            await unregisterGlobalShortcut(shortcut.keys);
+        } catch (_) {}
         await safeRegister(newShortcut);
         await saveShortcut(newShortcut);
     } catch (e) {
@@ -213,6 +221,12 @@ function enrichSavedShortcut(shortcut: Shortcut) {
     if (!defaultShortcut) {
         return null;
     }
+    shortcut.name = defaultShortcut.name;
+    shortcut.page = defaultShortcut.page;
     shortcut.globalF = defaultShortcut.globalF;
     return shortcut as Shortcut;
+}
+
+function newShortcutByOld(old: Shortcut, keys: string[], enabled: boolean) {
+    return new Shortcut(old.id, keys, enabled, old.page, old.name, old.globalF);
 }

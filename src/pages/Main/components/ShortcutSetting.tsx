@@ -3,7 +3,7 @@ import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getAllShortcuts, updateShortcutEnabled } from "@/services/shortcut/shortcut";
-import { debug, warn } from "@tauri-apps/plugin-log";
+import { warn } from "@tauri-apps/plugin-log";
 import { useEffect, useMemo, useState } from "react";
 
 type ShortcutState = {
@@ -20,76 +20,42 @@ export default function ShortcutSetting() {
     const tabsData = useMemo(() => {
         return [
             {
-                value: "basic",
+                page: "basic",
                 label: "全局热键",
-                shortcuts: [
-                    {
-                        id: "take_screenshot",
-                        name: "区域截图",
-                    },
-                    {
-                        id: "test",
-                        name: "测试",
-                    },
-                ],
             },
             {
-                value: "screenshot",
+                page: "screenshot",
                 label: "截图界面",
-                shortcuts: [
-                    {
-                        id: "screenshot_exit",
-                        name: "取消截图",
-                    },
-                    {
-                        id: "screenshot_confirm",
-                        name: "确认截图",
-                    },
-                ],
             },
         ];
     }, []);
 
-    const [shortcutItems, setShortcutItems] = useState<Record<string, ShortcutItem>>({});
+    const [shortcutItems, setShortcutItems] = useState<Record<string, ShortcutItem[]>>({});
     const [isLoaded, setIsLoaded] = useState(false);
 
     useEffect(() => {
         const loadShortcuts = async () => {
-            const allRawShortcuts = tabsData.flatMap((tab) => tab.shortcuts);
-            const allShortcutStates = await getAllShortcuts();
-            const states = allRawShortcuts.reduce(
-                (acc, raw) => {
-                    const state = allShortcutStates[raw.id];
-                    if (state) {
-                        acc[raw.id] = {
-                            id: raw.id,
-                            name: raw.name,
-                            keys: state.keys,
-                            enabled: state.enabled,
-                        };
-                    }
-                    return acc;
+            const allShortcuts = await getAllShortcuts();
+            const shortcutsByPage = Object.values(allShortcuts).reduce(
+                (prev, cur) => {
+                    prev[cur.page] = [...(prev[cur.page] || []), cur];
+                    return prev;
                 },
-                {} as Record<string, ShortcutItem>,
+                {} as Record<string, ShortcutItem[]>,
             );
-
-            debug(`[ShortcutSetting] loaded shortcuts: ${JSON.stringify(states)}`);
-            setShortcutItems(states);
+            setShortcutItems(shortcutsByPage);
             setIsLoaded(true);
         };
 
         loadShortcuts();
-    }, [tabsData]);
+    }, []);
 
-    const onChecked = async (id: string, enabled: boolean) => {
+    const onChecked = (page: string) => async (id: string, enabled: boolean) => {
         try {
             await updateShortcutEnabled(id, enabled);
             setShortcutItems((prev) => ({
                 ...prev,
-                [id]: {
-                    ...prev[id],
-                    enabled,
-                },
+                [page]: prev[page].map((item) => (item.id === id ? { ...item, enabled } : item)),
             }));
         } catch (e) {
             warn(`[ShortcutSetting] failed to update shortcut to enabled[${enabled}]: ${id}, error: ${e}`);
@@ -101,16 +67,14 @@ export default function ShortcutSetting() {
             <Tabs defaultValue="basic" className="w-full">
                 <TabsHeaders headers={tabsData} />
                 <div className="w-full border-border border-b left-0 mt-2 mb-2" />
-                {tabsData.map((tab) => {
-                    const shortcuts = tab.shortcuts.map((s) => shortcutItems[s.id]).filter((s) => !!s);
-
+                {Object.entries(shortcutItems).map(([page, shortcuts]) => {
                     return (
-                        <TabsContent key={tab.value} value={tab.value}>
+                        <TabsContent key={page} value={page}>
                             <div className="[&_tr]:hover:bg-transparent bg-muted rounded-md pl-5 pr-5">
                                 <Table>
                                     <TabsContentHeader />
                                     {isLoaded ? (
-                                        <TabsContentBody shortcuts={shortcuts} onChecked={onChecked} />
+                                        <TabsContentBody shortcuts={shortcuts} onChecked={onChecked(page)} />
                                     ) : (
                                         <TableBody>
                                             <TableRow>
@@ -130,11 +94,11 @@ export default function ShortcutSetting() {
     );
 }
 
-function TabsHeaders({ headers }: { headers: { value: string; label: string }[] }) {
+function TabsHeaders({ headers }: { headers: { page: string; label: string }[] }) {
     return (
         <TabsList className="gap-2">
             {headers.map((header) => (
-                <TabsTrigger key={header.value} value={header.value}>
+                <TabsTrigger key={header.page} value={header.page}>
                     {header.label}
                 </TabsTrigger>
             ))}
