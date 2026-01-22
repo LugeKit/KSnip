@@ -55,7 +55,7 @@ export default function OverlayPage() {
 
     return (
         <div
-            className="fixed bg-transparent w-screen h-screen"
+            className="fixed top-0 left-0 bg-transparent w-screen h-screen"
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
