@@ -1,6 +1,7 @@
 use tauri::Manager;
 
-mod screenshots;
+mod model;
+mod screenshot;
 mod util;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -14,7 +15,7 @@ pub fn run() {
                 .level(tauri_plugin_log::log::LevelFilter::Debug)
                 .build(),
         )
-        .invoke_handler(tauri::generate_handler![screenshots::screenshots_take])
+        .invoke_handler(tauri::generate_handler![screenshot::screenshot_take])
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { .. } = event {
                 if window.label() == "main" {

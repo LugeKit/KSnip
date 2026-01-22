@@ -24,7 +24,7 @@ const CropToolbar: React.FC<CropToolbarProps> = ({ window, cropArea, monitor, on
             error(`[CropToolbar] monitor.current is null`);
             return;
         }
-        invoke("screenshots_take", {
+        invoke("screenshot_take", {
             param: {
                 left: cropArea.left,
                 top: cropArea.top,
