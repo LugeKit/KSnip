@@ -220,6 +220,43 @@ async function saveShortcut(shortcut: Shortcut) {
     await store.set(SHORTCUT_SETTING_KEY, setting);
 }
 
+export async function registerWindowShortcut(id: string, f: (e: KeyboardEvent) => void | Promise<void>) {
+    const shortcut = await getShortcut(id);
+    if (!shortcut) {
+        warn(`[shortcut service] failed to register window shortcut: shortcut [${id}] not found`);
+        return () => {};
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+        const keys = shortcut.keys;
+        for (const key of keys) {
+            if (key === "Ctrl" && e.ctrlKey) {
+                continue;
+            }
+
+            if (key === "Alt" && e.altKey) {
+                continue;
+            }
+
+            if ((key === "Cmd" || key === "Win") && e.metaKey) {
+                continue;
+            }
+            if (key === e.key) {
+                f(e);
+                break;
+            }
+        }
+    };
+
+    debug(`[shortcut service] registering window shortcut [${shortcut.id}]`);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+        debug(`[shortcut service] unregistering window shortcut [${shortcut.id}]`);
+        window.removeEventListener("keydown", handleKeyDown);
+    };
+}
+
 function enrichSavedShortcut(shortcut: Shortcut) {
     if (!shortcut || !shortcut.id) {
         return null;

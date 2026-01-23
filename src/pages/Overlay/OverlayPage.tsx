@@ -1,7 +1,8 @@
+import { SHORTCUT_SCREENSHOT_EXIT } from "@/services/shortcut/const";
+import { registerWindowShortcut } from "@/services/shortcut/shortcut";
 import { currentMonitor, getCurrentWindow, Monitor } from "@tauri-apps/api/window";
 import { error } from "@tauri-apps/plugin-log";
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import { useWindowShortcut } from "../../hooks/shortcut";
+import { useCallback, useEffect, useRef } from "react";
 import CropArea from "./components/CropArea";
 import CropToolbar from "./components/CropToolbar";
 import { useCrop } from "./hooks/crop";
@@ -30,16 +31,19 @@ export default function OverlayPage() {
     // register global keydown event listener to close overlay page
     // 1. no crop area: press "Esc" to close the overlay page
     // 2. crop area: press "Esc" to cancel the crop
-    useWindowShortcut(
-        useMemo(() => ["Escape"], []),
-        () => {
+    useEffect(() => {
+        const clear = registerWindowShortcut(SHORTCUT_SCREENSHOT_EXIT, () => {
             if (mouseMoveType !== MouseMoveType.NotPressed || cropArea) {
                 cancelCrop();
                 return;
             }
             closeOverlayPage();
-        },
-    );
+        });
+
+        return () => {
+            clear.then((clear) => clear());
+        };
+    }, [mouseMoveType, cropArea]);
 
     return (
         <div

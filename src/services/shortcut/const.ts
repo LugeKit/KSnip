@@ -2,12 +2,38 @@ import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { debug, error, info } from "@tauri-apps/plugin-log";
 import { Shortcut, ShortcutSetting } from "./types";
 
+export const SHORTCUT_SCREENSHOT_EXIT = "SHORTCUT_SCREENSHOT_EXIT";
+export const SHORTCUT_TEST = "SHORTCUT_TEST";
+export const SHORTCUT_TAKE_SCREENSHOT = "SHORTCUT_TAKE_SCREENSHOT";
+export const SHORTCUT_SCREENSHOT_CONFIRM = "SHORTCUT_SCREENSHOT_CONFIRM";
+
 export const DEFAULT_SHORTCUT_SETTING: ShortcutSetting = {
     shortcuts: {
-        take_screenshot: new Shortcut("take_screenshot", ["Alt", "A"], true, "basic", "区域截图", take_screenshot),
-        test: new Shortcut("test", ["Alt", "T"], false, "basic", "测试", test),
-        screenshot_exit: new Shortcut("screenshot_exit", ["Escape"], true, "screenshot", "退出截图", null),
-        screenshot_confirm: new Shortcut("screenshot_confirm", ["Enter"], true, "screenshot", "确认截图", null),
+        [SHORTCUT_TAKE_SCREENSHOT]: new Shortcut(
+            SHORTCUT_TAKE_SCREENSHOT,
+            ["Alt", "A"],
+            true,
+            "basic",
+            "区域截图",
+            take_screenshot,
+        ),
+        [SHORTCUT_TEST]: new Shortcut(SHORTCUT_TEST, ["Alt", "T"], false, "basic", "测试", test),
+        [SHORTCUT_SCREENSHOT_EXIT]: new Shortcut(
+            SHORTCUT_SCREENSHOT_EXIT,
+            ["Escape"],
+            true,
+            "screenshot",
+            "退出截图",
+            null,
+        ),
+        [SHORTCUT_SCREENSHOT_CONFIRM]: new Shortcut(
+            SHORTCUT_SCREENSHOT_CONFIRM,
+            ["Enter"],
+            true,
+            "screenshot",
+            "确认截图",
+            null,
+        ),
     },
 };
 
