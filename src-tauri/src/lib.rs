@@ -1,6 +1,7 @@
 use tauri::Manager;
 
 mod model;
+mod protocol;
 mod screenshot;
 mod util;
 
@@ -26,6 +27,7 @@ pub fn run() {
                 }
             }
         })
+        .register_uri_scheme_protocol("ksnip", protocol::handle)
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -31,8 +31,8 @@ pub fn screenshot_take(param: LogicalParam) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub fn pin_create(param: LogicalParam) -> Result<(), String> {
+pub fn pin_create(param: LogicalParam) -> Result<i32, String> {
     info!("[pin_create] called successfully, param: {:?}", param);
     param.validate()?;
-    Ok(())
+    Ok(1)
 }

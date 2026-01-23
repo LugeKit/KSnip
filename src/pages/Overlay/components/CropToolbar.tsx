@@ -61,10 +61,10 @@ export default function CropToolbar({ cropArea, monitor, onConfirmSuccess, onCan
         }
         try {
             const param = newLogicalParam(cropArea, monitor.current);
-            invoke("pin_create", {
+            const pin_id: number = await invoke("pin_create", {
                 param,
             });
-            newPinPage(param, 1);
+            newPinPage(param, pin_id);
             onConfirmSuccess();
         } catch (e) {
             error(`[CropToolbar] failed to call pin_create: ${e}`);
@@ -126,7 +126,7 @@ function newPinPage(param: LogicalParam, pinID: number) {
     }
 
     const pinPage = new WebviewWindow(`pin_page_${pinID}`, {
-        url: "#pin",
+        url: `#pin?id=${pinID}`,
         width: param.width,
         height: param.height,
         x: param.left,
