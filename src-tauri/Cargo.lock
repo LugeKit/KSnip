@@ -2358,6 +2358,7 @@ dependencies = [
  "arboard",
  "base64 0.22.1",
  "image 0.24.9",
+ "percent-encoding",
  "serde",
  "serde_json",
  "tauri",
@@ -2366,6 +2367,7 @@ dependencies = [
  "tauri-plugin-log",
  "tauri-plugin-opener",
  "tauri-plugin-store",
+ "url",
  "xcap",
 ]
 
