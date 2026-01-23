@@ -20,22 +20,31 @@ export default function PinPage() {
         getCurrentWindow().close();
     }, []);
 
+    useEffect(() => {
+        const unlistenPromise = getCurrentWindow().once("tauri://close-requested", async () => {
+            info(`[PinPage] close-requested: ${pinID}`);
+            if (pinID > 0) {
+                try {
+                    await invoke("pin_delete", { pinId: pinID });
+                } catch (e) {
+                    error(`[PinPage] failed to delete pin: ${e}`);
+                }
+            }
+
+            await getCurrentWindow().close();
+        });
+        return () => {
+            unlistenPromise.then((unlisten) => unlisten());
+        };
+    }, [pinID]);
+
     return (
         <div className="left-0 top-0 w-screen h-screen bg-transparnent overflow-hidden">
             {pinID > 0 && <img src={convertFileSrc(`pin?id=${pinID}`, "ksnip")} />}
             <div
                 className="fixed top-0 left-0 w-full h-full z-1"
                 data-tauri-drag-region
-                onDoubleClick={async () => {
-                    try {
-                        if (pinID > 0) {
-                            await invoke("pin_delete", { pinId: pinID });
-                        }
-                    } catch (e) {
-                        error(`[PinPage] failed to delete pin: ${e}`);
-                    }
-                    getCurrentWindow().close();
-                }}
+                onDoubleClick={() => getCurrentWindow().close()}
                 onWheel={(e: React.WheelEvent) => {
                     debug(`[PinPage] wheel: ${e.deltaY}`);
                 }}
