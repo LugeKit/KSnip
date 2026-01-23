@@ -55,7 +55,7 @@ export default function PinPage() {
         info(`[PinPage] wheel: ${e.deltaY}, size: ${size.width}, ${size.height}`);
 
         try {
-            const newHeight = size.height + RESIZE_SPEED * (e.deltaY > 0 ? 1 : -1);
+            const newHeight = size.height + RESIZE_SPEED * (e.deltaY > 0 ? -1 : 1);
             const newWidth = ratio * newHeight;
             await app.setSize(new PhysicalSize(Math.round(newWidth), Math.round(newHeight)));
         } catch (e) {
