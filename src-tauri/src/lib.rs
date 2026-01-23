@@ -18,7 +18,8 @@ pub fn run() {
         )
         .invoke_handler(tauri::generate_handler![
             screenshot::screenshot_take,
-            screenshot::pin_create
+            screenshot::pin_create,
+            screenshot::pin_delete,
         ])
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { .. } = event {
@@ -27,6 +28,7 @@ pub fn run() {
                 }
             }
         })
+        .manage(model::AppState::default())
         .register_uri_scheme_protocol("ksnip", protocol::handle)
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

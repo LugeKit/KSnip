@@ -1,17 +1,26 @@
 use tauri::{
-    http::{Request, Response, StatusCode},
-    Runtime, UriSchemeContext,
+    http::{
+        header::{ACCESS_CONTROL_ALLOW_ORIGIN, CONTENT_TYPE},
+        Request, Response, StatusCode,
+    },
+    Manager, Runtime, UriSchemeContext,
 };
 use tauri_plugin_log::log::info;
 use url::form_urlencoded::{self};
+
+use crate::{model::AppState, screenshot::pin_get};
 
 pub fn handle<R: Runtime>(
     _ctx: UriSchemeContext<'_, R>,
     request: Request<Vec<u8>>,
 ) -> Response<Vec<u8>> {
-    let response_builder = Response::builder().header("Access-Control-Allow-Origin", "*");
+    let response_builder = Response::builder().header(ACCESS_CONTROL_ALLOW_ORIGIN, "*");
     match internal_handle(_ctx, request) {
-        Ok(body) => response_builder.status(StatusCode::OK).body(body).unwrap(),
+        Ok(body) => response_builder
+            .status(StatusCode::OK)
+            .header(CONTENT_TYPE, "image/png")
+            .body(body)
+            .unwrap(),
         Err(e) => response_builder
             .status(StatusCode::BAD_REQUEST)
             .body(e.into_bytes())
@@ -43,12 +52,15 @@ fn internal_handle<R: Runtime>(
 
     let query = query.ok_or(String::from("query is empty"))?;
     let mut parsed = form_urlencoded::parse(query.as_bytes());
-    let id = parsed
+    let pin_id = parsed
         .find(|(k, _)| k == "id")
         .map(|(_, v)| v.into_owned())
-        .ok_or(String::from("id is empty"))?;
+        .ok_or(String::from("id is empty"))?
+        .parse::<i32>()
+        .map_err(|e| e.to_string())?;
 
-    info!("[protocol] id: {}", id);
+    let image = pin_get(pin_id, _ctx.app_handle().state::<AppState>())?;
+    info!("[protocol] pin_id: {}, image: {}", pin_id, image.len());
 
-    Ok(Vec::new())
+    Ok(image)
 }

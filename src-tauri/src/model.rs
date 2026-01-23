@@ -1,4 +1,18 @@
+use std::{collections::HashMap, sync::RwLock};
+
 use xcap::Monitor;
+
+pub struct AppState {
+    pub pin_images: RwLock<HashMap<i32, Vec<u8>>>,
+}
+
+impl Default for AppState {
+    fn default() -> Self {
+        Self {
+            pin_images: RwLock::new(HashMap::new()),
+        }
+    }
+}
 
 #[derive(serde::Deserialize, serde::Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
