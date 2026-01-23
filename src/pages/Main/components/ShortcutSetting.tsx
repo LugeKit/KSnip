@@ -4,7 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getAllShortcuts, updateShortcutEnabled } from "@/services/shortcut/shortcut";
-import { warn } from "@tauri-apps/plugin-log";
+import { debug, warn } from "@tauri-apps/plugin-log";
 import { useEffect, useMemo, useState } from "react";
 
 type ShortcutState = {
@@ -187,7 +187,7 @@ function ShortcutCell({ shortcut }: { shortcut: ShortcutItem }) {
                 <KbdGroup className="hover:bg-muted-foreground p-1 rounded-md">
                     {shortcut.keys.map((key) => (
                         <Kbd className="bg-white" key={shortcut.id + key}>
-                            {key}
+                            {key.toUpperCase()}
                         </Kbd>
                     ))}
                 </KbdGroup>
@@ -199,7 +199,7 @@ function ShortcutCell({ shortcut }: { shortcut: ShortcutItem }) {
                         <KbdGroup>
                             {keys.map((key) => (
                                 <Kbd className="text-l bg-muted p-4 min-w-12 text-center font-medium" key={key}>
-                                    {key}
+                                    {key.toUpperCase()}
                                 </Kbd>
                             ))}
                         </KbdGroup>
