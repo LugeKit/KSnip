@@ -2,14 +2,14 @@ import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { registerGlobalShortcut, unregisterGlobalShortcut } from "@/lib/utils";
 import { invoke } from "@tauri-apps/api/core";
-import { Monitor, Window } from "@tauri-apps/api/window";
-import { debug, error } from "@tauri-apps/plugin-log";
+import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { getCurrentWindow, Monitor } from "@tauri-apps/api/window";
+import { debug, error, info } from "@tauri-apps/plugin-log";
 import { CheckIcon, Disc, PinIcon, X } from "lucide-react";
 import React, { useState } from "react";
 import { Rectangle } from "../types";
 
 interface CropToolbarProps {
-    window: Window;
     cropArea: Rectangle;
     monitor: React.RefObject<Monitor | null>;
     onConfirmSuccess: () => void;
@@ -36,7 +36,7 @@ function newLogicalParam(rect: Rectangle, monitor: Monitor): LogicalParam {
     };
 }
 
-const CropToolbar: React.FC<CropToolbarProps> = ({ window, cropArea, monitor, onConfirmSuccess, onCancel }) => {
+export default function CropToolbar({ cropArea, monitor, onConfirmSuccess, onCancel }: CropToolbarProps) {
     const [isRecording, setRecording] = useState(false);
 
     const takeScreenshot = async () => {
@@ -60,9 +60,11 @@ const CropToolbar: React.FC<CropToolbarProps> = ({ window, cropArea, monitor, on
             return;
         }
         try {
+            const param = newLogicalParam(cropArea, monitor.current);
             invoke("pin_create", {
-                param: newLogicalParam(cropArea, monitor.current),
+                param,
             });
+            newPinPage(param, 1);
             onConfirmSuccess();
         } catch (e) {
             error(`[CropToolbar] failed to call pin_create: ${e}`);
@@ -73,6 +75,7 @@ const CropToolbar: React.FC<CropToolbarProps> = ({ window, cropArea, monitor, on
         debug("[CropToolbar] record region is called");
         setRecording(true);
         try {
+            const window = getCurrentWindow();
             registerGlobalShortcut(["Shift", "Escape"], async () => {
                 try {
                     await window.setFocusable(true);
@@ -111,10 +114,35 @@ const CropToolbar: React.FC<CropToolbarProps> = ({ window, cropArea, monitor, on
             </CommonButton>
         </ButtonGroup>
     );
-};
+}
 
 function CommonButton(props: React.ComponentProps<typeof Button>) {
     return <Button variant="outline" size="icon-sm" {...props} />;
 }
 
-export default CropToolbar;
+function newPinPage(param: LogicalParam, pinID: number) {
+    if (pinID <= 0) {
+        throw new Error(`pinID must be greater than 0`);
+    }
+
+    const pinPage = new WebviewWindow(`pin_page_${pinID}`, {
+        url: "#pin",
+        width: param.width,
+        height: param.height,
+        x: param.left,
+        y: param.top,
+        transparent: true,
+        decorations: false,
+        alwaysOnTop: true,
+        resizable: false,
+        shadow: false,
+    });
+
+    pinPage.once("tauri://created", () => {
+        info("pin page created");
+    });
+
+    pinPage.once("tauri://error", () => {
+        error("failed to create pin page");
+    });
+}

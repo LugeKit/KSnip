@@ -1,8 +1,4 @@
-import {
-    currentMonitor,
-    getCurrentWindow,
-    Monitor,
-} from "@tauri-apps/api/window";
+import { currentMonitor, getCurrentWindow, Monitor } from "@tauri-apps/api/window";
 import { error } from "@tauri-apps/plugin-log";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useWindowShortcut } from "../../hooks/shortcut";
@@ -12,14 +8,7 @@ import { useCrop } from "./hooks/crop";
 import { MouseMoveType } from "./types";
 
 export default function OverlayPage() {
-    const {
-        cropArea,
-        mouseMoveType,
-        handleMouseDown,
-        handleMouseMove,
-        handleMouseUp,
-        cancelCrop,
-    } = useCrop();
+    const { cropArea, mouseMoveType, handleMouseDown, handleMouseMove, handleMouseUp, cancelCrop } = useCrop();
 
     const monitor = useRef<Monitor | null>(null);
     useEffect(() => {
@@ -32,10 +21,9 @@ export default function OverlayPage() {
             });
     }, []);
 
-    const appWindow = useMemo(() => getCurrentWindow(), []);
-
     // closeOverlayPage closes the overlay page
     const closeOverlayPage = useCallback(() => {
+        const appWindow = getCurrentWindow();
         appWindow.close();
     }, []);
 
@@ -72,7 +60,6 @@ export default function OverlayPage() {
                         }}
                     >
                         <CropToolbar
-                            window={appWindow}
                             cropArea={cropArea}
                             monitor={monitor}
                             onConfirmSuccess={closeOverlayPage}
