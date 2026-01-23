@@ -21,6 +21,7 @@
         "core:window:allow-maximize",
         "core:window:allow-toggle-maximize",
         "core:webview:allow-create-webview-window",
+        "core:window:allow-set-size",
         "store:allow-load",
         "store:default",
         "store:allow-get",
