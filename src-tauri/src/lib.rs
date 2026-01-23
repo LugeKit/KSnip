@@ -15,7 +15,10 @@ pub fn run() {
                 .level(tauri_plugin_log::log::LevelFilter::Debug)
                 .build(),
         )
-        .invoke_handler(tauri::generate_handler![screenshot::screenshot_take])
+        .invoke_handler(tauri::generate_handler![
+            screenshot::screenshot_take,
+            screenshot::pin_create
+        ])
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { .. } = event {
                 if window.label() == "main" {

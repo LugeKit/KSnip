@@ -8,6 +8,7 @@ use crate::{
 #[tauri::command]
 pub fn screenshot_take(param: LogicalParam) -> Result<(), String> {
     info!("[screenshots] called successfully, param: {:?}", param);
+    param.validate()?;
 
     let monitor = util::find_monitor(param.screen_x, param.screen_y)
         .ok_or(String::from("monitor not found"))?;
@@ -27,5 +28,11 @@ pub fn screenshot_take(param: LogicalParam) -> Result<(), String> {
         image.into_raw(),
     )?;
     Ok(())
+}
 
+#[tauri::command]
+pub fn pin_create(param: LogicalParam) -> Result<(), String> {
+    info!("[pin_create] called successfully, param: {:?}", param);
+    param.validate()?;
+    Ok(())
 }

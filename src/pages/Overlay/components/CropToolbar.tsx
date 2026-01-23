@@ -4,7 +4,7 @@ import { registerGlobalShortcut, unregisterGlobalShortcut } from "@/lib/utils";
 import { invoke } from "@tauri-apps/api/core";
 import { Monitor, Window } from "@tauri-apps/api/window";
 import { debug, error } from "@tauri-apps/plugin-log";
-import { CheckIcon, Disc, X } from "lucide-react";
+import { CheckIcon, Disc, PinIcon, X } from "lucide-react";
 import React, { useState } from "react";
 import { Rectangle } from "../types";
 
@@ -16,28 +16,57 @@ interface CropToolbarProps {
     onCancel: () => void;
 }
 
+interface LogicalParam {
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+    screenX: number;
+    screenY: number;
+}
+
+function newLogicalParam(rect: Rectangle, monitor: Monitor): LogicalParam {
+    return {
+        left: rect.left,
+        top: rect.top,
+        width: rect.width,
+        height: rect.height,
+        screenX: monitor.position.x,
+        screenY: monitor.position.y,
+    };
+}
+
 const CropToolbar: React.FC<CropToolbarProps> = ({ window, cropArea, monitor, onConfirmSuccess, onCancel }) => {
     const [isRecording, setRecording] = useState(false);
 
-    const takeScreenshot = () => {
+    const takeScreenshot = async () => {
         if (!monitor.current) {
             error(`[CropToolbar] monitor.current is null`);
             return;
         }
-        invoke("screenshot_take", {
-            param: {
-                left: cropArea.left,
-                top: cropArea.top,
-                width: cropArea.width,
-                height: cropArea.height,
-                screenX: monitor.current.position.x,
-                screenY: monitor.current.position.y,
-            },
-        })
-            .then(onConfirmSuccess)
-            .catch((e: Error) => {
-                error(`[CropToolbar] failed to call screenshots_take: ${e}`);
+        try {
+            await invoke("screenshot_take", {
+                param: newLogicalParam(cropArea, monitor.current),
             });
+            onConfirmSuccess();
+        } catch (e) {
+            error(`[CropToolbar] failed to call screenshots_take: ${e}`);
+        }
+    };
+
+    const createPin = async () => {
+        if (!monitor.current) {
+            error(`[CropToolbar] monitor.current is null`);
+            return;
+        }
+        try {
+            invoke("pin_create", {
+                param: newLogicalParam(cropArea, monitor.current),
+            });
+            onConfirmSuccess();
+        } catch (e) {
+            error(`[CropToolbar] failed to call pin_create: ${e}`);
+        }
     };
 
     const recordRegion = async () => {
@@ -70,6 +99,9 @@ const CropToolbar: React.FC<CropToolbarProps> = ({ window, cropArea, monitor, on
         >
             <CommonButton onClick={takeScreenshot}>
                 <CheckIcon />
+            </CommonButton>
+            <CommonButton onClick={createPin}>
+                <PinIcon />
             </CommonButton>
             <CommonButton onClick={recordRegion}>
                 {isRecording ? <Disc className="text-red-500" /> : <Disc />}
