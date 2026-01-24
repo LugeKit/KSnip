@@ -4,8 +4,8 @@ import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getAllShortcuts, getShortcut, updateShortcutEnabled } from "@/services/shortcut/shortcut";
-import { warn } from "@tauri-apps/plugin-log";
+import { getAllShortcuts, getShortcut, updateShortcutEnabled, updateShortcutKey } from "@/services/shortcut/shortcut";
+import { error, warn } from "@tauri-apps/plugin-log";
 import { CheckIcon, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -198,9 +198,14 @@ function ShortcutCell({
         };
     }, []);
 
-    const onConfirm = () => {
-        onShortcutChanged(shortcut.id);
-        setOpen(false);
+    const onConfirm = async () => {
+        try {
+            await updateShortcutKey(shortcut.id, keys);
+            onShortcutChanged(shortcut.id);
+            setOpen(false);
+        } catch (e) {
+            error(`[ShortcutSetting] failed to update shortcut key [${shortcut.id}] to [${keys}], error: ${e}`);
+        }
     };
 
     useEffect(() => {

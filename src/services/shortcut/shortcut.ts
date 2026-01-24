@@ -158,9 +158,10 @@ export async function updateShortcutEnabled(id: string, enabled: boolean) {
     }
 }
 
-async function getConflictKeyInSamePage(shortcut: Shortcut): Promise<Shortcut | undefined> {
+async function getConflictKeyInSamePage(newKeys: string[], shortcut: Shortcut): Promise<Shortcut | undefined> {
     const shortcuts = await getAllShortcuts();
-    const keys = shortcut.keys.join(",");
+    debug(`[shortcut service] checking conflicted shortcut: ${JSON.stringify(shortcuts)}`);
+    const keys = newKeys.join(",");
     return Object.values(shortcuts).find((s) => s.page === shortcut.page && s.keys.join(",") === keys);
 }
 
@@ -172,7 +173,7 @@ export async function updateShortcutKey(id: string, keys: string[]): Promise<voi
         throw Error(`shortcut [${id}] not found`);
     }
 
-    const conflicted = await getConflictKeyInSamePage(shortcut);
+    const conflicted = await getConflictKeyInSamePage(keys, shortcut);
     if (conflicted) {
         throw Error(`shortcut key [${keys}] is already used by [${conflicted.id}]`);
     }
