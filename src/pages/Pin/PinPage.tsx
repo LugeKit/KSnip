@@ -1,5 +1,5 @@
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
-import { getCurrentWindow, PhysicalSize } from "@tauri-apps/api/window";
+import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
 import { debug, error, info } from "@tauri-apps/plugin-log";
 import { useEffect, useRef, useState } from "react";
 
@@ -75,12 +75,14 @@ export default function PinPage() {
             if (rawWidth.current === 0 || rawHeight.current === 0) {
                 return;
             }
+            const app = getCurrentWindow();
+            const scale = await app.scaleFactor();
 
-            const newWidth = Math.round(rawWidth.current * ratio);
-            const newHeight = Math.round(rawHeight.current * ratio);
-            debug(`[PinPage] new width: ${newWidth}, new height: ${newHeight}`);
+            // use logical size rather than physical size in front display to avoid floating point size
+            const newWidth = Math.round(rawWidth.current * ratio * scale);
+            const newHeight = Math.round(rawHeight.current * ratio * scale);
 
-            getCurrentWindow().setSize(new PhysicalSize(newWidth, newHeight));
+            app.setSize(new LogicalSize(newWidth, newHeight));
         };
         resize();
     }, [ratio]);
