@@ -1,5 +1,5 @@
 import { isGlobalShortcutRegistration, registerGlobalShortcut, unregisterGlobalShortcut } from "@/lib/utils";
-import { debug, error, warn } from "@tauri-apps/plugin-log";
+import { debug, error, info, warn } from "@tauri-apps/plugin-log";
 import { getLocalStore } from "../store";
 import { DEFAULT_SHORTCUT_SETTING } from "./const";
 import { Shortcut, ShortcutSetting } from "./types";
@@ -228,6 +228,11 @@ export async function registerWindowShortcut(id: string, f: (e: KeyboardEvent) =
         return () => {};
     }
 
+    if (!shortcut.enabled) {
+        info(`[shortcut service] not registering window shortcut [${shortcut.id}] as it is disabled`);
+        return () => {};
+    }
+
     const handleKeyDown = (e: KeyboardEvent) => {
         const keys = shortcut.keys;
         for (const key of keys) {
@@ -242,7 +247,7 @@ export async function registerWindowShortcut(id: string, f: (e: KeyboardEvent) =
             if ((key === "Cmd" || key === "Win") && e.metaKey) {
                 continue;
             }
-            if (key === e.key) {
+            if (key === e.key.toUpperCase()) {
                 f(e);
                 break;
             }

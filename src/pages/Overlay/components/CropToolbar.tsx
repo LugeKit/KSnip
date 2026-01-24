@@ -1,12 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { registerGlobalShortcut, unregisterGlobalShortcut } from "@/lib/utils";
+import {
+    SHORTCUT_CREATE_PIN,
+    SHORTCUT_RECORD_REGION,
+    SHORTCUT_RECORD_REGION_CONFIRM,
+    SHORTCUT_SCREENSHOT_CONFIRM,
+} from "@/services/shortcut/const";
+import { getShortcut, registerWindowShortcut } from "@/services/shortcut/shortcut";
 import { invoke } from "@tauri-apps/api/core";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { getCurrentWindow, Monitor } from "@tauri-apps/api/window";
 import { debug, error, info } from "@tauri-apps/plugin-log";
 import { CheckIcon, Disc, PinIcon, X } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Rectangle } from "../types";
 
 interface CropToolbarProps {
@@ -75,15 +82,21 @@ export default function CropToolbar({ cropArea, monitor, onConfirmSuccess, onCan
         debug("[CropToolbar] record region is called");
         setRecording(true);
         try {
+            const confirmShortcut = await getShortcut(SHORTCUT_RECORD_REGION_CONFIRM);
+            if (!confirmShortcut) {
+                error(`[CropToolbar] failed to get confirm shortcut`);
+                return;
+            }
+
             const window = getCurrentWindow();
-            registerGlobalShortcut(["Shift", "Escape"], async () => {
+            registerGlobalShortcut(confirmShortcut.keys, async () => {
                 try {
                     await window.setFocusable(true);
                     await window.setIgnoreCursorEvents(false);
                 } catch (e) {
                     error(`[CropToolbar] failed to complete take gif: ${e}`);
                 } finally {
-                    unregisterGlobalShortcut(["Shift", "Escape"]);
+                    unregisterGlobalShortcut(confirmShortcut.keys);
                     setRecording(false);
                 }
             });
@@ -93,6 +106,10 @@ export default function CropToolbar({ cropArea, monitor, onConfirmSuccess, onCan
             error(`[CropToolbar] failed to take gif: ${e}`);
         }
     };
+
+    useWindowShortcut(SHORTCUT_SCREENSHOT_CONFIRM, takeScreenshot);
+    useWindowShortcut(SHORTCUT_CREATE_PIN, createPin);
+    useWindowShortcut(SHORTCUT_RECORD_REGION, recordRegion);
 
     return (
         <ButtonGroup
@@ -114,6 +131,18 @@ export default function CropToolbar({ cropArea, monitor, onConfirmSuccess, onCan
             </CommonButton>
         </ButtonGroup>
     );
+}
+
+function useWindowShortcut(id: string, callback: (e: KeyboardEvent) => void) {
+    useEffect(() => {
+        const registerShortcut = async () => {
+            return await registerWindowShortcut(id, callback);
+        };
+        const clear = registerShortcut();
+        return () => {
+            clear.then((clear) => clear());
+        };
+    }, [id, callback]);
 }
 
 function CommonButton(props: React.ComponentProps<typeof Button>) {
