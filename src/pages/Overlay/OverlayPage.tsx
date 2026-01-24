@@ -28,21 +28,9 @@ export default function OverlayPage() {
         appWindow.close();
     }, []);
 
-    // register global keydown event listener to close overlay page
-    // 1. no crop area: press "Esc" to close the overlay page
-    // 2. crop area: press "Esc" to cancel the crop
-    const handleExit = () => {
-        if (cropArea) {
-            cancelCrop();
-            return;
-        }
-
-        closeOverlayPage();
-    };
-
     useEffect(() => {
         const registerShortcut = async () => {
-            return await registerWindowShortcut(SHORTCUT_SCREENSHOT_EXIT, handleExit);
+            return await registerWindowShortcut(SHORTCUT_SCREENSHOT_EXIT, closeOverlayPage);
         };
         const clear = registerShortcut();
         return () => {
