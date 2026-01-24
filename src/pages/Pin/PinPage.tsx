@@ -75,12 +75,17 @@ export default function PinPage() {
             if (rawWidth.current === 0 || rawHeight.current === 0) {
                 return;
             }
+
             const app = getCurrentWindow();
             const scale = await app.scaleFactor();
+            if (scale <= 0) {
+                error(`[PinPage] failed to get scaleFactor: ${scale}`);
+                return;
+            }
 
             // use logical size rather than physical size in front display to avoid floating point size
-            const newWidth = Math.round(rawWidth.current * ratio * scale);
-            const newHeight = Math.round(rawHeight.current * ratio * scale);
+            const newWidth = Math.round((rawWidth.current * ratio) / scale);
+            const newHeight = Math.round((rawHeight.current * ratio) / scale);
 
             app.setSize(new LogicalSize(newWidth, newHeight));
         };
@@ -104,15 +109,15 @@ export default function PinPage() {
     }, []);
 
     return (
-        <div className="left-0 top-0 w-screen h-screen bg-transparnent overflow-hidden border-none">
+        <div className="left-0 top-0 w-screen h-screen bg-transparent overflow-hidden border-none">
             {pinID > 0 && (
                 <img
-                    className="top-0 left-0 fixed w-full h-full object-fill"
+                    className="top-0 left-0 fixed w-full h-full object-fill border-none"
                     src={convertFileSrc(`pin?id=${pinID}`, "ksnip")}
                 />
             )}
             <div
-                className="flex fixed bg-transparent top-0 left-0 w-full h-full z-1 items-center justify-center"
+                className="flex fixed bg-transparent top-0 left-0 w-full h-full z-1 items-center justify-center border-none"
                 data-tauri-drag-region
                 onDoubleClick={() => getCurrentWindow().close()}
                 onWheel={onWheel}
