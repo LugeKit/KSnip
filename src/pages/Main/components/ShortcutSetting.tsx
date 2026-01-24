@@ -14,7 +14,7 @@ import {
     SHORTCUT_TEST,
 } from "@/services/shortcut/const";
 import { getAllShortcuts, getShortcut, updateShortcutEnabled, updateShortcutKey } from "@/services/shortcut/shortcut";
-import { error, warn } from "@tauri-apps/plugin-log";
+import { debug, error, warn } from "@tauri-apps/plugin-log";
 import { CheckIcon, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -186,24 +186,25 @@ function ShortcutCell({
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
+            debug(`[ShortcutSetting] keydown: ${e.key}`);
             const input_keys = [];
             if (e.metaKey) {
-                input_keys.push("Meta");
+                input_keys.push("META");
             }
 
             if (e.ctrlKey) {
-                input_keys.push("Ctrl");
+                input_keys.push("CTRL");
             }
 
             if (e.shiftKey) {
-                input_keys.push("Shift");
+                input_keys.push("SHIFT");
             }
 
             if (e.altKey) {
-                input_keys.push("Alt");
+                input_keys.push("ALT");
             }
 
-            if (e.key.length === 1) {
+            if (!["Control", "Shift", "Alt", "Meta"].includes(e.key)) {
                 input_keys.push(e.key);
             }
             setKeys(input_keys);
@@ -213,7 +214,7 @@ function ShortcutCell({
         return () => {
             window.removeEventListener("keydown", handleKeyDown);
         };
-    }, []);
+    }, [open]);
 
     const onConfirm = async () => {
         try {
@@ -245,10 +246,14 @@ function ShortcutCell({
                 </KbdGroup>
             </PopoverTrigger>
             <PopoverContent className="w-auto min-w-40 h-25 p-4" onFocusOutside={() => setOpen(false)}>
-                <div className="flex items-center justify-center w-full h-full">
-                    {keys.length === 0 && <span className="text-muted-foreground text-sm">请输入快捷键...</span>}
-                    {keys.length > 0 && (
-                        <div className="w-full h-full flex flex-col items-center justify-center">
+                <div className="w-full h-full flex flex-col items-center justify-center">
+                    <div className="h-16 flex items-center justify-center w-full">
+                        {keys.length === 0 && (
+                            <span className="text-muted-foreground text-sm text-center font-medium">
+                                请输入快捷键...
+                            </span>
+                        )}
+                        {keys.length > 0 && (
                             <KbdGroup>
                                 {keys.map((key) => (
                                     <Kbd className="text-l bg-muted p-4 min-w-12 text-center font-medium" key={key}>
@@ -256,22 +261,24 @@ function ShortcutCell({
                                     </Kbd>
                                 ))}
                             </KbdGroup>
-                            <div className="mt-3 flex items-center justify-center gap-2">
-                                <Badge
-                                    variant="secondary"
-                                    className="hover:bg-muted-foreground"
-                                    onClick={() => {
-                                        setOpen(false);
-                                    }}
-                                >
-                                    <X />
-                                </Badge>
-                                <Badge variant="default" className="hover:bg-muted-foreground" onClick={onConfirm}>
-                                    <CheckIcon />
-                                </Badge>
-                            </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
+                    <div className="mt-3 flex items-center justify-center gap-2">
+                        <Badge
+                            variant="secondary"
+                            className="hover:bg-muted-foreground"
+                            onClick={() => {
+                                setOpen(false);
+                            }}
+                        >
+                            <X />
+                        </Badge>
+                        {keys.length > 0 && (
+                            <Badge variant="default" className="hover:bg-muted-foreground" onClick={onConfirm}>
+                                <CheckIcon />
+                            </Badge>
+                        )}
+                    </div>
                 </div>
             </PopoverContent>
         </Popover>
