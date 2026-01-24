@@ -1,15 +1,18 @@
-use std::{collections::HashMap, sync::RwLock};
+use std::{collections::HashMap, sync::{Mutex, RwLock}};
+use tauri_plugin_shell::process::CommandChild;
 
 use xcap::Monitor;
 
 pub struct AppState {
     pub pin_images: RwLock<HashMap<i32, Vec<u8>>>,
+    pub recording_process: Mutex<Option<CommandChild>>,
 }
 
 impl Default for AppState {
     fn default() -> Self {
         Self {
             pin_images: RwLock::new(HashMap::new()),
+            recording_process: Mutex::new(None),
         }
     }
 }

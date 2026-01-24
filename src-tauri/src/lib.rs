@@ -2,6 +2,7 @@ use tauri::Manager;
 
 mod model;
 mod protocol;
+mod record;
 mod screenshot;
 mod util;
 
@@ -22,6 +23,8 @@ pub fn run() {
             screenshot::screenshot_take,
             screenshot::pin_create,
             screenshot::pin_delete,
+            record::record_start,
+            record::record_stop,
         ])
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { .. } = event {

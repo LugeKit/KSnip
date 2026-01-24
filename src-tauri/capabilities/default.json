@@ -30,6 +30,7 @@
         "global-shortcut:allow-is-registered",
         "global-shortcut:allow-register",
         "global-shortcut:allow-unregister",
-        "macos-permissions:default"
+        "macos-permissions:default",
+        "shell:allow-execute"
     ]
 }

@@ -1,0 +1,85 @@
+use crate::{
+    model::{AppState, LogicalParam, PhysicalParam},
+    util,
+};
+use std::time::{SystemTime, UNIX_EPOCH};
+use tauri::{AppHandle, State};
+use tauri_plugin_log::log::info;
+use tauri_plugin_shell::ShellExt;
+
+#[tauri::command]
+pub fn record_start(
+    app: AppHandle,
+    param: LogicalParam,
+    state: State<'_, AppState>,
+) -> Result<String, String> {
+    info!("[record_start] called successfully, param: {:?}", param);
+    param.validate()?;
+
+    let monitor = util::find_monitor(param.screen_x, param.screen_y)
+        .ok_or(String::from("monitor not found"))?;
+    let physical_param = PhysicalParam::new(&monitor, &param);
+
+    // Generate filename
+    let start = SystemTime::now();
+    let since_the_epoch = start
+        .duration_since(UNIX_EPOCH)
+        .map_err(|e| e.to_string())?;
+    let timestamp = since_the_epoch.as_secs();
+
+    // Use current directory
+    let current_dir = std::env::current_dir().map_err(|e| e.to_string())?;
+    let file_name = format!("recording_{}.mp4", timestamp);
+    let file_path = current_dir.join(&file_name);
+    let file_path_str = file_path.to_str().ok_or("Invalid path")?.to_string();
+
+    let args = vec![
+        "-f".to_string(),
+        "gdigrab".to_string(),
+        "-framerate".to_string(),
+        "30".to_string(),
+        "-offset_x".to_string(),
+        physical_param.left.to_string(),
+        "-offset_y".to_string(),
+        physical_param.top.to_string(),
+        "-video_size".to_string(),
+        format!("{}x{}", physical_param.width, physical_param.height),
+        "-i".to_string(),
+        "desktop".to_string(),
+        "-c:v".to_string(),
+        "libx264".to_string(),
+        "-preset".to_string(),
+        "ultrafast".to_string(),
+        "-y".to_string(),
+        file_path_str.clone(),
+    ];
+
+    info!("[record_start] spawning ffmpeg with args: {:?}", args);
+
+    let sidecar_command = app.shell().sidecar("ffmpeg").map_err(|e| e.to_string())?;
+    let (mut _rx, child) = sidecar_command
+        .args(args)
+        .spawn()
+        .map_err(|e| e.to_string())?;
+
+    let mut process_guard = state.recording_process.lock().map_err(|e| e.to_string())?;
+    *process_guard = Some(child);
+
+    info!("[record_start] recording started, file: {}", file_path_str);
+
+    Ok(file_path_str)
+}
+
+#[tauri::command]
+pub fn record_stop(state: State<'_, AppState>) -> Result<(), String> {
+    info!("[record_stop] called");
+    let mut process_guard = state.recording_process.lock().map_err(|e| e.to_string())?;
+    if let Some(mut child) = process_guard.take() {
+        // Send 'q' to stop recording gracefully
+        child.write(b"q").map_err(|e| e.to_string())?;
+        info!("[record_stop] sent 'q' to ffmpeg process");
+    } else {
+        return Err(String::from("No recording in progress"));
+    }
+    Ok(())
+}
