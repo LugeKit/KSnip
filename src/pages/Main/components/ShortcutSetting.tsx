@@ -127,8 +127,9 @@ function TabsContentHeader() {
     return (
         <TableHeader>
             <TableRow>
-                <TableHead className="font-bold w-1/2">功能</TableHead>
+                <TableHead className="font-bold w-[200px]">功能</TableHead>
                 <TableHead className="font-bold text-center whitespace-nowrap">快捷键</TableHead>
+                <TableHead className="font-bold text-center whitespace-nowrap w-[60px]">启用</TableHead>
             </TableRow>
         </TableHeader>
     );
@@ -161,7 +162,7 @@ function TabsContentBody({
                         <ShortcutCell shortcut={shortcut} onShortcutChanged={onShortcutChanged} />
                     </TableCell>
                     {/* 启用列 */}
-                    <TableCell className="text-right">
+                    <TableCell className="text-center">
                         <Checkbox
                             className="data-[state=checked]:bg-transparent data-[state=checked]:text-black border-black mr-1"
                             checked={shortcut.enabled}
@@ -185,6 +186,8 @@ function ShortcutCell({
     const [open, setOpen] = useState<boolean>(false);
 
     useEffect(() => {
+        if (!open) return;
+
         const handleKeyDown = (e: KeyboardEvent) => {
             debug(`[ShortcutSetting] keydown: ${e.key}`);
             const input_keys = [];
