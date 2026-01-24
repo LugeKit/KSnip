@@ -1,7 +1,7 @@
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
 import { debug, error, info } from "@tauri-apps/plugin-log";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const RESIZE_SPEED = 0.1;
 const MIN_RATIO = 0.1;
@@ -11,6 +11,7 @@ export default function PinPage() {
     const [pinID, setPinID] = useState(0);
     const [ratio, setRatio] = useState(1);
     const [isDragging, setIsDragging] = useState(false);
+    const src = useMemo(() => convertFileSrc(`pin?id=${pinID}`, "ksnip"), [pinID]);
 
     const rawWidth = useRef(0);
     const rawHeight = useRef(0);
@@ -110,12 +111,7 @@ export default function PinPage() {
 
     return (
         <div className="left-0 top-0 w-screen h-screen bg-transparent overflow-hidden border-none">
-            {pinID > 0 && (
-                <img
-                    className="top-0 left-0 fixed w-full h-full object-fill border-none"
-                    src={convertFileSrc(`pin?id=${pinID}`, "ksnip")}
-                />
-            )}
+            {pinID > 0 && <img className="top-0 left-0 fixed w-full h-full object-fill border-none" src={src} />}
             <div
                 className="flex fixed bg-transparent top-0 left-0 w-full h-full z-1 items-center justify-center border-none"
                 data-tauri-drag-region
