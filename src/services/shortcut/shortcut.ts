@@ -173,12 +173,13 @@ export async function updateShortcutKey(id: string, keys: string[]): Promise<voi
         throw Error(`shortcut [${id}] not found`);
     }
 
-    const conflicted = await getConflictKeyInSamePage(keys, shortcut);
+    const newKeys = keys.map((key) => key.toUpperCase());
+    const conflicted = await getConflictKeyInSamePage(newKeys, shortcut);
     if (conflicted) {
-        throw Error(`shortcut key [${keys}] is already used by [${conflicted.id}]`);
+        throw Error(`shortcut key [${newKeys}] is already used by [${conflicted.id}]`);
     }
 
-    const newShortcut = newShortcutByOld(shortcut, keys, shortcut.enabled);
+    const newShortcut = newShortcutByOld(shortcut, newKeys, shortcut.enabled);
     // for non-global shortcut, just update the keys
     if (!shortcut.globalF) {
         await saveShortcut(newShortcut);

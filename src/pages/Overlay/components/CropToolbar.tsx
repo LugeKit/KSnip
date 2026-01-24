@@ -46,19 +46,17 @@ function newLogicalParam(rect: Rectangle, monitor: Monitor): LogicalParam {
 export default function CropToolbar({ cropArea, monitor, onConfirmSuccess, onCancel }: CropToolbarProps) {
     const [isRecording, setRecording] = useState(false);
 
-    const takeScreenshot = async () => {
+    const takeScreenshot = () => {
         if (!monitor.current) {
             error(`[CropToolbar] monitor.current is null`);
             return;
         }
-        try {
-            await invoke("screenshot_take", {
-                param: newLogicalParam(cropArea, monitor.current),
-            });
-            onConfirmSuccess();
-        } catch (e) {
+        onConfirmSuccess();
+        invoke("screenshot_take", {
+            param: newLogicalParam(cropArea, monitor.current),
+        }).catch((e) => {
             error(`[CropToolbar] failed to call screenshots_take: ${e}`);
-        }
+        });
     };
 
     const createPin = async () => {
