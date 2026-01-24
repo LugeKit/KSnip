@@ -1,21 +1,25 @@
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow, PhysicalSize } from "@tauri-apps/api/window";
-import { error, info } from "@tauri-apps/plugin-log";
-import { useEffect, useState } from "react";
+import { debug, error, info } from "@tauri-apps/plugin-log";
+import { useEffect, useRef, useState } from "react";
 
-const RESIZE_SPEED = 100;
+const RESIZE_SPEED = 0.1;
+const MIN_RATIO = 0.1;
+const MAX_RATIO = 5.0;
 
 export default function PinPage() {
     const [pinID, setPinID] = useState(0);
-    const [ratio, setRatio] = useState(0);
+    const [ratio, setRatio] = useState(1);
     const [isDragging, setIsDragging] = useState(false);
 
+    const rawWidth = useRef(0);
+    const rawHeight = useRef(0);
     useEffect(() => {
-        const getRatio = async () => {
-            const size = await getCurrentWindow().innerSize();
-            setRatio(size.width / size.height);
-        };
-        getRatio();
+        const app = getCurrentWindow();
+        app.innerSize().then((size) => {
+            rawWidth.current = size.width;
+            rawHeight.current = size.height;
+        });
     }, []);
 
     useEffect(() => {
@@ -51,18 +55,35 @@ export default function PinPage() {
     }, [pinID]);
 
     const onWheel = async (e: React.WheelEvent) => {
-        const app = getCurrentWindow();
-        const size = await app.innerSize();
-        info(`[PinPage] wheel: ${e.deltaY}, size: ${size.width}, ${size.height}`);
-
-        try {
-            const newHeight = size.height + RESIZE_SPEED * (e.deltaY > 0 ? -1 : 1);
-            const newWidth = ratio * newHeight;
-            await app.setSize(new PhysicalSize(Math.round(newWidth), Math.round(newHeight)));
-        } catch (e) {
-            error(`[PinPage] failed to set size: ${e}`);
+        const newRatio = ratio + (e.deltaY > 0 ? -RESIZE_SPEED : RESIZE_SPEED);
+        debug(`[PinPage] ratio: ${ratio} newRatio: ${newRatio}`);
+        if (newRatio < MIN_RATIO) {
+            setRatio(MIN_RATIO);
+            return;
         }
+
+        if (newRatio > MAX_RATIO) {
+            setRatio(MAX_RATIO);
+            return;
+        }
+
+        setRatio(newRatio);
     };
+
+    useEffect(() => {
+        const resize = async () => {
+            if (rawWidth.current === 0 || rawHeight.current === 0) {
+                return;
+            }
+
+            const newWidth = Math.round(rawWidth.current * ratio);
+            const newHeight = Math.round(rawHeight.current * ratio);
+            debug(`[PinPage] new width: ${newWidth}, new height: ${newHeight}`);
+
+            getCurrentWindow().setSize(new PhysicalSize(newWidth, newHeight));
+        };
+        resize();
+    }, [ratio]);
 
     useEffect(() => {
         let timeout: ReturnType<typeof setTimeout>;
@@ -81,17 +102,24 @@ export default function PinPage() {
     }, []);
 
     return (
-        <div className="left-0 top-0 w-screen h-screen bg-transparnent overflow-hidden">
+        <div className="left-0 top-0 w-screen h-screen bg-transparnent overflow-hidden border-none">
             {pinID > 0 && (
-                <img className="top-0 left-0 fixed w-full h-full" src={convertFileSrc(`pin?id=${pinID}`, "ksnip")} />
+                <img
+                    className="top-0 left-0 fixed w-full h-full object-fill"
+                    src={convertFileSrc(`pin?id=${pinID}`, "ksnip")}
+                />
             )}
             <div
-                className="flex fixed top-0 left-0 w-full h-full z-1 items-center justify-center"
+                className="flex fixed bg-transparent top-0 left-0 w-full h-full z-1 items-center justify-center"
                 data-tauri-drag-region
                 onDoubleClick={() => getCurrentWindow().close()}
                 onWheel={onWheel}
             >
-                {isDragging && <span>hello world</span>}
+                {isDragging && (
+                    <div className="flex items-center justify-center bg-muted p-4 rounded-md">
+                        <span>"double click" to close the pin</span>
+                    </div>
+                )}
             </div>
         </div>
     );
