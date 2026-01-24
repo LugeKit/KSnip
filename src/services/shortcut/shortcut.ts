@@ -237,15 +237,19 @@ export async function registerWindowShortcut(id: string, f: (e: KeyboardEvent) =
     const handleKeyDown = (e: KeyboardEvent) => {
         const keys = shortcut.keys;
         for (const key of keys) {
-            if (key === "Ctrl" && e.ctrlKey) {
+            if (key === "CTRL" && e.ctrlKey) {
                 continue;
             }
 
-            if (key === "Alt" && e.altKey) {
+            if (key === "SHIFT" && e.shiftKey) {
                 continue;
             }
 
-            if ((key === "Cmd" || key === "Win") && e.metaKey) {
+            if (key === "ALT" && e.altKey) {
+                continue;
+            }
+
+            if ((key === "CMD" || key === "WIN") && e.metaKey) {
                 continue;
             }
             if (key === e.key.toUpperCase()) {
