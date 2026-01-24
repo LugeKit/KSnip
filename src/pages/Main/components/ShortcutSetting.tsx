@@ -4,6 +4,15 @@ import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+    SHORTCUT_CREATE_PIN,
+    SHORTCUT_RECORD_REGION,
+    SHORTCUT_RECORD_REGION_CONFIRM,
+    SHORTCUT_SCREENSHOT_CONFIRM,
+    SHORTCUT_SCREENSHOT_EXIT,
+    SHORTCUT_TAKE_SCREENSHOT,
+    SHORTCUT_TEST,
+} from "@/services/shortcut/const";
 import { getAllShortcuts, getShortcut, updateShortcutEnabled, updateShortcutKey } from "@/services/shortcut/shortcut";
 import { error, warn } from "@tauri-apps/plugin-log";
 import { CheckIcon, X } from "lucide-react";
@@ -25,10 +34,18 @@ export default function ShortcutSetting() {
             {
                 page: "basic",
                 label: "全局热键",
+                shortcutIds: [SHORTCUT_TAKE_SCREENSHOT, SHORTCUT_TEST],
             },
             {
                 page: "screenshot",
                 label: "截图界面",
+                shortcutIds: [
+                    SHORTCUT_SCREENSHOT_EXIT,
+                    SHORTCUT_SCREENSHOT_CONFIRM,
+                    SHORTCUT_CREATE_PIN,
+                    SHORTCUT_RECORD_REGION,
+                    SHORTCUT_RECORD_REGION_CONFIRM,
+                ],
             },
         ];
     }, []);
@@ -38,18 +55,18 @@ export default function ShortcutSetting() {
     useEffect(() => {
         const loadShortcuts = async () => {
             const allShortcuts = await getAllShortcuts();
-            const shortcutsByPage = Object.values(allShortcuts).reduce(
-                (prev, cur) => {
-                    prev[cur.page] = [...(prev[cur.page] || []), cur];
-                    return prev;
-                },
-                {} as Record<string, ShortcutItem[]>,
-            );
+            const shortcutsByPage: Record<string, ShortcutItem[]> = {};
+
+            tabsData.forEach((tab) => {
+                const items = tab.shortcutIds.map((id) => allShortcuts[id]).filter((item) => item !== undefined);
+                shortcutsByPage[tab.page] = items;
+            });
+
             setShortcutItems(shortcutsByPage);
         };
 
         loadShortcuts();
-    }, []);
+    }, [tabsData]);
 
     const onShortcutChanged = (page: string) => async (id: string) => {
         try {
