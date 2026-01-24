@@ -80,7 +80,10 @@ export default function CropToolbar({ cropArea, monitor, onConfirmSuccess, onCan
 
     const recordRegion = async () => {
         debug("[CropToolbar] record region is called");
-        setRecording(true);
+        if (isRecording || !monitor.current) {
+            return;
+        }
+
         try {
             const confirmShortcut = await getShortcut(SHORTCUT_RECORD_REGION_CONFIRM);
             if (!confirmShortcut) {
@@ -91,17 +94,25 @@ export default function CropToolbar({ cropArea, monitor, onConfirmSuccess, onCan
             const window = getCurrentWindow();
             registerGlobalShortcut(confirmShortcut.keys, async () => {
                 try {
-                    await window.setFocusable(true);
-                    await window.setIgnoreCursorEvents(false);
+                    await Promise.all([
+                        invoke("record_stop"),
+                        window.setFocusable(true),
+                        window.setIgnoreCursorEvents(false),
+                        unregisterGlobalShortcut(confirmShortcut.keys),
+                    ]);
                 } catch (e) {
                     error(`[CropToolbar] failed to complete take gif: ${e}`);
                 } finally {
-                    unregisterGlobalShortcut(confirmShortcut.keys);
                     setRecording(false);
+                    onConfirmSuccess();
                 }
             });
             await window.setFocusable(false);
             await window.setIgnoreCursorEvents(true);
+            setRecording(true);
+            await invoke("record_start", {
+                param: newLogicalParam(cropArea, monitor.current),
+            });
         } catch (e) {
             error(`[CropToolbar] failed to take gif: ${e}`);
         }

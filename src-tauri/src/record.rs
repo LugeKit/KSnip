@@ -4,7 +4,7 @@ use crate::{
 };
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::{AppHandle, State};
-use tauri_plugin_log::log::info;
+use tauri_plugin_log::log::{info, warn};
 use tauri_plugin_shell::ShellExt;
 
 #[tauri::command]
@@ -13,11 +13,16 @@ pub fn record_start(
     param: LogicalParam,
     state: State<'_, AppState>,
 ) -> Result<String, String> {
-    info!("[record_start] called successfully, param: {:?}", param);
+    info!("[record_start] Called successfully, param: {:?}", param);
     param.validate()?;
 
+    // Stop existing recording if any
+    if let Err(e) = stop_recording_internal(&state) {
+        warn!("[record_start] Failed to stop existing recording: {}", e);
+    }
+
     let monitor = util::find_monitor(param.screen_x, param.screen_y)
-        .ok_or(String::from("monitor not found"))?;
+        .ok_or(String::from("Monitor not found"))?;
     let physical_param = PhysicalParam::new(&monitor, &param);
 
     // Generate filename
@@ -65,7 +70,7 @@ pub fn record_start(
     let mut process_guard = state.recording_process.lock().map_err(|e| e.to_string())?;
     *process_guard = Some(child);
 
-    info!("[record_start] recording started, file: {}", file_path_str);
+    info!("[record_start] Recording started, file: {}", file_path_str);
 
     Ok(file_path_str)
 }
@@ -73,13 +78,21 @@ pub fn record_start(
 #[tauri::command]
 pub fn record_stop(state: State<'_, AppState>) -> Result<(), String> {
     info!("[record_stop] called");
+    if stop_recording_internal(&state)? {
+        Ok(())
+    } else {
+        Err(String::from("No recording in progress"))
+    }
+}
+
+fn stop_recording_internal(state: &AppState) -> Result<bool, String> {
     let mut process_guard = state.recording_process.lock().map_err(|e| e.to_string())?;
     if let Some(mut child) = process_guard.take() {
         // Send 'q' to stop recording gracefully
         child.write(b"q").map_err(|e| e.to_string())?;
-        info!("[record_stop] sent 'q' to ffmpeg process");
+        info!("[stop_recording_internal] sent 'q' to ffmpeg process");
+        Ok(true)
     } else {
-        return Err(String::from("No recording in progress"));
+        Ok(false)
     }
-    Ok(())
 }

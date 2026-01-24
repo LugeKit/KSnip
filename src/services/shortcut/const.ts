@@ -23,7 +23,7 @@ export const DEFAULT_SHORTCUT_SETTING: ShortcutSetting = {
         [SHORTCUT_TEST]: new Shortcut(SHORTCUT_TEST, ["Alt", "T"], false, "basic", "测试", test),
         [SHORTCUT_SCREENSHOT_EXIT]: new Shortcut(
             SHORTCUT_SCREENSHOT_EXIT,
-            ["Escape"],
+            ["ESCAPE"],
             true,
             "screenshot",
             "退出截图",
@@ -31,7 +31,7 @@ export const DEFAULT_SHORTCUT_SETTING: ShortcutSetting = {
         ),
         [SHORTCUT_SCREENSHOT_CONFIRM]: new Shortcut(
             SHORTCUT_SCREENSHOT_CONFIRM,
-            ["Enter"],
+            ["ENTER"],
             true,
             "screenshot",
             "确认截图",

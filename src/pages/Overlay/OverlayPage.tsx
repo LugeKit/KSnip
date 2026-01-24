@@ -31,19 +31,24 @@ export default function OverlayPage() {
     // register global keydown event listener to close overlay page
     // 1. no crop area: press "Esc" to close the overlay page
     // 2. crop area: press "Esc" to cancel the crop
-    useEffect(() => {
-        const clear = registerWindowShortcut(SHORTCUT_SCREENSHOT_EXIT, () => {
-            if (mouseMoveType !== MouseMoveType.NotPressed || cropArea) {
-                cancelCrop();
-                return;
-            }
-            closeOverlayPage();
-        });
+    const handleExit = () => {
+        if (cropArea) {
+            cancelCrop();
+            return;
+        }
 
+        closeOverlayPage();
+    };
+
+    useEffect(() => {
+        const registerShortcut = async () => {
+            return await registerWindowShortcut(SHORTCUT_SCREENSHOT_EXIT, handleExit);
+        };
+        const clear = registerShortcut();
         return () => {
             clear.then((clear) => clear());
         };
-    }, [mouseMoveType, cropArea]);
+    }, [cropArea]);
 
     return (
         <div
