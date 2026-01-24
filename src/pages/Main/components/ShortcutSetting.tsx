@@ -1,10 +1,12 @@
+import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getAllShortcuts, updateShortcutEnabled } from "@/services/shortcut/shortcut";
-import { debug, warn } from "@tauri-apps/plugin-log";
+import { getAllShortcuts, getShortcut, updateShortcutEnabled } from "@/services/shortcut/shortcut";
+import { warn } from "@tauri-apps/plugin-log";
+import { CheckIcon, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 type ShortcutState = {
@@ -49,15 +51,21 @@ export default function ShortcutSetting() {
         loadShortcuts();
     }, []);
 
-    const onChecked = (page: string) => async (id: string, enabled: boolean) => {
+    const onShortcutChanged = (page: string) => async (id: string) => {
         try {
-            await updateShortcutEnabled(id, enabled);
+            const shortcut = await getShortcut(id);
+            if (!shortcut) {
+                return;
+            }
+
             setShortcutItems((prev) => ({
                 ...prev,
-                [page]: prev[page].map((item) => (item.id === id ? { ...item, enabled } : item)),
+                [page]: prev[page].map((item) =>
+                    item.id === id ? { ...item, enabled: shortcut.enabled, keys: shortcut.keys } : item,
+                ),
             }));
         } catch (e) {
-            warn(`[ShortcutSetting] failed to update shortcut to enabled[${enabled}]: ${id}, error: ${e}`);
+            warn(`[ShortcutSetting] failed to get shortcut: ${id}, error: ${e}`);
         }
     };
 
@@ -72,7 +80,10 @@ export default function ShortcutSetting() {
                             <div className="[&_tr]:hover:bg-transparent bg-muted rounded-md pl-5 pr-5">
                                 <Table>
                                     <TabsContentHeader />
-                                    <TabsContentBody shortcuts={shortcuts} onChecked={onChecked(page)} />
+                                    <TabsContentBody
+                                        shortcuts={shortcuts}
+                                        onShortcutChanged={onShortcutChanged(page)}
+                                    />
                                 </Table>
                             </div>
                         </TabsContent>
@@ -108,11 +119,20 @@ function TabsContentHeader() {
 
 function TabsContentBody({
     shortcuts,
-    onChecked,
+    onShortcutChanged,
 }: {
     shortcuts: ShortcutItem[];
-    onChecked: (id: string, enabled: boolean) => void;
+    onShortcutChanged: (id: string) => void;
 }) {
+    const onChecked = async (id: string, enabled: boolean) => {
+        try {
+            await updateShortcutEnabled(id, enabled);
+            onShortcutChanged(id);
+        } catch (e) {
+            warn(`[ShortcutSetting] failed to update shortcut to enabled[${enabled}]: ${id}, error: ${e}`);
+        }
+    };
+
     return (
         <TableBody>
             {shortcuts.map((shortcut) => (
@@ -121,7 +141,7 @@ function TabsContentBody({
                     <TableCell>{shortcut.name}</TableCell>
                     {/* 快捷键列 */}
                     <TableCell className="text-center">
-                        <ShortcutCell shortcut={shortcut} />
+                        <ShortcutCell shortcut={shortcut} onShortcutChanged={onShortcutChanged} />
                     </TableCell>
                     {/* 启用列 */}
                     <TableCell className="text-right">
@@ -137,8 +157,15 @@ function TabsContentBody({
     );
 }
 
-function ShortcutCell({ shortcut }: { shortcut: ShortcutItem }) {
+function ShortcutCell({
+    shortcut,
+    onShortcutChanged,
+}: {
+    shortcut: ShortcutItem;
+    onShortcutChanged: (id: string) => void;
+}) {
     const [keys, setKeys] = useState<string[]>([]);
+    const [open, setOpen] = useState<boolean>(false);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -171,19 +198,22 @@ function ShortcutCell({ shortcut }: { shortcut: ShortcutItem }) {
         };
     }, []);
 
-    return (
-        <Popover
-            onOpenChange={(open) => {
-                if (open) {
-                    return;
-                }
+    const onConfirm = () => {
+        onShortcutChanged(shortcut.id);
+        setOpen(false);
+    };
 
-                setTimeout(() => {
-                    setKeys([]);
-                }, 100);
-            }}
-        >
-            <PopoverTrigger asChild>
+    useEffect(() => {
+        if (!open) {
+            setTimeout(() => {
+                setKeys([]);
+            }, 100);
+        }
+    }, [open]);
+
+    return (
+        <Popover open={open}>
+            <PopoverTrigger asChild onClick={() => setOpen(true)}>
                 <KbdGroup className="hover:bg-muted-foreground p-1 rounded-md">
                     {shortcut.keys.map((key) => (
                         <Kbd className="bg-white" key={shortcut.id + key}>
@@ -192,17 +222,33 @@ function ShortcutCell({ shortcut }: { shortcut: ShortcutItem }) {
                     ))}
                 </KbdGroup>
             </PopoverTrigger>
-            <PopoverContent className="w-auto min-w-[10rem] p-4">
+            <PopoverContent className="w-auto min-w-40 h-25 p-4" onFocusOutside={() => setOpen(false)}>
                 <div className="flex items-center justify-center w-full h-full">
-                    {keys.length === 0 && <span className="text-muted-foreground">请输入快捷键...</span>}
+                    {keys.length === 0 && <span className="text-muted-foreground text-sm">请输入快捷键...</span>}
                     {keys.length > 0 && (
-                        <KbdGroup>
-                            {keys.map((key) => (
-                                <Kbd className="text-l bg-muted p-4 min-w-12 text-center font-medium" key={key}>
-                                    {key.toUpperCase()}
-                                </Kbd>
-                            ))}
-                        </KbdGroup>
+                        <div className="w-full h-full flex flex-col items-center justify-center">
+                            <KbdGroup>
+                                {keys.map((key) => (
+                                    <Kbd className="text-l bg-muted p-4 min-w-12 text-center font-medium" key={key}>
+                                        {key.toUpperCase()}
+                                    </Kbd>
+                                ))}
+                            </KbdGroup>
+                            <div className="mt-3 flex items-center justify-center gap-2">
+                                <Badge
+                                    variant="secondary"
+                                    className="hover:bg-muted-foreground"
+                                    onClick={() => {
+                                        setOpen(false);
+                                    }}
+                                >
+                                    <X />
+                                </Badge>
+                                <Badge variant="default" className="hover:bg-muted-foreground" onClick={onConfirm}>
+                                    <CheckIcon />
+                                </Badge>
+                            </div>
+                        </div>
                     )}
                 </div>
             </PopoverContent>
