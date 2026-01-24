@@ -16,6 +16,7 @@ pub fn run() {
                 .level(tauri_plugin_log::log::LevelFilter::Debug)
                 .build(),
         )
+        .plugin(tauri_plugin_macos_permissions::init())
         .invoke_handler(tauri::generate_handler![
             screenshot::screenshot_take,
             screenshot::pin_create,
