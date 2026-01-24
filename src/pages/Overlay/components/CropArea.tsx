@@ -1,7 +1,7 @@
 import React from "react";
 import { Rectangle } from "../types";
 
-const CROP_AREA_STROKE_WIDTH = 2;
+const CROP_AREA_STROKE_WIDTH = 1;
 
 interface CropAreaProps {
     cropArea: Rectangle | null;

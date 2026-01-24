@@ -51,8 +51,8 @@ impl PhysicalParam {
         Self {
             left: (param.left as f32 * scale_factor).round() as u32,
             top: (param.top as f32 * scale_factor).round() as u32,
-            width: (param.width as f32 * scale_factor).round() as u32,
-            height: (param.height as f32 * scale_factor).round() as u32,
+            width: (param.width as f32 * scale_factor).trunc() as u32,
+            height: (param.height as f32 * scale_factor).trunc() as u32,
         }
     }
 }
