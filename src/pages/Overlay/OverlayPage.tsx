@@ -1,26 +1,14 @@
 import { SHORTCUT_SCREENSHOT_EXIT } from "@/services/shortcut/const";
-import { registerWindowShortcut } from "@/services/shortcut/shortcut";
-import { currentMonitor, getCurrentWindow, Monitor } from "@tauri-apps/api/window";
-import { error } from "@tauri-apps/plugin-log";
-import { useCallback, useEffect, useRef } from "react";
+import { getCurrentWindow } from "@tauri-apps/api/window";
+import { useCallback } from "react";
 import CropArea from "./components/CropArea";
 import CropToolbar from "./components/CropToolbar";
 import { useCrop } from "./hooks/crop";
+import { useWindowShortcut } from "./hooks/shortcut";
 import { MouseMoveType } from "./types";
 
 export default function OverlayPage() {
     const { cropArea, mouseMoveType, handleMouseDown, handleMouseMove, handleMouseUp, cancelCrop } = useCrop();
-
-    const monitor = useRef<Monitor | null>(null);
-    useEffect(() => {
-        currentMonitor()
-            .then((m) => {
-                monitor.current = m;
-            })
-            .catch((e) => {
-                error(`[OverlayPage] currentMonitor error: ${e}`);
-            });
-    }, []);
 
     // closeOverlayPage closes the overlay page
     const closeOverlayPage = useCallback(() => {
@@ -28,15 +16,7 @@ export default function OverlayPage() {
         appWindow.close();
     }, []);
 
-    useEffect(() => {
-        const registerShortcut = async () => {
-            return await registerWindowShortcut(SHORTCUT_SCREENSHOT_EXIT, closeOverlayPage);
-        };
-        const clear = registerShortcut();
-        return () => {
-            clear.then((clear) => clear());
-        };
-    }, [cropArea]);
+    useWindowShortcut(SHORTCUT_SCREENSHOT_EXIT, closeOverlayPage);
 
     return (
         <div
@@ -56,12 +36,7 @@ export default function OverlayPage() {
                             transform: "translateX(-100%)",
                         }}
                     >
-                        <CropToolbar
-                            cropArea={cropArea}
-                            monitor={monitor}
-                            onConfirmSuccess={closeOverlayPage}
-                            onCancel={cancelCrop}
-                        />
+                        <CropToolbar cropArea={cropArea} onConfirmSuccess={closeOverlayPage} onCancel={cancelCrop} />
                     </div>
                 </>
             )}

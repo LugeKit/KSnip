@@ -7,18 +7,18 @@ import {
     SHORTCUT_RECORD_REGION_CONFIRM,
     SHORTCUT_SCREENSHOT_CONFIRM,
 } from "@/services/shortcut/const";
-import { getShortcut, registerWindowShortcut } from "@/services/shortcut/shortcut";
+import { getShortcut } from "@/services/shortcut/shortcut";
 import { invoke } from "@tauri-apps/api/core";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { getCurrentWindow, Monitor } from "@tauri-apps/api/window";
-import { debug, error, info } from "@tauri-apps/plugin-log";
+import { currentMonitor, getCurrentWindow, Monitor } from "@tauri-apps/api/window";
+import { error, info } from "@tauri-apps/plugin-log";
 import { CheckIcon, Disc, PinIcon, X } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useWindowShortcut } from "../hooks/shortcut";
 import { Rectangle } from "../types";
 
 interface CropToolbarProps {
     cropArea: Rectangle;
-    monitor: React.RefObject<Monitor | null>;
     onConfirmSuccess: () => void;
     onCancel: () => void;
 }
@@ -43,29 +43,33 @@ function newLogicalParam(rect: Rectangle, monitor: Monitor): LogicalParam {
     };
 }
 
-export default function CropToolbar({ cropArea, monitor, onConfirmSuccess, onCancel }: CropToolbarProps) {
+export default function CropToolbar({ cropArea, onConfirmSuccess, onCancel }: CropToolbarProps) {
     const [isRecording, setRecording] = useState(false);
 
-    const takeScreenshot = () => {
-        if (!monitor.current) {
-            error(`[CropToolbar] monitor.current is null`);
+    const takeScreenshot = async () => {
+        const monitor = await currentMonitor();
+        if (!monitor) {
+            error(`[CropToolbar] failed to get current monitor`);
             return;
         }
         onConfirmSuccess();
         invoke("screenshot_take", {
-            param: newLogicalParam(cropArea, monitor.current),
+            param: newLogicalParam(cropArea, monitor),
         }).catch((e) => {
             error(`[CropToolbar] failed to call screenshots_take: ${e}`);
         });
     };
 
     const createPin = async () => {
-        if (!monitor.current) {
+        const monitor = await currentMonitor();
+
+        if (!monitor) {
             error(`[CropToolbar] monitor.current is null`);
             return;
         }
+
         try {
-            const param = newLogicalParam(cropArea, monitor.current);
+            const param = newLogicalParam(cropArea, monitor);
             const pin_id: number = await invoke("pin_create", {
                 param,
             });
@@ -77,8 +81,9 @@ export default function CropToolbar({ cropArea, monitor, onConfirmSuccess, onCan
     };
 
     const recordRegion = async () => {
-        debug("[CropToolbar] record region is called");
-        if (isRecording || !monitor.current) {
+        const monitor = await currentMonitor();
+
+        if (isRecording || !monitor) {
             return;
         }
 
@@ -109,7 +114,7 @@ export default function CropToolbar({ cropArea, monitor, onConfirmSuccess, onCan
             await window.setIgnoreCursorEvents(true);
             setRecording(true);
             await invoke("record_start", {
-                param: newLogicalParam(cropArea, monitor.current),
+                param: newLogicalParam(cropArea, monitor),
             });
         } catch (e) {
             error(`[CropToolbar] failed to take gif: ${e}`);
@@ -140,18 +145,6 @@ export default function CropToolbar({ cropArea, monitor, onConfirmSuccess, onCan
             </CommonButton>
         </ButtonGroup>
     );
-}
-
-function useWindowShortcut(id: string, callback: (e: KeyboardEvent) => void) {
-    useEffect(() => {
-        const registerShortcut = async () => {
-            return await registerWindowShortcut(id, callback);
-        };
-        const clear = registerShortcut();
-        return () => {
-            clear.then((clear) => clear());
-        };
-    }, [id, callback]);
 }
 
 function CommonButton(props: React.ComponentProps<typeof Button>) {
