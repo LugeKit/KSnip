@@ -11,7 +11,6 @@ export interface Rectangle {
 }
 
 export enum MouseMoveType {
-    NotPressed,
     Cropping,
     Dragging,
     Resizing,

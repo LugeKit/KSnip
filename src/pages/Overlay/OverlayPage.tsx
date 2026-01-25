@@ -3,22 +3,15 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useCallback, useEffect } from "react";
 import CropArea from "./components/CropArea";
 import CropToolbar from "./components/CropToolbar";
-import { useCrop } from "./hooks/crop";
+import { useCrop, useMouseEvent } from "./hooks/crop";
 import { useWindowShortcut } from "./hooks/shortcut";
 import { MouseMoveType } from "./types";
 
 export default function OverlayPage() {
-    const {
-        cropArea,
-        cancelCrop,
-        resizeDirection,
-        mousePosition,
-        startPosition,
-        mouseMoveType,
-        handleMouseDown,
-        handleMouseMove,
-        handleMouseUp,
-    } = useCrop();
+    const { isPressing, pressPosition, mousePosition, handleMouseDown, handleMouseUp, handleMouseMove } =
+        useMouseEvent();
+
+    const { cropArea, cancelCrop, resizeDirection, mouseMoveType } = useCrop(isPressing, mousePosition, pressPosition);
 
     const closeOverlayPage = useCallback(() => {
         const appWindow = getCurrentWindow();
@@ -58,7 +51,7 @@ export default function OverlayPage() {
                 <span className="text-white">{`Mouse position: ${mousePosition?.x ?? 0}, ${mousePosition?.y ?? 0}`}</span>
                 <span className="text-white">{`Crop area: left: ${cropArea?.left ?? 0}, top: ${cropArea?.top ?? 0}, width: ${cropArea?.width ?? 0}, height: ${cropArea?.height ?? 0}`}</span>
             </div>
-            {cropArea && startPosition === null && (
+            {cropArea && !isPressing && (
                 <>
                     <div
                         className="absolute"

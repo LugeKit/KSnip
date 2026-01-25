@@ -1,6 +1,5 @@
 import { currentMonitor } from "@tauri-apps/api/window";
-import { debug } from "@tauri-apps/plugin-log";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { MouseMoveType, Point, Rectangle, ResizeArea } from "../types";
 
 function isInRectangle(point: Point | null, rectangle: Rectangle | null) {
@@ -82,33 +81,63 @@ function closeToEdge(point: Point | null, rectangle: Rectangle | null) {
     return null;
 }
 
-export function useCrop() {
-    const [startPosition, setStartPosition] = useState<Point | null>(null);
-    const [cropArea, setCropArea] = useState<Rectangle | null>(null);
-    const [resizeDirection, setResizeDirection] = useState<ResizeArea | null>(null);
-    const [mouseMoveType, setMouseMoveType] = useState<MouseMoveType>(MouseMoveType.NotPressed);
+export function useMouseEvent() {
+    const [isPressing, setIsPressing] = useState(false);
+    const [pressPosition, setPressPosition] = useState<Point | null>(null);
     const [mousePosition, setMousePosition] = useState<Point | null>(null);
-    const startCropArea = useRef<Rectangle | null>(null);
 
     const handleMouseDown = (e: React.MouseEvent) => {
-        debug(`[useCrop] handleMouseDown: ${e.clientX}, ${e.clientY}`);
-        setStartPosition({ x: e.clientX, y: e.clientY });
-        startCropArea.current = cropArea;
+        setIsPressing(true);
+        setPressPosition({ x: e.clientX, y: e.clientY });
     };
 
-    const handleMouseMove = async (e: React.MouseEvent) => {
-        const position = { x: e.clientX, y: e.clientY };
-        setMousePosition(position);
+    const handleMouseMove = (e: React.MouseEvent) => {
+        setMousePosition({ x: e.clientX, y: e.clientY });
+    };
 
-        if (!startPosition) {
-            const resizeDirection = closeToEdge(position, cropArea);
+    const handleMouseUp = (e: React.MouseEvent) => {
+        setPressPosition(null);
+        setIsPressing(false);
+    };
+
+    return {
+        isPressing,
+        pressPosition,
+        mousePosition,
+        handleMouseDown,
+        handleMouseMove,
+        handleMouseUp,
+    };
+}
+
+export function useCrop(isPressing: boolean, mousePosition: Point | null, pressPosition: Point | null) {
+    const [cropArea, setCropArea] = useState<Rectangle | null>(null);
+    const [resizeDirection, setResizeDirection] = useState<ResizeArea | null>(null);
+    const [mouseMoveType, setMouseMoveType] = useState<MouseMoveType>(MouseMoveType.Cropping);
+    const startCropArea = useRef<Rectangle | null>(null);
+
+    const setCropAreaByPhysicalTruncate = async (rectangle: Rectangle) => {
+        const truncatedCropArea = await physicalTruncate(rectangle);
+        setCropArea(truncatedCropArea);
+    };
+
+    useEffect(() => {
+        if (isPressing) {
+            startCropArea.current = cropArea;
+        } else {
+        }
+    }, [isPressing]);
+
+    useEffect(() => {
+        if (!pressPosition) {
+            const resizeDirection = closeToEdge(mousePosition, cropArea);
             if (resizeDirection) {
                 setMouseMoveType(MouseMoveType.Resizing);
                 setResizeDirection(resizeDirection);
                 return;
             }
 
-            if (isInRectangle(position, cropArea)) {
+            if (isInRectangle(mousePosition, cropArea)) {
                 setMouseMoveType(MouseMoveType.Dragging);
                 return;
             }
@@ -117,23 +146,25 @@ export function useCrop() {
             return;
         }
 
+        if (!mousePosition) {
+            return;
+        }
+
         switch (mouseMoveType) {
             case MouseMoveType.Cropping: {
-                const x = e.clientX;
-                const y = e.clientY;
-                const width = Math.abs(startPosition.x - x);
-                const height = Math.abs(startPosition.y - y);
+                const width = Math.abs(pressPosition.x - mousePosition.x);
+                const height = Math.abs(pressPosition.y - mousePosition.y);
                 if (width <= 0 || height <= 0) {
                     setCropArea(null);
                     return;
                 }
-                const truncatedCropArea = await physicalTruncate({
-                    left: Math.min(startPosition.x, x),
-                    top: Math.min(startPosition.y, y),
+
+                setCropAreaByPhysicalTruncate({
+                    left: Math.min(pressPosition.x, mousePosition.x),
+                    top: Math.min(pressPosition.y, mousePosition.y),
                     width,
                     height,
                 });
-                setCropArea(truncatedCropArea);
                 break;
             }
             case MouseMoveType.Dragging: {
@@ -141,41 +172,28 @@ export function useCrop() {
                     return;
                 }
 
-                const truncatedCropArea = await physicalTruncate({
-                    left: startCropArea.current.left + e.clientX - startPosition.x,
-                    top: startCropArea.current.top + e.clientY - startPosition.y,
+                setCropAreaByPhysicalTruncate({
+                    left: startCropArea.current.left + mousePosition.x - pressPosition.x,
+                    top: startCropArea.current.top + mousePosition.y - pressPosition.y,
                     width: cropArea.width,
                     height: cropArea.height,
                 });
-                setCropArea(truncatedCropArea);
                 break;
             }
             default:
                 return;
         }
-    };
+    }, [mousePosition]);
 
-    const handleMouseUp = (_: React.MouseEvent) => {
-        setMouseMoveType(MouseMoveType.NotPressed);
-        setStartPosition(null);
-    };
-
-    const cancelCrop = useCallback(() => {
+    const cancelCrop = () => {
         setCropArea(null);
-        setMouseMoveType(MouseMoveType.NotPressed);
-        setStartPosition(null);
-    }, []);
+    };
 
     return {
         cropArea,
         cancelCrop,
         resizeDirection,
-        mousePosition,
-        startPosition,
         mouseMoveType,
-        handleMouseDown,
-        handleMouseMove,
-        handleMouseUp,
     };
 }
 
