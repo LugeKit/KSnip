@@ -1,4 +1,7 @@
-use std::{collections::HashMap, sync::{Mutex, RwLock}};
+use std::{
+    collections::HashMap,
+    sync::{Mutex, RwLock},
+};
 use tauri_plugin_shell::process::CommandChild;
 
 use xcap::Monitor;
@@ -20,17 +23,17 @@ impl Default for AppState {
 #[derive(serde::Deserialize, serde::Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct LogicalParam {
-    pub left: i32,
-    pub top: i32,
-    pub width: i32,
-    pub height: i32,
+    pub left: f64,
+    pub top: f64,
+    pub width: f64,
+    pub height: f64,
     pub screen_x: i32,
     pub screen_y: i32,
 }
 
 impl LogicalParam {
     pub fn validate(&self) -> Result<(), String> {
-        if self.left < 0 || self.top < 0 || self.width <= 0 || self.height <= 0 {
+        if self.left < 0.0 || self.top < 0.0 || self.width <= 0.0 || self.height <= 0.0 {
             return Err(String::from("invalid param"));
         }
         Ok(())
@@ -49,10 +52,10 @@ impl PhysicalParam {
     pub fn new(monitor: &Monitor, param: &LogicalParam) -> Self {
         let scale_factor = monitor.scale_factor().unwrap_or(1.0);
         Self {
-            left: (param.left as f32 * scale_factor).round() as u32,
-            top: (param.top as f32 * scale_factor).round() as u32,
-            width: (param.width as f32 * scale_factor).trunc() as u32,
-            height: (param.height as f32 * scale_factor).trunc() as u32,
+            left: (param.left * (scale_factor as f64)).round() as u32,
+            top: (param.top * (scale_factor as f64)).round() as u32,
+            width: (param.width * (scale_factor as f64)).round() as u32,
+            height: (param.height * (scale_factor as f64)).round() as u32,
         }
     }
 }

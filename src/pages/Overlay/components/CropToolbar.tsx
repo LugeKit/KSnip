@@ -11,7 +11,7 @@ import { getShortcut } from "@/services/shortcut/shortcut";
 import { invoke } from "@tauri-apps/api/core";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { currentMonitor, getCurrentWindow, Monitor } from "@tauri-apps/api/window";
-import { error, info } from "@tauri-apps/plugin-log";
+import { debug, error, info } from "@tauri-apps/plugin-log";
 import { CheckIcon, Disc, PinIcon, X } from "lucide-react";
 import React, { useState } from "react";
 import { useWindowShortcut } from "../hooks/shortcut";
@@ -33,6 +33,7 @@ interface LogicalParam {
 }
 
 function newLogicalParam(rect: Rectangle, monitor: Monitor): LogicalParam {
+    debug(`[newLogicalParam] rect: ${JSON.stringify(rect)}, monitor: ${JSON.stringify(monitor)}`);
     return {
         left: rect.left,
         top: rect.top,

@@ -1,3 +1,4 @@
+import { currentMonitor } from "@tauri-apps/api/window";
 import { debug } from "@tauri-apps/plugin-log";
 import React, { useCallback, useState } from "react";
 import { MouseMoveType, Point, Rectangle } from "../types";
@@ -18,9 +19,7 @@ function isInRectangle(point: Point | null, rectangle: Rectangle | null) {
 export function useCrop() {
     const [startPosition, setStartPosition] = useState<Point | null>(null);
     const [cropArea, setCropArea] = useState<Rectangle | null>(null);
-    const [mouseMoveType, setMouseMoveType] = useState<MouseMoveType>(
-        MouseMoveType.NotPressed,
-    );
+    const [mouseMoveType, setMouseMoveType] = useState<MouseMoveType>(MouseMoveType.NotPressed);
 
     const handleMouseDown = (e: React.MouseEvent) => {
         debug(`[useCrop] handleMouseDown: ${e.clientX}, ${e.clientY}`);
@@ -42,7 +41,7 @@ export function useCrop() {
         setStartPosition(downPoint);
     };
 
-    const handleMouseMove = (e: React.MouseEvent) => {
+    const handleMouseMove = async (e: React.MouseEvent) => {
         if (!startPosition) {
             return;
         }
@@ -57,12 +56,13 @@ export function useCrop() {
                     setCropArea(null);
                     return;
                 }
-                setCropArea({
+                const truncatedCropArea = await physicalTruncate({
                     left: Math.min(startPosition.x, x),
                     top: Math.min(startPosition.y, y),
                     width,
                     height,
                 });
+                setCropArea(truncatedCropArea);
                 break;
             }
             case MouseMoveType.Dragging: {
@@ -72,12 +72,13 @@ export function useCrop() {
 
                 const newLeft = e.clientX - startPosition.x;
                 const newTop = e.clientY - startPosition.y;
-                setCropArea({
+                const truncatedCropArea = await physicalTruncate({
                     left: newLeft,
                     top: newTop,
                     width: cropArea.width,
                     height: cropArea.height,
                 });
+                setCropArea(truncatedCropArea);
                 break;
             }
             default:
@@ -102,5 +103,24 @@ export function useCrop() {
         handleMouseMove,
         handleMouseUp,
         cancelCrop,
+    };
+}
+
+async function physicalTruncate(cropArea: { left: number; top: number; width: number; height: number }) {
+    const monitor = await currentMonitor();
+    if (!monitor) {
+        return cropArea;
+    }
+
+    const scale = monitor.scaleFactor;
+    if (scale <= 0) {
+        return cropArea;
+    }
+
+    return {
+        left: Math.round(cropArea.left * scale) / scale,
+        top: Math.round(cropArea.top * scale) / scale,
+        width: Math.round(cropArea.width * scale) / scale,
+        height: Math.round(cropArea.height * scale) / scale,
     };
 }

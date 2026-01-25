@@ -39,6 +39,13 @@ pub fn pin_create(param: LogicalParam, state: tauri::State<'_, AppState>) -> Res
     let monitor = util::find_monitor(param.screen_x, param.screen_y)
         .ok_or(String::from("monitor not found"))?;
     let physical_param = PhysicalParam::new(&monitor, &param);
+
+    info!(
+        "[pin_create] monitor: {:?}, physical_param: {:?}",
+        monitor.name(),
+        physical_param
+    );
+
     let image = monitor
         .capture_region(
             physical_param.left,
