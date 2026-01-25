@@ -12,6 +12,7 @@ export default function OverlayPage() {
         cropArea,
         cancelCrop,
         resizeDirection,
+        mousePosition,
         startPosition,
         mouseMoveType,
         handleMouseDown,
@@ -47,6 +48,16 @@ export default function OverlayPage() {
             onMouseUp={handleMouseUp}
         >
             <CropArea cropArea={cropArea} />
+            <div
+                className="bg-black flex flex-col w-auto h-auto fixed"
+                style={{
+                    top: (mousePosition?.y ?? 0) + 10,
+                    left: (mousePosition?.x ?? 0) + 10,
+                }}
+            >
+                <span className="text-white">{`Mouse position: ${mousePosition?.x ?? 0}, ${mousePosition?.y ?? 0}`}</span>
+                <span className="text-white">{`Crop area: left: ${cropArea?.left ?? 0}, top: ${cropArea?.top ?? 0}, width: ${cropArea?.width ?? 0}, height: ${cropArea?.height ?? 0}`}</span>
+            </div>
             {cropArea && startPosition === null && (
                 <>
                     <div

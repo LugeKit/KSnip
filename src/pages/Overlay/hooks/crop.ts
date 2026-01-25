@@ -58,7 +58,7 @@ function closeToEdge(point: Point | null, rectangle: Rectangle | null) {
     if (
         point.x >= rectangle.left &&
         point.x <= rectangle.left + rectangle.width &&
-        Math.abs(point.y - rectangle.top + rectangle.height) <= EDGE_DISTANCE
+        Math.abs(point.y - rectangle.top - rectangle.height) <= EDGE_DISTANCE
     ) {
         return ResizeArea.Bottom;
     }
@@ -74,7 +74,7 @@ function closeToEdge(point: Point | null, rectangle: Rectangle | null) {
     if (
         point.y >= rectangle.top &&
         point.y <= rectangle.top + rectangle.height &&
-        Math.abs(point.x - rectangle.left + rectangle.width) <= EDGE_DISTANCE
+        Math.abs(point.x - rectangle.left - rectangle.width) <= EDGE_DISTANCE
     ) {
         return ResizeArea.Right;
     }
@@ -87,6 +87,7 @@ export function useCrop() {
     const [cropArea, setCropArea] = useState<Rectangle | null>(null);
     const [resizeDirection, setResizeDirection] = useState<ResizeArea | null>(null);
     const [mouseMoveType, setMouseMoveType] = useState<MouseMoveType>(MouseMoveType.NotPressed);
+    const [mousePosition, setMousePosition] = useState<Point | null>(null);
     const startCropArea = useRef<Rectangle | null>(null);
 
     const handleMouseDown = (e: React.MouseEvent) => {
@@ -96,9 +97,10 @@ export function useCrop() {
     };
 
     const handleMouseMove = async (e: React.MouseEvent) => {
-        if (!startPosition) {
-            const position = { x: e.clientX, y: e.clientY };
+        const position = { x: e.clientX, y: e.clientY };
+        setMousePosition(position);
 
+        if (!startPosition) {
             const resizeDirection = closeToEdge(position, cropArea);
             if (resizeDirection) {
                 setMouseMoveType(MouseMoveType.Resizing);
@@ -168,6 +170,7 @@ export function useCrop() {
         cropArea,
         cancelCrop,
         resizeDirection,
+        mousePosition,
         startPosition,
         mouseMoveType,
         handleMouseDown,
