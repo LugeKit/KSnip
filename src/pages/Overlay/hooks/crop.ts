@@ -1,6 +1,6 @@
 import { currentMonitor } from "@tauri-apps/api/window";
 import { debug } from "@tauri-apps/plugin-log";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { MouseMoveType, Point, Rectangle } from "../types";
 
 function isInRectangle(point: Point | null, rectangle: Rectangle | null) {
@@ -20,25 +20,23 @@ export function useCrop() {
     const [startPosition, setStartPosition] = useState<Point | null>(null);
     const [cropArea, setCropArea] = useState<Rectangle | null>(null);
     const [mouseMoveType, setMouseMoveType] = useState<MouseMoveType>(MouseMoveType.NotPressed);
+    const startCropArea = useRef<Rectangle | null>(null);
 
     const handleMouseDown = (e: React.MouseEvent) => {
         debug(`[useCrop] handleMouseDown: ${e.clientX}, ${e.clientY}`);
 
         const downPoint = { x: e.clientX, y: e.clientY };
+        setStartPosition(downPoint);
+        startCropArea.current = cropArea;
 
         // dragging the crop area
         if (cropArea && isInRectangle(downPoint, cropArea)) {
             setMouseMoveType(MouseMoveType.Dragging);
-            setStartPosition({
-                x: downPoint.x - cropArea.left,
-                y: downPoint.y - cropArea.top,
-            });
             return;
         }
 
         // start a new crop area
         setMouseMoveType(MouseMoveType.Cropping);
-        setStartPosition(downPoint);
     };
 
     const handleMouseMove = async (e: React.MouseEvent) => {
@@ -66,15 +64,13 @@ export function useCrop() {
                 break;
             }
             case MouseMoveType.Dragging: {
-                if (!cropArea) {
+                if (!cropArea || !startCropArea.current) {
                     return;
                 }
 
-                const newLeft = e.clientX - startPosition.x;
-                const newTop = e.clientY - startPosition.y;
                 const truncatedCropArea = await physicalTruncate({
-                    left: newLeft,
-                    top: newTop,
+                    left: startCropArea.current.left + e.clientX - startPosition.x,
+                    top: startCropArea.current.top + e.clientY - startPosition.y,
                     width: cropArea.width,
                     height: cropArea.height,
                 });
