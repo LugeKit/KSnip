@@ -24,23 +24,19 @@ export function useCrop() {
 
     const handleMouseDown = (e: React.MouseEvent) => {
         debug(`[useCrop] handleMouseDown: ${e.clientX}, ${e.clientY}`);
-
-        const downPoint = { x: e.clientX, y: e.clientY };
-        setStartPosition(downPoint);
+        setStartPosition({ x: e.clientX, y: e.clientY });
         startCropArea.current = cropArea;
-
-        // dragging the crop area
-        if (cropArea && isInRectangle(downPoint, cropArea)) {
-            setMouseMoveType(MouseMoveType.Dragging);
-            return;
-        }
-
-        // start a new crop area
-        setMouseMoveType(MouseMoveType.Cropping);
     };
 
     const handleMouseMove = async (e: React.MouseEvent) => {
         if (!startPosition) {
+            const position = { x: e.clientX, y: e.clientY };
+            if (isInRectangle(position, cropArea)) {
+                setMouseMoveType(MouseMoveType.Dragging);
+                return;
+            }
+
+            setMouseMoveType(MouseMoveType.Cropping);
             return;
         }
 
@@ -84,6 +80,7 @@ export function useCrop() {
 
     const handleMouseUp = (_: React.MouseEvent) => {
         setMouseMoveType(MouseMoveType.NotPressed);
+        setStartPosition(null);
     };
 
     const cancelCrop = useCallback(() => {
@@ -94,6 +91,7 @@ export function useCrop() {
 
     return {
         cropArea,
+        startPosition,
         mouseMoveType,
         handleMouseDown,
         handleMouseMove,

@@ -1,6 +1,6 @@
 import { SHORTCUT_SCREENSHOT_EXIT } from "@/services/shortcut/const";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import CropArea from "./components/CropArea";
 import CropToolbar from "./components/CropToolbar";
 import { useCrop } from "./hooks/crop";
@@ -8,15 +8,25 @@ import { useWindowShortcut } from "./hooks/shortcut";
 import { MouseMoveType } from "./types";
 
 export default function OverlayPage() {
-    const { cropArea, mouseMoveType, handleMouseDown, handleMouseMove, handleMouseUp, cancelCrop } = useCrop();
+    const { cropArea, startPosition, mouseMoveType, handleMouseDown, handleMouseMove, handleMouseUp, cancelCrop } =
+        useCrop();
 
-    // closeOverlayPage closes the overlay page
     const closeOverlayPage = useCallback(() => {
         const appWindow = getCurrentWindow();
         appWindow.close();
     }, []);
-
     useWindowShortcut(SHORTCUT_SCREENSHOT_EXIT, closeOverlayPage);
+
+    useEffect(() => {
+        switch (mouseMoveType) {
+            case MouseMoveType.Dragging:
+                document.body.style.cursor = "move";
+                break;
+            default:
+                document.body.style.cursor = "default";
+                break;
+        }
+    }, [mouseMoveType]);
 
     return (
         <div
@@ -26,7 +36,7 @@ export default function OverlayPage() {
             onMouseUp={handleMouseUp}
         >
             <CropArea cropArea={cropArea} />
-            {cropArea && mouseMoveType === MouseMoveType.NotPressed && (
+            {cropArea && startPosition === null && (
                 <>
                     <div
                         className="absolute"
