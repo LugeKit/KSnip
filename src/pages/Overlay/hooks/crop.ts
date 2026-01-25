@@ -24,7 +24,7 @@ function distance(p1: Point, p2: Point) {
 
 function closeToEdge(point: Point | null, rectangle: Rectangle | null) {
     if (!point || !rectangle) {
-        return null;
+        return ResizeArea.None;
     }
 
     if (distance(point, { x: rectangle.left, y: rectangle.top }) <= EDGE_CORNER_RADIUS) {
@@ -78,12 +78,12 @@ function closeToEdge(point: Point | null, rectangle: Rectangle | null) {
         return ResizeArea.Right;
     }
 
-    return null;
+    return ResizeArea.None;
 }
 
 export function useCrop(isPressing: boolean, mousePosition: Point | null, pressPosition: Point | null) {
     const [cropArea, setCropArea] = useState<Rectangle | null>(null);
-    const [resizeDirection, setResizeDirection] = useState<ResizeArea | null>(null);
+    const [resizeDirection, setResizeDirection] = useState<ResizeArea>(ResizeArea.None);
     const [mouseMoveType, setMouseMoveType] = useState<MouseMoveType>(MouseMoveType.Cropping);
     const startCropArea = useRef<Rectangle | null>(null);
 
@@ -94,12 +94,12 @@ export function useCrop(isPressing: boolean, mousePosition: Point | null, pressP
 
     const determineMoveType = (mousePosition: Point | null) => {
         const resizeDirection = closeToEdge(mousePosition, cropArea);
-        if (resizeDirection !== null) {
+        if (resizeDirection) {
             setMouseMoveType(MouseMoveType.Resizing);
             setResizeDirection(resizeDirection);
             return;
         } else {
-            setResizeDirection(null);
+            setResizeDirection(ResizeArea.None);
         }
 
         if (isInRectangle(mousePosition, cropArea)) {
@@ -140,6 +140,90 @@ export function useCrop(isPressing: boolean, mousePosition: Point | null, pressP
                     width: cropArea.width,
                     height: cropArea.height,
                 });
+                break;
+            }
+            case MouseMoveType.Resizing: {
+                if (!cropArea || !resizeDirection || !startCropArea.current) {
+                    return;
+                }
+
+                const xDiff = mousePosition.x - pressPosition.x;
+                const yDiff = mousePosition.y - pressPosition.y;
+
+                switch (resizeDirection) {
+                    case ResizeArea.TopLeft: {
+                        setCropAreaByPhysicalTruncate({
+                            left: startCropArea.current.left + xDiff,
+                            top: startCropArea.current.top + yDiff,
+                            width: startCropArea.current.width - xDiff,
+                            height: startCropArea.current.height - yDiff,
+                        });
+                        break;
+                    }
+                    case ResizeArea.Top: {
+                        setCropAreaByPhysicalTruncate({
+                            left: startCropArea.current.left,
+                            top: startCropArea.current.top + yDiff,
+                            width: startCropArea.current.width,
+                            height: startCropArea.current.height - yDiff,
+                        });
+                        break;
+                    }
+                    case ResizeArea.TopRight: {
+                        setCropAreaByPhysicalTruncate({
+                            left: startCropArea.current.left,
+                            top: startCropArea.current.top + yDiff,
+                            width: startCropArea.current.width + xDiff,
+                            height: startCropArea.current.height - yDiff,
+                        });
+                        break;
+                    }
+                    case ResizeArea.Left: {
+                        setCropAreaByPhysicalTruncate({
+                            left: startCropArea.current.left + xDiff,
+                            top: startCropArea.current.top,
+                            width: startCropArea.current.width - xDiff,
+                            height: startCropArea.current.height,
+                        });
+                        break;
+                    }
+                    case ResizeArea.Right: {
+                        setCropAreaByPhysicalTruncate({
+                            left: startCropArea.current.left,
+                            top: startCropArea.current.top,
+                            width: startCropArea.current.width + xDiff,
+                            height: startCropArea.current.height,
+                        });
+                        break;
+                    }
+                    case ResizeArea.BottomLeft: {
+                        setCropAreaByPhysicalTruncate({
+                            left: startCropArea.current.left + xDiff,
+                            top: startCropArea.current.top,
+                            width: startCropArea.current.width - xDiff,
+                            height: startCropArea.current.height + yDiff,
+                        });
+                        break;
+                    }
+                    case ResizeArea.Bottom: {
+                        setCropAreaByPhysicalTruncate({
+                            left: startCropArea.current.left,
+                            top: startCropArea.current.top,
+                            width: startCropArea.current.width,
+                            height: startCropArea.current.height + yDiff,
+                        });
+                        break;
+                    }
+                    case ResizeArea.BottomRight: {
+                        setCropAreaByPhysicalTruncate({
+                            left: startCropArea.current.left,
+                            top: startCropArea.current.top,
+                            width: startCropArea.current.width + xDiff,
+                            height: startCropArea.current.height + yDiff,
+                        });
+                        break;
+                    }
+                }
                 break;
             }
             default:

@@ -17,6 +17,7 @@ export enum MouseMoveType {
 }
 
 export enum ResizeArea {
+    None,
     TopLeft,
     TopRight,
     BottomLeft,

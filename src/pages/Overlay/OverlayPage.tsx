@@ -77,6 +77,7 @@ export default function OverlayPage() {
                 }}
             >
                 <span className="text-white">{`Mouse position: ${mousePosition?.x ?? 0}, ${mousePosition?.y ?? 0}`}</span>
+                <span className="text-white">{`Press position: ${pressPosition?.x ?? 0}, ${pressPosition?.y ?? 0}`}</span>
                 <span className="text-white">{`Crop area: left: ${cropArea?.left ?? 0}, top: ${cropArea?.top ?? 0}, width: ${cropArea?.width ?? 0}, height: ${cropArea?.height ?? 0}`}</span>
                 <span className="text-white">{`Resize direction: ${resizeDirection}`}</span>
                 <span className="text-white">{`Mouse move type: ${mouseMoveType}`}</span>
