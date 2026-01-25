@@ -27,3 +27,8 @@ export enum ResizeArea {
     Top,
     Bottom,
 }
+
+export enum PenType {
+    None,
+    Rectangle,
+}

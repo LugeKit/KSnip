@@ -12,15 +12,17 @@ import { invoke } from "@tauri-apps/api/core";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { currentMonitor, getCurrentWindow, Monitor } from "@tauri-apps/api/window";
 import { debug, error, info } from "@tauri-apps/plugin-log";
-import { CheckIcon, Disc, PinIcon, X } from "lucide-react";
+import { CheckIcon, Disc, PinIcon, RectangleCircle, X } from "lucide-react";
 import React, { useState } from "react";
 import { useWindowShortcut } from "../hooks/shortcut";
-import { Rectangle } from "../types";
+import { PenType, Rectangle } from "../types";
 
 interface CropToolbarProps {
     cropArea: Rectangle;
-    onConfirmSuccess: () => void;
+    pen: PenType;
+    onConfirm: () => void;
     onCancel: () => void;
+    onSelectPen: (pen: PenType) => void;
 }
 
 interface LogicalParam {
@@ -44,7 +46,7 @@ function newLogicalParam(rect: Rectangle, monitor: Monitor): LogicalParam {
     };
 }
 
-export default function CropToolbar({ cropArea, onConfirmSuccess, onCancel }: CropToolbarProps) {
+export default function CropToolbar({ cropArea, pen, onConfirm, onCancel, onSelectPen }: CropToolbarProps) {
     const [isRecording, setRecording] = useState(false);
 
     const takeScreenshot = async () => {
@@ -58,7 +60,7 @@ export default function CropToolbar({ cropArea, onConfirmSuccess, onCancel }: Cr
         }).catch((e) => {
             error(`[CropToolbar] failed to call screenshots_take: ${e}`);
         });
-        onConfirmSuccess();
+        onConfirm();
     };
 
     const createPin = async () => {
@@ -75,7 +77,7 @@ export default function CropToolbar({ cropArea, onConfirmSuccess, onCancel }: Cr
                 param,
             });
             newPinPage(param, pin_id);
-            onConfirmSuccess();
+            onConfirm();
         } catch (e) {
             error(`[CropToolbar] failed to call pin_create: ${e}`);
         }
@@ -108,7 +110,7 @@ export default function CropToolbar({ cropArea, onConfirmSuccess, onCancel }: Cr
                     error(`[CropToolbar] failed to complete take gif: ${e}`);
                 } finally {
                     setRecording(false);
-                    onConfirmSuccess();
+                    onConfirm();
                 }
             });
             await window.setFocusable(false);
@@ -134,6 +136,9 @@ export default function CropToolbar({ cropArea, onConfirmSuccess, onCancel }: Cr
         >
             <CommonButton onClick={takeScreenshot}>
                 <CheckIcon />
+            </CommonButton>
+            <CommonButton onClick={() => onSelectPen(PenType.Rectangle)}>
+                {pen === PenType.Rectangle ? <RectangleCircle className="text-red-500" /> : <RectangleCircle />}
             </CommonButton>
             <CommonButton onClick={createPin}>
                 <PinIcon />

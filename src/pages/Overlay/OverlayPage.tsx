@@ -1,19 +1,21 @@
 import { SHORTCUT_SCREENSHOT_EXIT } from "@/services/shortcut/const";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { debug } from "@tauri-apps/plugin-log";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import CropArea from "./components/CropArea";
 import CropToolbar from "./components/CropToolbar";
 import { useCrop } from "./hooks/crop";
 import { useMouseEvent } from "./hooks/mouse";
 import { useWindowShortcut } from "./hooks/shortcut";
-import { MouseMoveType, ResizeArea } from "./types";
+import { MouseMoveType, PenType, ResizeArea } from "./types";
 
 export default function OverlayPage() {
     const { isPressing, pressPosition, mousePosition, handleMouseDown, handleMouseUp, handleMouseMove } =
         useMouseEvent();
 
     const { cropArea, cancelCrop, resizeDirection, mouseMoveType } = useCrop(isPressing, mousePosition, pressPosition);
+
+    const [pen, setPen] = useState(PenType.None);
 
     const closeOverlayPage = useCallback(() => {
         const appWindow = getCurrentWindow();
@@ -92,7 +94,19 @@ export default function OverlayPage() {
                             transform: "translateX(-100%)",
                         }}
                     >
-                        <CropToolbar cropArea={cropArea} onConfirmSuccess={closeOverlayPage} onCancel={cancelCrop} />
+                        <CropToolbar
+                            cropArea={cropArea}
+                            pen={pen}
+                            onConfirm={closeOverlayPage}
+                            onCancel={cancelCrop}
+                            onSelectPen={(newPen) => {
+                                if (pen === newPen) {
+                                    setPen(PenType.None);
+                                } else {
+                                    setPen(newPen);
+                                }
+                            }}
+                        />
                     </div>
                 </>
             )}
