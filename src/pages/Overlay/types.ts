@@ -14,4 +14,16 @@ export enum MouseMoveType {
     NotPressed,
     Cropping,
     Dragging,
+    Resizing,
+}
+
+export enum ResizeArea {
+    TopLeft,
+    TopRight,
+    BottomLeft,
+    BottomRight,
+    Left,
+    Right,
+    Top,
+    Bottom,
 }

@@ -53,12 +53,12 @@ export default function CropToolbar({ cropArea, onConfirmSuccess, onCancel }: Cr
             error(`[CropToolbar] failed to get current monitor`);
             return;
         }
-        onConfirmSuccess();
         invoke("screenshot_take", {
             param: newLogicalParam(cropArea, monitor),
         }).catch((e) => {
             error(`[CropToolbar] failed to call screenshots_take: ${e}`);
         });
+        onConfirmSuccess();
     };
 
     const createPin = async () => {

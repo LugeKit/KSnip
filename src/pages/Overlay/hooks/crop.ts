@@ -1,7 +1,7 @@
 import { currentMonitor } from "@tauri-apps/api/window";
 import { debug } from "@tauri-apps/plugin-log";
 import React, { useCallback, useRef, useState } from "react";
-import { MouseMoveType, Point, Rectangle } from "../types";
+import { MouseMoveType, Point, Rectangle, ResizeArea } from "../types";
 
 function isInRectangle(point: Point | null, rectangle: Rectangle | null) {
     if (!point || !rectangle) {
@@ -16,9 +16,76 @@ function isInRectangle(point: Point | null, rectangle: Rectangle | null) {
     );
 }
 
+const EDGE_CORNER_RADIUS = 10;
+const EDGE_DISTANCE = 10;
+
+function distance(p1: Point, p2: Point) {
+    return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+}
+
+function closeToEdge(point: Point | null, rectangle: Rectangle | null) {
+    if (!point || !rectangle) {
+        return null;
+    }
+
+    if (distance(point, { x: rectangle.left, y: rectangle.top }) <= EDGE_CORNER_RADIUS) {
+        return ResizeArea.TopLeft;
+    }
+
+    if (distance(point, { x: rectangle.left + rectangle.width, y: rectangle.top }) <= EDGE_CORNER_RADIUS) {
+        return ResizeArea.TopRight;
+    }
+
+    if (distance(point, { x: rectangle.left, y: rectangle.top + rectangle.height }) <= EDGE_CORNER_RADIUS) {
+        return ResizeArea.BottomLeft;
+    }
+
+    if (
+        distance(point, { x: rectangle.left + rectangle.width, y: rectangle.top + rectangle.height }) <=
+        EDGE_CORNER_RADIUS
+    ) {
+        return ResizeArea.BottomRight;
+    }
+
+    if (
+        point.x >= rectangle.left &&
+        point.x <= rectangle.left + rectangle.width &&
+        Math.abs(point.y - rectangle.top) <= EDGE_DISTANCE
+    ) {
+        return ResizeArea.Top;
+    }
+
+    if (
+        point.x >= rectangle.left &&
+        point.x <= rectangle.left + rectangle.width &&
+        Math.abs(point.y - rectangle.top + rectangle.height) <= EDGE_DISTANCE
+    ) {
+        return ResizeArea.Bottom;
+    }
+
+    if (
+        point.y >= rectangle.top &&
+        point.y <= rectangle.top + rectangle.height &&
+        Math.abs(point.x - rectangle.left) <= EDGE_DISTANCE
+    ) {
+        return ResizeArea.Left;
+    }
+
+    if (
+        point.y >= rectangle.top &&
+        point.y <= rectangle.top + rectangle.height &&
+        Math.abs(point.x - rectangle.left + rectangle.width) <= EDGE_DISTANCE
+    ) {
+        return ResizeArea.Right;
+    }
+
+    return null;
+}
+
 export function useCrop() {
     const [startPosition, setStartPosition] = useState<Point | null>(null);
     const [cropArea, setCropArea] = useState<Rectangle | null>(null);
+    const [resizeDirection, setResizeDirection] = useState<ResizeArea | null>(null);
     const [mouseMoveType, setMouseMoveType] = useState<MouseMoveType>(MouseMoveType.NotPressed);
     const startCropArea = useRef<Rectangle | null>(null);
 
@@ -31,6 +98,14 @@ export function useCrop() {
     const handleMouseMove = async (e: React.MouseEvent) => {
         if (!startPosition) {
             const position = { x: e.clientX, y: e.clientY };
+
+            const resizeDirection = closeToEdge(position, cropArea);
+            if (resizeDirection) {
+                setMouseMoveType(MouseMoveType.Resizing);
+                setResizeDirection(resizeDirection);
+                return;
+            }
+
             if (isInRectangle(position, cropArea)) {
                 setMouseMoveType(MouseMoveType.Dragging);
                 return;
@@ -91,12 +166,13 @@ export function useCrop() {
 
     return {
         cropArea,
+        cancelCrop,
+        resizeDirection,
         startPosition,
         mouseMoveType,
         handleMouseDown,
         handleMouseMove,
         handleMouseUp,
-        cancelCrop,
     };
 }
 

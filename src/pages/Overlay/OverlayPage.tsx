@@ -8,8 +8,16 @@ import { useWindowShortcut } from "./hooks/shortcut";
 import { MouseMoveType } from "./types";
 
 export default function OverlayPage() {
-    const { cropArea, startPosition, mouseMoveType, handleMouseDown, handleMouseMove, handleMouseUp, cancelCrop } =
-        useCrop();
+    const {
+        cropArea,
+        cancelCrop,
+        resizeDirection,
+        startPosition,
+        mouseMoveType,
+        handleMouseDown,
+        handleMouseMove,
+        handleMouseUp,
+    } = useCrop();
 
     const closeOverlayPage = useCallback(() => {
         const appWindow = getCurrentWindow();
@@ -21,6 +29,9 @@ export default function OverlayPage() {
         switch (mouseMoveType) {
             case MouseMoveType.Dragging:
                 document.body.style.cursor = "move";
+                break;
+            case MouseMoveType.Resizing:
+                document.body.style.cursor = "crosshair";
                 break;
             default:
                 document.body.style.cursor = "default";
