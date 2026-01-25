@@ -1,11 +1,13 @@
 import { SHORTCUT_SCREENSHOT_EXIT } from "@/services/shortcut/const";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { debug } from "@tauri-apps/plugin-log";
 import { useCallback, useEffect } from "react";
 import CropArea from "./components/CropArea";
 import CropToolbar from "./components/CropToolbar";
-import { useCrop, useMouseEvent } from "./hooks/crop";
+import { useCrop } from "./hooks/crop";
+import { useMouseEvent } from "./hooks/mouse";
 import { useWindowShortcut } from "./hooks/shortcut";
-import { MouseMoveType } from "./types";
+import { MouseMoveType, ResizeArea } from "./types";
 
 export default function OverlayPage() {
     const { isPressing, pressPosition, mousePosition, handleMouseDown, handleMouseUp, handleMouseMove } =
@@ -20,18 +22,44 @@ export default function OverlayPage() {
     useWindowShortcut(SHORTCUT_SCREENSHOT_EXIT, closeOverlayPage);
 
     useEffect(() => {
+        debug(`[OverlayPage] mouseMoveType: ${mouseMoveType}, resizeDirection: ${resizeDirection}`);
         switch (mouseMoveType) {
             case MouseMoveType.Dragging:
                 document.body.style.cursor = "move";
                 break;
             case MouseMoveType.Resizing:
-                document.body.style.cursor = "crosshair";
+                switch (resizeDirection) {
+                    case ResizeArea.Top:
+                        document.body.style.cursor = "n-resize";
+                        break;
+                    case ResizeArea.Left:
+                        document.body.style.cursor = "w-resize";
+                        break;
+                    case ResizeArea.Right:
+                        document.body.style.cursor = "e-resize";
+                        break;
+                    case ResizeArea.Bottom:
+                        document.body.style.cursor = "s-resize";
+                        break;
+                    case ResizeArea.TopLeft:
+                        document.body.style.cursor = "nw-resize";
+                        break;
+                    case ResizeArea.TopRight:
+                        document.body.style.cursor = "ne-resize";
+                        break;
+                    case ResizeArea.BottomLeft:
+                        document.body.style.cursor = "sw-resize";
+                        break;
+                    case ResizeArea.BottomRight:
+                        document.body.style.cursor = "se-resize";
+                        break;
+                }
                 break;
             default:
                 document.body.style.cursor = "default";
                 break;
         }
-    }, [mouseMoveType]);
+    }, [mouseMoveType, resizeDirection]);
 
     return (
         <div
@@ -50,6 +78,8 @@ export default function OverlayPage() {
             >
                 <span className="text-white">{`Mouse position: ${mousePosition?.x ?? 0}, ${mousePosition?.y ?? 0}`}</span>
                 <span className="text-white">{`Crop area: left: ${cropArea?.left ?? 0}, top: ${cropArea?.top ?? 0}, width: ${cropArea?.width ?? 0}, height: ${cropArea?.height ?? 0}`}</span>
+                <span className="text-white">{`Resize direction: ${resizeDirection}`}</span>
+                <span className="text-white">{`Mouse move type: ${mouseMoveType}`}</span>
             </div>
             {cropArea && !isPressing && (
                 <>
