@@ -3,7 +3,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import {
     SHORTCUT_CREATE_PIN,
     SHORTCUT_RECORD_REGION,
@@ -17,6 +17,8 @@ import { getAllShortcuts, getShortcut, updateShortcutEnabled, updateShortcutKey 
 import { debug, error, warn } from "@tauri-apps/plugin-log";
 import { CheckIcon, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import {TabsHeaders} from "@/pages/Main/components/Tab.tsx";
+import Border from "@/components/ui/Border.tsx";
 
 type ShortcutState = {
     keys: string[];
@@ -90,7 +92,7 @@ export default function ShortcutSetting() {
         <div className="relative top-0 right-0 w-full h-full p-4">
             <Tabs defaultValue="basic" className="w-full">
                 <TabsHeaders headers={tabsData} />
-                <div className="w-full border-border border-b left-0 mt-2 mb-2" />
+                <Border />
                 {Object.entries(shortcutItems).map(([page, shortcuts]) => {
                     return (
                         <TabsContent
@@ -107,18 +109,6 @@ export default function ShortcutSetting() {
                 })}
             </Tabs>
         </div>
-    );
-}
-
-function TabsHeaders({ headers }: { headers: { page: string; label: string }[] }) {
-    return (
-        <TabsList className="gap-2">
-            {headers.map((header) => (
-                <TabsTrigger key={header.page} value={header.page}>
-                    {header.label}
-                </TabsTrigger>
-            ))}
-        </TabsList>
     );
 }
 
