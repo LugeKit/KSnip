@@ -17,7 +17,7 @@ import { getAllShortcuts, getShortcut, updateShortcutEnabled, updateShortcutKey 
 import { debug, error, warn } from "@tauri-apps/plugin-log";
 import { CheckIcon, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import {TabsHeaders} from "@/pages/Main/components/Tab.tsx";
+import {TabsHeader} from "@/pages/Main/components/Tab.tsx";
 import Border from "@/components/ui/Border.tsx";
 
 type ShortcutState = {
@@ -91,7 +91,7 @@ export default function ShortcutSetting() {
     return (
         <div className="relative top-0 right-0 w-full h-full p-4">
             <Tabs defaultValue="basic" className="w-full">
-                <TabsHeaders headers={tabsData} />
+                <TabsHeader headers={tabsData} />
                 <Border />
                 {Object.entries(shortcutItems).map(([page, shortcuts]) => {
                     return (

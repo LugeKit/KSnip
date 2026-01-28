@@ -1,11 +1,11 @@
 import {TabsList, TabsTrigger} from "@/components/ui/tabs.tsx";
 
-type TabsHeader = {
+export type TabsHeaderData = {
     page: string;
     label: string;
 }
 
-export function TabsHeaders({headers}: { headers: TabsHeader[] }) {
+export function TabsHeader({headers}: { headers: TabsHeaderData[] }) {
     return (
         <TabsList className="gap-2">
             {headers.map((header) => (
