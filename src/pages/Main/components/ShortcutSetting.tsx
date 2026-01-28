@@ -93,16 +93,15 @@ export default function ShortcutSetting() {
                 <div className="w-full border-border border-b left-0 mt-2 mb-2" />
                 {Object.entries(shortcutItems).map(([page, shortcuts]) => {
                     return (
-                        <TabsContent key={page} value={page}>
-                            <div className="[&_tr]:hover:bg-transparent bg-muted rounded-md pl-5 pr-5">
-                                <Table>
-                                    <TabsContentHeader />
-                                    <TabsContentBody
-                                        shortcuts={shortcuts}
-                                        onShortcutChanged={onShortcutChanged(page)}
-                                    />
-                                </Table>
-                            </div>
+                        <TabsContent
+                            key={page}
+                            value={page}
+                            className="[&_tr]:hover:bg-transparent bg-muted rounded-md pl-5 pr-5"
+                        >
+                            <Table>
+                                <TabsContentHeader />
+                                <TabsContentBody shortcuts={shortcuts} onShortcutChanged={onShortcutChanged(page)} />
+                            </Table>
                         </TabsContent>
                     );
                 })}
