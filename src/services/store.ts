@@ -1,10 +1,8 @@
-import { load, Store } from "@tauri-apps/plugin-store";
+import {load, Store} from "@tauri-apps/plugin-store";
 
 export async function getLocalStore(): Promise<Store> {
-    const store = await load("config.json", {
+    return await load("config.json", {
         autoSave: true,
         defaults: {},
     });
-
-    return store;
 }
