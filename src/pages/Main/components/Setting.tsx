@@ -1,6 +1,6 @@
 import Border from "@/components/ui/Border.tsx";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Table, TableCell, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent } from "@/components/ui/tabs.tsx";
 import { TabsHeader, TabsHeaderData } from "@/pages/Main/components/Tab.tsx";
 import { ENABLE_DEBUG_SETTING } from "@/services/setting/const";
@@ -85,15 +85,28 @@ export default function SettingComponent() {
                             className="[&_tr]:hover:bg-transparent bg-muted rounded-md pl-5 pr-5"
                         >
                             <Table>
-                                {items.map((item) => {
-                                    return <SettingTableRow item={item} onValueChanged={onValueChanged(page)} />;
-                                })}
+                                <TabsContentHeader />
+                                <TableBody>
+                                    {items.map((item) => {
+                                        return <SettingTableRow item={item} onValueChanged={onValueChanged(page)} />;
+                                    })}
+                                </TableBody>
                             </Table>
                         </TabsContent>
                     );
                 })}
             </Tabs>
         </div>
+    );
+}
+
+function TabsContentHeader() {
+    return (
+        <TableHeader>
+            <TableRow>
+                <TableHead className="font-bold w-[200px]">功能</TableHead>
+            </TableRow>
+        </TableHeader>
     );
 }
 
@@ -107,15 +120,33 @@ function SettingTableRow({
     return (
         <TableRow>
             <TableCell>{item.name}</TableCell>
-            {item.type === "Boolean" && (item.value as SettingValueBoolean) && (
-                <TableCell>
-                    <Checkbox
-                        className="data-[state=checked]:bg-transparent data-[state=checked]:text-black border-black mr-1"
-                        checked={(item.value as SettingValueBoolean).value}
-                        onCheckedChange={(checked) => onValueChanged(item.id, new SettingValueBoolean(!!checked))}
-                    />
-                </TableCell>
+            {item.type === "Boolean" && (
+                <BooleanSetting
+                    id={item.id}
+                    value={item.value as SettingValueBoolean}
+                    onValueChanged={onValueChanged}
+                />
             )}
         </TableRow>
+    );
+}
+
+function BooleanSetting({
+    id,
+    value,
+    onValueChanged,
+}: {
+    id: string;
+    value: SettingValueBoolean;
+    onValueChanged: (id: string, newValue: SettingValueBoolean) => void;
+}) {
+    return (
+        <TableCell className="text-right">
+            <Checkbox
+                className="data-[state=checked]:bg-transparent data-[state=checked]:text-black border-black mr-4"
+                checked={value.value}
+                onCheckedChange={(checked) => onValueChanged(id, new SettingValueBoolean(!!checked))}
+            />
+        </TableCell>
     );
 }
