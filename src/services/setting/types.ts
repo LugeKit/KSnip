@@ -27,12 +27,20 @@ export class Setting {
 
 type SettingType = "Boolean" | "Path";
 
-export interface SettingTypeBoolean {
+export class SettingValueBoolean {
     value: boolean;
+
+    constructor(value: boolean) {
+        this.value = value;
+    }
 }
 
-export interface SettingTypePath {
+export class SettingValuePath {
     path: string;
+
+    constructor(path: string) {
+        this.path = path;
+    }
 }
 
-export type SettingValue = SettingTypeBoolean | SettingTypePath;
+export type SettingValue = SettingValueBoolean | SettingValuePath;

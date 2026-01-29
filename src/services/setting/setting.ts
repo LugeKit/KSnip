@@ -1,6 +1,6 @@
-import {Setting, SettingValue, StoredSetting} from "@/services/setting/types.ts";
-import {getLocalStore} from "@/services/store.ts";
-import {DEFAULT_SETTING} from "@/services/setting/const.ts";
+import { DEFAULT_SETTING } from "@/services/setting/const.ts";
+import { Setting, SettingValue, StoredSetting } from "@/services/setting/types.ts";
+import { getLocalStore } from "@/services/store.ts";
 
 const SETTING_KEY = "setting";
 
@@ -12,10 +12,10 @@ async function getStoredSetting(): Promise<StoredSetting | undefined> {
 export async function getAllSettings(): Promise<Record<string, Setting>> {
     const storedSettings = await getStoredSetting();
     if (!storedSettings) {
-        return {}
+        return DEFAULT_SETTING;
     }
 
-    const settings: Record<string, Setting> = {}
+    const settings: Record<string, Setting> = {};
     for (const setting of Object.values(storedSettings)) {
         const enriched = enrichSavedSetting(setting);
         if (!enriched) {
@@ -30,7 +30,7 @@ export async function getAllSettings(): Promise<Record<string, Setting>> {
 export async function getSetting(id: string): Promise<Setting | undefined> {
     const allSettings = await getStoredSetting();
     if (!allSettings) {
-        return undefined;
+        return enrichSavedSetting(DEFAULT_SETTING[id]);
     }
     return enrichSavedSetting(allSettings.settings[id]);
 }
@@ -48,7 +48,9 @@ export async function updateSetting(id: string, value: SettingValue): Promise<vo
 async function saveSetting(setting: Setting): Promise<void> {
     const allSettings = await getStoredSetting();
     if (!allSettings) {
-        throw Error("failed to get setting");
+        const store = await getLocalStore();
+        await store.set(SETTING_KEY, { settings: DEFAULT_SETTING });
+        return await saveSetting(setting);
     }
 
     allSettings.settings[setting.id] = setting;
@@ -66,5 +68,5 @@ function enrichSavedSetting(setting: Setting): Setting | undefined {
         return undefined;
     }
 
-    return new Setting(setting.id, defaultValue.name, defaultValue.description, defaultValue.type, setting.value)
+    return new Setting(setting.id, defaultValue.name, defaultValue.description, defaultValue.type, setting.value);
 }
