@@ -7,7 +7,7 @@ export class Setting {
     name: string;
     description: string;
     type: SettingType;
-    value: SettingValue
+    value: SettingValue;
 
     constructor(id: string, name: string, description: string, type: SettingType, value: SettingValue) {
         this.id = id;
@@ -20,8 +20,8 @@ export class Setting {
     toJSON() {
         return {
             id: this.id,
-            value: JSON.stringify(this.value)
-        }
+            value: this.value,
+        };
     }
 }
 
