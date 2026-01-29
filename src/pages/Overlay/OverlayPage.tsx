@@ -1,3 +1,6 @@
+import { ENABLE_DEBUG_SETTING } from "@/services/setting/const";
+import { getSetting } from "@/services/setting/setting";
+import { SettingValueBoolean } from "@/services/setting/types";
 import { SHORTCUT_SCREENSHOT_EXIT } from "@/services/shortcut/const";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { debug } from "@tauri-apps/plugin-log";
@@ -10,6 +13,16 @@ import { useWindowShortcut } from "./hooks/shortcut";
 import { MouseMoveType, PenType, ResizeArea } from "./types";
 
 export default function OverlayPage() {
+    const [enableDebug, setEnableDebug] = useState(false);
+    useEffect(() => {
+        getSetting(ENABLE_DEBUG_SETTING).then((setting) => {
+            if (!setting) {
+                return;
+            }
+            setEnableDebug((setting.value as SettingValueBoolean).value);
+        });
+    }, []);
+
     const { isPressing, pressPosition, mousePosition, handleMouseDown, handleMouseUp, handleMouseMove } =
         useMouseEvent();
 
@@ -71,19 +84,21 @@ export default function OverlayPage() {
             onMouseUp={handleMouseUp}
         >
             <CropArea cropArea={cropArea} />
-            <div
-                className="bg-black flex flex-col w-auto h-auto fixed"
-                style={{
-                    top: (mousePosition?.y ?? 0) + 10,
-                    left: (mousePosition?.x ?? 0) + 10,
-                }}
-            >
-                <span className="text-white">{`Mouse position: ${mousePosition?.x ?? 0}, ${mousePosition?.y ?? 0}`}</span>
-                <span className="text-white">{`Press position: ${pressPosition?.x ?? 0}, ${pressPosition?.y ?? 0}`}</span>
-                <span className="text-white">{`Crop area: left: ${cropArea?.left ?? 0}, top: ${cropArea?.top ?? 0}, width: ${cropArea?.width ?? 0}, height: ${cropArea?.height ?? 0}`}</span>
-                <span className="text-white">{`Resize direction: ${resizeDirection}`}</span>
-                <span className="text-white">{`Mouse move type: ${mouseMoveType}`}</span>
-            </div>
+            {enableDebug && (
+                <div
+                    className="bg-black flex flex-col w-auto h-auto fixed"
+                    style={{
+                        top: (mousePosition?.y ?? 0) + 10,
+                        left: (mousePosition?.x ?? 0) + 10,
+                    }}
+                >
+                    <span className="text-white">{`Mouse position: ${mousePosition?.x ?? 0}, ${mousePosition?.y ?? 0}`}</span>
+                    <span className="text-white">{`Press position: ${pressPosition?.x ?? 0}, ${pressPosition?.y ?? 0}`}</span>
+                    <span className="text-white">{`Crop area: left: ${cropArea?.left ?? 0}, top: ${cropArea?.top ?? 0}, width: ${cropArea?.width ?? 0}, height: ${cropArea?.height ?? 0}`}</span>
+                    <span className="text-white">{`Resize direction: ${resizeDirection}`}</span>
+                    <span className="text-white">{`Mouse move type: ${mouseMoveType}`}</span>
+                </div>
+            )}
             {cropArea && !isPressing && (
                 <>
                     <div
