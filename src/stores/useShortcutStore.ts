@@ -1,4 +1,9 @@
-import { getAllShortcuts, initShortcut, updateShortcutEnabled as updateShortcutEnabledService, updateShortcutKey as updateShortcutKeyService } from "@/services/shortcut/shortcut";
+import {
+    getAllShortcuts,
+    initShortcut,
+    updateShortcutEnabled as updateShortcutEnabledService,
+    updateShortcutKey as updateShortcutKeyService,
+} from "@/services/shortcut/shortcut";
 import { Shortcut } from "@/services/shortcut/types";
 import { error } from "@tauri-apps/plugin-log";
 import { create } from "zustand";
@@ -33,10 +38,14 @@ export const useShortcutStore = create<ShortcutState>((set, get) => ({
                 const shortcut = state.shortcuts[id];
                 if (!shortcut) return state;
 
-                // Create a new instance to ensure state update triggers re-renders
-                // Assuming Shortcut is a class or object we can clone/update
-                const newShortcut = Object.assign(Object.create(Object.getPrototypeOf(shortcut)), shortcut);
-                newShortcut.enabled = enabled;
+                const newShortcut = new Shortcut(
+                    shortcut.id,
+                    shortcut.keys,
+                    enabled,
+                    shortcut.page,
+                    shortcut.name,
+                    shortcut.globalF,
+                );
 
                 return {
                     shortcuts: {
@@ -57,8 +66,14 @@ export const useShortcutStore = create<ShortcutState>((set, get) => ({
                 const shortcut = state.shortcuts[id];
                 if (!shortcut) return state;
 
-                const newShortcut = Object.assign(Object.create(Object.getPrototypeOf(shortcut)), shortcut);
-                newShortcut.keys = keys;
+                const newShortcut = new Shortcut(
+                    shortcut.id,
+                    keys,
+                    shortcut.enabled,
+                    shortcut.page,
+                    shortcut.name,
+                    shortcut.globalF,
+                );
 
                 return {
                     shortcuts: {
