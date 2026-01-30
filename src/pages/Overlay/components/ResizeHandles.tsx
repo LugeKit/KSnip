@@ -22,7 +22,7 @@ const ResizeHandles: React.FC<ResizeHandlesProps> = ({ cropArea, onResizeStart, 
     // Common styles for hit areas. Using a larger hit area for better UX.
     // We can make them invisible (transparent) or give them a debug color if needed.
     // For now, let's make them transparent.
-    const baseHandleStyle = "absolute pointer-events-auto z-50";
+    const baseHandleStyle = "absolute pointer-events-auto";
 
     return (
         <div

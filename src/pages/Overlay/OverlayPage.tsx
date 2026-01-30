@@ -17,10 +17,7 @@ export default function OverlayPage() {
     const enableDebug = debugSetting?.value ?? false;
 
     const { mouseState, handleMouseDown, handleMouseUp, handleMouseMove } = useMouseEvent();
-    const { isPressing, pressPosition, mousePosition } = mouseState;
-
     const { cropArea, setMouseType } = useCrop(mouseState);
-
     const [pen, setPen] = useState(PenType.None);
 
     const closeOverlayPage = useCallback(() => {
@@ -42,26 +39,30 @@ export default function OverlayPage() {
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
         >
+            {/* crop area(the red border line) */}
             <CropArea cropArea={cropArea} />
+            {/* resize handles, for mouse dragging and resizing */}
             <ResizeHandles
                 cropArea={cropArea}
                 onResizeStart={(direction) => setMouseType({ type: "resizing", direction })}
                 onDragStart={() => setMouseType({ type: "dragging" })}
             />
-            {enableDebug && (
+            {/* debug panel */}
+            {enableDebug && mouseState && (
                 <div
                     className="bg-black flex flex-col w-auto h-auto fixed"
                     style={{
-                        top: (mousePosition?.y ?? 0) + 10,
-                        left: (mousePosition?.x ?? 0) + 10,
+                        top: (mouseState.mousePosition?.y ?? 0) + 10,
+                        left: (mouseState.mousePosition?.x ?? 0) + 10,
                     }}
                 >
-                    <span className="text-white">{`Mouse position: ${mousePosition?.x ?? 0}, ${mousePosition?.y ?? 0}`}</span>
-                    <span className="text-white">{`Press position: ${pressPosition?.x ?? 0}, ${pressPosition?.y ?? 0}`}</span>
+                    <span className="text-white">{`Mouse position: ${mouseState.mousePosition?.x ?? 0}, ${mouseState.mousePosition?.y ?? 0}`}</span>
+                    <span className="text-white">{`Press position: ${mouseState.pressPosition?.x ?? 0}, ${mouseState.pressPosition?.y ?? 0}`}</span>
                     <span className="text-white">{`Crop area: left: ${cropArea?.left ?? 0}, top: ${cropArea?.top ?? 0}, width: ${cropArea?.width ?? 0}, height: ${cropArea?.height ?? 0}`}</span>
                 </div>
             )}
-            {cropArea && !isPressing && (
+            {/* tool bar */}
+            {cropArea && !mouseState.isPressing && (
                 <>
                     <div
                         className="absolute"
