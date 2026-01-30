@@ -1,26 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { ENABLE_DEBUG_SETTING } from "@/services/setting/const";
-import { getSetting } from "@/services/setting/setting";
 import { SettingValueBoolean } from "@/services/setting/types";
 import { getLocalStore } from "@/services/store";
+import { useSettingValue } from "@/stores/useSettingStore";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { error } from "@tauri-apps/plugin-log";
 import { Heart, Minus, RectangleEllipsis, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 
 export default function AppHeader() {
     const appWindow = useMemo(() => getCurrentWindow(), []);
-    const [isDebug, setIsDebug] = useState(false);
-    useEffect(() => {
-        getSetting(ENABLE_DEBUG_SETTING).then((setting) => {
-            if (!setting) {
-                return;
-            }
-
-            setIsDebug((setting.value as SettingValueBoolean).value);
-        });
-    }, []);
+    const debugSetting = useSettingValue<SettingValueBoolean>(ENABLE_DEBUG_SETTING);
+    const isDebug = debugSetting?.value ?? false;
 
     return (
         <div className="relative top-0 left-0 h-(--header-height) w-full flex justify-end bg-sidebar">

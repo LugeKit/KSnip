@@ -11,17 +11,23 @@ async function getStoredSetting(): Promise<StoredSetting | undefined> {
 
 export async function getAllSettings(): Promise<Record<string, Setting>> {
     const storedSettings = await getStoredSetting();
-    if (!storedSettings) {
-        return DEFAULT_SETTING;
-    }
-
     const settings: Record<string, Setting> = {};
-    for (const setting of Object.values(storedSettings)) {
-        const enriched = enrichSavedSetting(setting);
-        if (!enriched) {
-            continue;
+
+    for (const key of Object.keys(DEFAULT_SETTING)) {
+        const defaultItem = DEFAULT_SETTING[key];
+        // Try to get from store
+        const storedItem = storedSettings?.settings?.[key];
+
+        if (storedItem) {
+            const enriched = enrichSavedSetting(storedItem);
+            if (enriched) {
+                settings[key] = enriched;
+                continue;
+            }
         }
-        settings[setting.id] = enriched;
+
+        // Fallback to default
+        settings[key] = defaultItem;
     }
 
     return settings;

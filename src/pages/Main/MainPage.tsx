@@ -1,5 +1,6 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { initShortcut } from "@/services/shortcut/shortcut";
+import { useSettingStore } from "@/stores/useSettingStore";
 import { error, info } from "@tauri-apps/plugin-log";
 import { useEffect, useState } from "react";
 import AppHeader from "../../components/ui/AppHeader";
@@ -9,11 +10,13 @@ import ShortcutSetting from "./components/ShortcutSetting";
 
 export default function MainPage() {
     const [activeMenu, setActiveMenu] = useState<MenuKey>(MenuKey.Settings);
+    const initSettings = useSettingStore((state) => state.init);
 
     useEffect(() => {
         initShortcut()
             .then(() => info(`[MainPage] init shortcut success`))
             .catch((e) => error(`[MainPage] failed in init shortcut: ${e}`));
+        initSettings();
     }, []);
 
     return (
