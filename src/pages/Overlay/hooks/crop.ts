@@ -1,4 +1,5 @@
 import { currentMonitor } from "@tauri-apps/api/window";
+import { warn } from "@tauri-apps/plugin-log";
 import { useEffect, useRef, useState } from "react";
 import { MouseMoveType, MouseState, Point, Rectangle, ResizeArea } from "../types";
 
@@ -13,6 +14,17 @@ export function useCrop(mouseState: MouseState) {
     const setCropAreaByPhysicalTruncate = async (rectangle: Rectangle) => {
         const truncatedCropArea = await physicalTruncate(rectangle);
         setCropArea(truncatedCropArea);
+    };
+
+    const setMouseMoveTypeAfterCheck = (newMouseMoveType: MouseMoveType) => {
+        setMouseMoveType((prev) => {
+            if (prev.type === "idle" || newMouseMoveType.type === "idle") {
+                return newMouseMoveType;
+            }
+
+            warn(`[setMouseMoveType] failed to set new type ${newMouseMoveType.type}, from ${prev.type}`);
+            return prev;
+        });
     };
 
     const makingMouseMoveByType = (mousePosition: Point, pressPosition: Point) => {
@@ -138,11 +150,20 @@ export function useCrop(mouseState: MouseState) {
     };
 
     useEffect(() => {
+        // From not-pressed to pressed
         if (mouseState.isPressing) {
             startCropArea.current = cropArea;
-        } else {
-            setMouseMoveType({ type: "idle" });
+            return;
         }
+
+        // From pressed to not-pressed (release)
+
+        // For painting type, not reset to idle when releasing
+        if (mouseMoveType.type === "painting") {
+            return;
+        }
+
+        setMouseMoveType({ type: "idle" });
     }, [mouseState.isPressing]);
 
     useEffect(() => {
@@ -156,7 +177,7 @@ export function useCrop(mouseState: MouseState) {
         cropArea,
         setCropArea: setCropAreaByPhysicalTruncate,
         mouseMoveType,
-        setMouseMoveType,
+        setMouseMoveType: setMouseMoveTypeAfterCheck,
     };
 }
 
