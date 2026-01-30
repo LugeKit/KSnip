@@ -1,7 +1,7 @@
 import { ENABLE_DEBUG_SETTING } from "@/services/setting/const";
-import { getSetting } from "@/services/setting/setting";
 import { SettingValueBoolean } from "@/services/setting/types";
 import { SHORTCUT_SCREENSHOT_EXIT } from "@/services/shortcut/const";
+import { useSettingStore, useSettingValue } from "@/stores/useSettingStore";
 import { useShortcutStore } from "@/stores/useShortcutStore";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useCallback, useEffect, useState } from "react";
@@ -14,16 +14,14 @@ import { useWindowShortcut } from "./hooks/shortcut";
 import { PenType } from "./types";
 
 export default function OverlayPage() {
-    const [enableDebug, setEnableDebug] = useState(false);
+    const initSettings = useSettingStore((state) => state.init);
+    const debugSetting = useSettingValue<SettingValueBoolean>(ENABLE_DEBUG_SETTING);
+    const enableDebug = debugSetting?.value ?? false;
+
     const initShortcuts = useShortcutStore((state) => state.init);
 
     useEffect(() => {
-        getSetting(ENABLE_DEBUG_SETTING).then((setting) => {
-            if (!setting) {
-                return;
-            }
-            setEnableDebug((setting.value as SettingValueBoolean).value);
-        });
+        initSettings();
         initShortcuts(false);
     }, []);
 
