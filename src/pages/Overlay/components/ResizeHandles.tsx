@@ -1,15 +1,17 @@
+import { cn } from "@/lib/utils";
 import React from "react";
 import { Rectangle, ResizeArea } from "../types";
 
 interface ResizeHandlesProps {
     cropArea: Rectangle;
+    className?: string;
     onResizeStart: (direction: ResizeArea) => void;
     onDragStart: () => void;
 }
 
 const HANDLE_SIZE = 10; // Hit area
 
-const ResizeHandles: React.FC<ResizeHandlesProps> = ({ cropArea, onResizeStart, onDragStart }) => {
+const ResizeHandles: React.FC<ResizeHandlesProps> = ({ cropArea, onResizeStart, onDragStart, className }) => {
     if (!cropArea) return null;
 
     const handleMouseDown = (e: React.MouseEvent, direction: ResizeArea) => {
@@ -26,7 +28,7 @@ const ResizeHandles: React.FC<ResizeHandlesProps> = ({ cropArea, onResizeStart, 
 
     return (
         <div
-            className="absolute pointer-events-auto cursor-move"
+            className={cn("absolute pointer-events-auto cursor-move", className)}
             style={{
                 left: cropArea.left,
                 top: cropArea.top,
