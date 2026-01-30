@@ -51,16 +51,22 @@ export default function OverlayPage() {
         >
             {/* crop area(the red border line) */}
             <CropArea cropArea={cropArea} />
+
             {/* resize handles, for mouse dragging and resizing */}
-            {cropArea && pen === PenType.None && (
-                <ResizeHandles
-                    cropArea={cropArea}
-                    onResizeStart={(direction) => setMouseMoveType({ type: "resizing", direction })}
-                    onDragStart={() => setMouseMoveType({ type: "dragging" })}
-                />
-            )}
+            {cropArea &&
+                (mouseMoveType.type === "idle" ||
+                    mouseMoveType.type === "resizing" ||
+                    mouseMoveType.type === "dragging") && (
+                    <ResizeHandles
+                        cropArea={cropArea}
+                        onResizeStart={(direction) => setMouseMoveType({ type: "resizing", direction })}
+                        onDragStart={() => setMouseMoveType({ type: "dragging" })}
+                    />
+                )}
+
             {/* pen handles, for painting */}
-            {cropArea && pen !== PenType.None && <PenHandles cropArea={cropArea} />}
+            {cropArea && mouseMoveType.type === "painting" && <PenHandles cropArea={cropArea} />}
+
             {/* debug panel */}
             {enableDebug && mouseState && (
                 <div
@@ -76,6 +82,7 @@ export default function OverlayPage() {
                     <span className="text-white">{`Crop area: left: ${cropArea?.left ?? 0}, top: ${cropArea?.top ?? 0}, width: ${cropArea?.width ?? 0}, height: ${cropArea?.height ?? 0}`}</span>
                 </div>
             )}
+
             {/* tool bar */}
             {cropArea &&
                 !(

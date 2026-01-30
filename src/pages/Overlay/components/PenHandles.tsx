@@ -10,7 +10,7 @@ interface PenHandlesProps {
 const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className }) => {
     return (
         <div
-            className={cn("bg-black absolute cursor-wait", className)}
+            className={cn("bg-transparent absolute", className)}
             style={{
                 left: cropArea.left,
                 top: cropArea.top,
