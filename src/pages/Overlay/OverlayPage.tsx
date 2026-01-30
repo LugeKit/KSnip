@@ -1,10 +1,9 @@
 import { ENABLE_DEBUG_SETTING } from "@/services/setting/const";
 import { SettingValueBoolean } from "@/services/setting/types";
 import { SHORTCUT_SCREENSHOT_EXIT } from "@/services/shortcut/const";
-import { useSettingStore, useSettingValue } from "@/stores/useSettingStore";
-import { useShortcutStore } from "@/stores/useShortcutStore";
+import { useSettingValue } from "@/stores/useSettingStore";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import CropArea from "./components/CropArea";
 import CropToolbar from "./components/CropToolbar";
 import ResizeHandles from "./components/ResizeHandles";
@@ -14,16 +13,8 @@ import { useWindowShortcut } from "./hooks/shortcut";
 import { PenType } from "./types";
 
 export default function OverlayPage() {
-    const initSettings = useSettingStore((state) => state.init);
     const debugSetting = useSettingValue<SettingValueBoolean>(ENABLE_DEBUG_SETTING);
     const enableDebug = debugSetting?.value ?? false;
-
-    const initShortcuts = useShortcutStore((state) => state.init);
-
-    useEffect(() => {
-        initSettings();
-        initShortcuts(false);
-    }, []);
 
     const { isPressing, pressPosition, mousePosition, handleMouseDown, handleMouseUp, handleMouseMove } =
         useMouseEvent();
