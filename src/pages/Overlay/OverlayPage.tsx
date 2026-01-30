@@ -30,7 +30,7 @@ export default function OverlayPage() {
     const { isPressing, pressPosition, mousePosition, handleMouseDown, handleMouseUp, handleMouseMove } =
         useMouseEvent();
 
-    const { cropArea, cancelCrop, resizeDirection, mouseMoveType, startResize } = useCrop(
+    const { cropArea, cancelCrop, startResize, startDrag, startCrop } = useCrop(
         isPressing,
         mousePosition,
         pressPosition,
@@ -47,12 +47,17 @@ export default function OverlayPage() {
     return (
         <div
             className="fixed top-0 left-0 bg-transparent w-screen h-screen"
-            onMouseDown={handleMouseDown}
+            onMouseDown={(e) => {
+                handleMouseDown(e);
+                if (e.target === e.currentTarget) {
+                    startCrop();
+                }
+            }}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
         >
             <CropArea cropArea={cropArea} />
-            <ResizeHandles cropArea={cropArea} onResizeStart={startResize} />
+            <ResizeHandles cropArea={cropArea} onResizeStart={startResize} onDragStart={startDrag} />
             {enableDebug && (
                 <div
                     className="bg-black flex flex-col w-auto h-auto fixed"
@@ -64,8 +69,6 @@ export default function OverlayPage() {
                     <span className="text-white">{`Mouse position: ${mousePosition?.x ?? 0}, ${mousePosition?.y ?? 0}`}</span>
                     <span className="text-white">{`Press position: ${pressPosition?.x ?? 0}, ${pressPosition?.y ?? 0}`}</span>
                     <span className="text-white">{`Crop area: left: ${cropArea?.left ?? 0}, top: ${cropArea?.top ?? 0}, width: ${cropArea?.width ?? 0}, height: ${cropArea?.height ?? 0}`}</span>
-                    <span className="text-white">{`Resize direction: ${resizeDirection}`}</span>
-                    <span className="text-white">{`Mouse move type: ${mouseMoveType}`}</span>
                 </div>
             )}
             {cropArea && !isPressing && (

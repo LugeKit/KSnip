@@ -2,19 +2,6 @@ import { currentMonitor } from "@tauri-apps/api/window";
 import { useEffect, useRef, useState } from "react";
 import { MouseMoveType, Point, Rectangle, ResizeArea } from "../types";
 
-function isInRectangle(point: Point | null, rectangle: Rectangle | null) {
-    if (!point || !rectangle) {
-        return false;
-    }
-
-    return (
-        point.x >= rectangle.left &&
-        point.x <= rectangle.left + rectangle.width &&
-        point.y >= rectangle.top &&
-        point.y <= rectangle.top + rectangle.height
-    );
-}
-
 export function useCrop(isPressing: boolean, mousePosition: Point | null, pressPosition: Point | null) {
     const [cropArea, setCropArea] = useState<Rectangle | null>(null);
     const [resizeDirection, setResizeDirection] = useState<ResizeArea>(ResizeArea.None);
@@ -31,17 +18,12 @@ export function useCrop(isPressing: boolean, mousePosition: Point | null, pressP
         setMouseMoveType(MouseMoveType.Resizing);
     };
 
-    const determineMoveType = (mousePosition: Point | null) => {
-        // Resizing is now handled by explicit handlers (startResize), so we don't detect it here.
-        // We only check for Dragging (inside existing crop) or Cropping (outside).
-        
-        if (isInRectangle(mousePosition, cropArea)) {
-            setMouseMoveType(MouseMoveType.Dragging);
-            return;
-        }
+    const startDrag = () => {
+        setMouseMoveType(MouseMoveType.Dragging);
+    };
 
+    const startCrop = () => {
         setMouseMoveType(MouseMoveType.Cropping);
-        return;
     };
 
     const makingMouseMoveByType = (mousePosition: Point, pressPosition: Point) => {
@@ -172,7 +154,6 @@ export function useCrop(isPressing: boolean, mousePosition: Point | null, pressP
 
     useEffect(() => {
         if (!isPressing) {
-            determineMoveType(mousePosition);
             return;
         }
 
@@ -192,6 +173,8 @@ export function useCrop(isPressing: boolean, mousePosition: Point | null, pressP
         resizeDirection,
         mouseMoveType,
         startResize,
+        startDrag,
+        startCrop,
     };
 }
 

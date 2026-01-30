@@ -4,12 +4,12 @@ import { Rectangle, ResizeArea } from "../types";
 interface ResizeHandlesProps {
     cropArea: Rectangle | null;
     onResizeStart: (direction: ResizeArea) => void;
+    onDragStart: () => void;
 }
 
-const HANDLE_SIZE = 10; // Visual size or hit area size? Let's use it for hit area.
-// We'll use absolute positioning.
+const HANDLE_SIZE = 10; // Hit area
 
-const ResizeHandles: React.FC<ResizeHandlesProps> = ({ cropArea, onResizeStart }) => {
+const ResizeHandles: React.FC<ResizeHandlesProps> = ({ cropArea, onResizeStart, onDragStart }) => {
     if (!cropArea) return null;
 
     const handleMouseDown = (e: React.MouseEvent, direction: ResizeArea) => {
@@ -26,12 +26,17 @@ const ResizeHandles: React.FC<ResizeHandlesProps> = ({ cropArea, onResizeStart }
 
     return (
         <div
-            className="absolute pointer-events-none"
+            className="absolute pointer-events-auto cursor-move"
             style={{
                 left: cropArea.left,
                 top: cropArea.top,
                 width: cropArea.width,
                 height: cropArea.height,
+            }}
+            onMouseDown={(e) => {
+                if (e.target !== e.currentTarget) return;
+                e.preventDefault();
+                onDragStart();
             }}
         >
             {/* Corners */}
