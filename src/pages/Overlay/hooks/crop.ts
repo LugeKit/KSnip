@@ -15,72 +15,6 @@ function isInRectangle(point: Point | null, rectangle: Rectangle | null) {
     );
 }
 
-const EDGE_CORNER_RADIUS = 5;
-const EDGE_DISTANCE = 5;
-
-function distance(p1: Point, p2: Point) {
-    return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
-}
-
-function closeToEdge(point: Point | null, rectangle: Rectangle | null) {
-    if (!point || !rectangle) {
-        return ResizeArea.None;
-    }
-
-    if (distance(point, { x: rectangle.left, y: rectangle.top }) <= EDGE_CORNER_RADIUS) {
-        return ResizeArea.TopLeft;
-    }
-
-    if (distance(point, { x: rectangle.left + rectangle.width, y: rectangle.top }) <= EDGE_CORNER_RADIUS) {
-        return ResizeArea.TopRight;
-    }
-
-    if (distance(point, { x: rectangle.left, y: rectangle.top + rectangle.height }) <= EDGE_CORNER_RADIUS) {
-        return ResizeArea.BottomLeft;
-    }
-
-    if (
-        distance(point, { x: rectangle.left + rectangle.width, y: rectangle.top + rectangle.height }) <=
-        EDGE_CORNER_RADIUS
-    ) {
-        return ResizeArea.BottomRight;
-    }
-
-    if (
-        point.x >= rectangle.left &&
-        point.x <= rectangle.left + rectangle.width &&
-        Math.abs(point.y - rectangle.top) <= EDGE_DISTANCE
-    ) {
-        return ResizeArea.Top;
-    }
-
-    if (
-        point.x >= rectangle.left &&
-        point.x <= rectangle.left + rectangle.width &&
-        Math.abs(point.y - rectangle.top - rectangle.height) <= EDGE_DISTANCE
-    ) {
-        return ResizeArea.Bottom;
-    }
-
-    if (
-        point.y >= rectangle.top &&
-        point.y <= rectangle.top + rectangle.height &&
-        Math.abs(point.x - rectangle.left) <= EDGE_DISTANCE
-    ) {
-        return ResizeArea.Left;
-    }
-
-    if (
-        point.y >= rectangle.top &&
-        point.y <= rectangle.top + rectangle.height &&
-        Math.abs(point.x - rectangle.left - rectangle.width) <= EDGE_DISTANCE
-    ) {
-        return ResizeArea.Right;
-    }
-
-    return ResizeArea.None;
-}
-
 export function useCrop(isPressing: boolean, mousePosition: Point | null, pressPosition: Point | null) {
     const [cropArea, setCropArea] = useState<Rectangle | null>(null);
     const [resizeDirection, setResizeDirection] = useState<ResizeArea>(ResizeArea.None);
@@ -92,16 +26,15 @@ export function useCrop(isPressing: boolean, mousePosition: Point | null, pressP
         setCropArea(truncatedCropArea);
     };
 
-    const determineMoveType = (mousePosition: Point | null) => {
-        const resizeDirection = closeToEdge(mousePosition, cropArea);
-        if (resizeDirection) {
-            setMouseMoveType(MouseMoveType.Resizing);
-            setResizeDirection(resizeDirection);
-            return;
-        } else {
-            setResizeDirection(ResizeArea.None);
-        }
+    const startResize = (direction: ResizeArea) => {
+        setResizeDirection(direction);
+        setMouseMoveType(MouseMoveType.Resizing);
+    };
 
+    const determineMoveType = (mousePosition: Point | null) => {
+        // Resizing is now handled by explicit handlers (startResize), so we don't detect it here.
+        // We only check for Dragging (inside existing crop) or Cropping (outside).
+        
         if (isInRectangle(mousePosition, cropArea)) {
             setMouseMoveType(MouseMoveType.Dragging);
             return;
@@ -258,6 +191,7 @@ export function useCrop(isPressing: boolean, mousePosition: Point | null, pressP
         cancelCrop,
         resizeDirection,
         mouseMoveType,
+        startResize,
     };
 }
 
