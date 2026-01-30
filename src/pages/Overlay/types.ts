@@ -1,4 +1,3 @@
-
 export interface Point {
     x: number;
     y: number;
@@ -30,9 +29,11 @@ export enum ResizeArea {
 }
 
 export type MouseMoveType =
+    | { type: "idle" }
     | { type: "cropping" }
     | { type: "dragging" }
-    | { type: "resizing"; direction: ResizeArea };
+    | { type: "resizing"; direction: ResizeArea }
+    | { type: "painting"; pen: PenType };
 
 export enum PenType {
     None,

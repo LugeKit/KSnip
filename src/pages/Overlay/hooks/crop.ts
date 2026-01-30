@@ -140,6 +140,8 @@ export function useCrop(mouseState: MouseState) {
     useEffect(() => {
         if (mouseState.isPressing) {
             startCropArea.current = cropArea;
+        } else {
+            setMouseMoveType({ type: "idle" });
         }
     }, [mouseState.isPressing]);
 
@@ -150,15 +152,11 @@ export function useCrop(mouseState: MouseState) {
         makingMouseMoveByType(mouseState.mousePosition, mouseState.pressPosition);
     }, [mouseState]);
 
-    const cancelCrop = () => {
-        setCropArea(null);
-    };
-
     return {
         cropArea,
-        cancelCrop,
+        setCropArea: setCropAreaByPhysicalTruncate,
         mouseMoveType,
-        setMouseType: setMouseMoveType,
+        setMouseMoveType,
     };
 }
 
