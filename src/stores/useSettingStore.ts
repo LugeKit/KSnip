@@ -24,7 +24,8 @@ export const useSettingStore = create<SettingState>((set) => ({
     },
     updateSetting: async (id: string, value: SettingValue) => {
         try {
-            // Optimistic update
+            await updateSettingService(id, value);
+
             set((state) => {
                 const setting = state.settings[id];
                 if (!setting) return state;
@@ -38,8 +39,6 @@ export const useSettingStore = create<SettingState>((set) => ({
                     },
                 };
             });
-
-            await updateSettingService(id, value);
         } catch (e) {
             error(`[useSettingStore] updateSetting error: ${e}`);
         }
