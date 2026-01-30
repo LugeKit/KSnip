@@ -11,9 +11,12 @@ import { useCrop } from "./hooks/crop";
 import { useMouseEvent } from "./hooks/mouse";
 import { useWindowShortcut } from "./hooks/shortcut";
 import { MouseMoveType, PenType, ResizeArea } from "./types";
+import { useShortcutStore } from "@/stores/useShortcutStore";
 
 export default function OverlayPage() {
     const [enableDebug, setEnableDebug] = useState(false);
+    const initShortcuts = useShortcutStore((state) => state.init);
+
     useEffect(() => {
         getSetting(ENABLE_DEBUG_SETTING).then((setting) => {
             if (!setting) {
@@ -21,6 +24,7 @@ export default function OverlayPage() {
             }
             setEnableDebug((setting.value as SettingValueBoolean).value);
         });
+        initShortcuts(false);
     }, []);
 
     const { isPressing, pressPosition, mousePosition, handleMouseDown, handleMouseUp, handleMouseMove } =

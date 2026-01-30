@@ -1,9 +1,11 @@
 import { Badge } from "@/components/ui/badge";
+import Border from "@/components/ui/Border.tsx";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { TabsHeader } from "@/pages/Main/components/Tab.tsx";
 import {
     SHORTCUT_CREATE_PIN,
     SHORTCUT_RECORD_REGION,
@@ -13,22 +15,11 @@ import {
     SHORTCUT_TAKE_SCREENSHOT,
     SHORTCUT_TEST,
 } from "@/services/shortcut/const";
-import { getAllShortcuts, getShortcut, updateShortcutEnabled, updateShortcutKey } from "@/services/shortcut/shortcut";
+import { Shortcut } from "@/services/shortcut/types";
+import { useShortcutStore } from "@/stores/useShortcutStore";
 import { debug, error, warn } from "@tauri-apps/plugin-log";
 import { CheckIcon, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import {TabsHeader} from "@/pages/Main/components/Tab.tsx";
-import Border from "@/components/ui/Border.tsx";
-
-type ShortcutState = {
-    keys: string[];
-    enabled: boolean;
-};
-
-type ShortcutItem = {
-    id: string;
-    name: string;
-} & ShortcutState;
 
 export default function ShortcutSetting() {
     const tabsData = useMemo(() => {
@@ -52,48 +43,25 @@ export default function ShortcutSetting() {
         ];
     }, []);
 
-    const [shortcutItems, setShortcutItems] = useState<Record<string, ShortcutItem[]>>({});
+    const { shortcuts } = useShortcutStore();
 
-    useEffect(() => {
-        const loadShortcuts = async () => {
-            const allShortcuts = await getAllShortcuts();
-            const shortcutsByPage: Record<string, ShortcutItem[]> = {};
-
-            tabsData.forEach((tab) => {
-                const items = tab.shortcutIds.map((id) => allShortcuts[id]).filter((item) => item !== undefined);
-                shortcutsByPage[tab.page] = items;
-            });
-
-            setShortcutItems(shortcutsByPage);
-        };
-
-        loadShortcuts();
-    }, [tabsData]);
-
-    const onShortcutChanged = (page: string) => async (id: string) => {
-        try {
-            const shortcut = await getShortcut(id);
-            if (!shortcut) {
-                return;
-            }
-
-            setShortcutItems((prev) => ({
-                ...prev,
-                [page]: prev[page].map((item) =>
-                    item.id === id ? { ...item, enabled: shortcut.enabled, keys: shortcut.keys } : item,
-                ),
-            }));
-        } catch (e) {
-            warn(`[ShortcutSetting] failed to get shortcut: ${id}, error: ${e}`);
-        }
-    };
+    const shortcutItems = useMemo(() => {
+        const shortcutsByPage: Record<string, Shortcut[]> = {};
+        tabsData.forEach((tab) => {
+            const items = tab.shortcutIds
+                .map((id) => shortcuts[id])
+                .filter((item) => item !== undefined);
+            shortcutsByPage[tab.page] = items;
+        });
+        return shortcutsByPage;
+    }, [tabsData, shortcuts]);
 
     return (
         <div className="relative top-0 right-0 w-full h-full p-4">
             <Tabs defaultValue="basic" className="w-full">
                 <TabsHeader headers={tabsData} />
                 <Border />
-                {Object.entries(shortcutItems).map(([page, shortcuts]) => {
+                {Object.entries(shortcutItems).map(([page, pageShortcuts]) => {
                     return (
                         <TabsContent
                             key={page}
@@ -102,7 +70,7 @@ export default function ShortcutSetting() {
                         >
                             <Table>
                                 <TabsContentHeader />
-                                <TabsContentBody shortcuts={shortcuts} onShortcutChanged={onShortcutChanged(page)} />
+                                <TabsContentBody shortcuts={pageShortcuts} />
                             </Table>
                         </TabsContent>
                     );
@@ -124,17 +92,12 @@ function TabsContentHeader() {
     );
 }
 
-function TabsContentBody({
-    shortcuts,
-    onShortcutChanged,
-}: {
-    shortcuts: ShortcutItem[];
-    onShortcutChanged: (id: string) => void;
-}) {
+function TabsContentBody({ shortcuts }: { shortcuts: Shortcut[] }) {
+    const updateShortcutEnabled = useShortcutStore((state) => state.updateShortcutEnabled);
+
     const onChecked = async (id: string, enabled: boolean) => {
         try {
             await updateShortcutEnabled(id, enabled);
-            onShortcutChanged(id);
         } catch (e) {
             warn(`[ShortcutSetting] failed to update shortcut to enabled[${enabled}]: ${id}, error: ${e}`);
         }
@@ -148,7 +111,7 @@ function TabsContentBody({
                     <TableCell>{shortcut.name}</TableCell>
                     {/* 快捷键列 */}
                     <TableCell className="text-center">
-                        <ShortcutCell shortcut={shortcut} onShortcutChanged={onShortcutChanged} />
+                        <ShortcutCell shortcut={shortcut} />
                     </TableCell>
                     {/* 启用列 */}
                     <TableCell className="text-center">
@@ -164,15 +127,10 @@ function TabsContentBody({
     );
 }
 
-function ShortcutCell({
-    shortcut,
-    onShortcutChanged,
-}: {
-    shortcut: ShortcutItem;
-    onShortcutChanged: (id: string) => void;
-}) {
+function ShortcutCell({ shortcut }: { shortcut: Shortcut }) {
     const [keys, setKeys] = useState<string[]>([]);
     const [open, setOpen] = useState<boolean>(false);
+    const updateShortcutKey = useShortcutStore((state) => state.updateShortcutKey);
 
     useEffect(() => {
         if (!open) return;
@@ -211,7 +169,6 @@ function ShortcutCell({
     const onConfirm = async () => {
         try {
             await updateShortcutKey(shortcut.id, keys);
-            onShortcutChanged(shortcut.id);
             setOpen(false);
         } catch (e) {
             error(`[ShortcutSetting] failed to update shortcut key [${shortcut.id}] to [${keys}], error: ${e}`);

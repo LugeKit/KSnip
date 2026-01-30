@@ -7,7 +7,7 @@ import {
     SHORTCUT_RECORD_REGION_CONFIRM,
     SHORTCUT_SCREENSHOT_CONFIRM,
 } from "@/services/shortcut/const";
-import { getShortcut } from "@/services/shortcut/shortcut";
+import { useShortcutStore } from "@/stores/useShortcutStore";
 import { invoke } from "@tauri-apps/api/core";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { currentMonitor, getCurrentWindow, Monitor } from "@tauri-apps/api/window";
@@ -91,7 +91,7 @@ export default function CropToolbar({ cropArea, pen, onConfirm, onCancel, onSele
         }
 
         try {
-            const confirmShortcut = await getShortcut(SHORTCUT_RECORD_REGION_CONFIRM);
+            const confirmShortcut = useShortcutStore.getState().shortcuts[SHORTCUT_RECORD_REGION_CONFIRM];
             if (!confirmShortcut) {
                 error(`[CropToolbar] failed to get confirm shortcut`);
                 return;

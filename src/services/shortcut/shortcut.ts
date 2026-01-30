@@ -8,7 +8,7 @@ const SHORTCUT_SETTING_KEY = "shortcut_setting";
 
 let initPromise: Promise<void> | null = null;
 
-export async function initShortcut() {
+export async function initShortcut(registerGlobal: boolean = true) {
     if (initPromise) {
         return initPromise;
     }
@@ -17,7 +17,9 @@ export async function initShortcut() {
             const store = await getLocalStore();
             let setting = await store.get<ShortcutSetting>(SHORTCUT_SETTING_KEY);
             setting = mergeWithDefault(setting);
-            await initGlobalShortcutRegister(setting.shortcuts);
+            if (registerGlobal) {
+                await initGlobalShortcutRegister(setting.shortcuts);
+            }
             await store.set(SHORTCUT_SETTING_KEY, setting);
             debug(`[shortcut service] init shortcut: ${JSON.stringify(setting)}`);
         } catch (e) {
@@ -222,6 +224,31 @@ async function saveShortcut(shortcut: Shortcut) {
     await store.set(SHORTCUT_SETTING_KEY, setting);
 }
 
+export function isShortcutPressed(shortcut: Shortcut, e: KeyboardEvent): boolean {
+    const keys = shortcut.keys;
+    for (const key of keys) {
+        if (key === "CTRL" && e.ctrlKey) {
+            continue;
+        }
+
+        if (key === "SHIFT" && e.shiftKey) {
+            continue;
+        }
+
+        if (key === "ALT" && e.altKey) {
+            continue;
+        }
+
+        if ((key === "CMD" || key === "WIN") && e.metaKey) {
+            continue;
+        }
+        if (key === e.key.toUpperCase()) {
+            return true;
+        }
+    }
+    return false;
+}
+
 export async function registerWindowShortcut(id: string, f: (e: KeyboardEvent) => void | Promise<void>) {
     const shortcut = await getShortcut(id);
     if (!shortcut) {
@@ -235,27 +262,8 @@ export async function registerWindowShortcut(id: string, f: (e: KeyboardEvent) =
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
-        const keys = shortcut.keys;
-        for (const key of keys) {
-            if (key === "CTRL" && e.ctrlKey) {
-                continue;
-            }
-
-            if (key === "SHIFT" && e.shiftKey) {
-                continue;
-            }
-
-            if (key === "ALT" && e.altKey) {
-                continue;
-            }
-
-            if ((key === "CMD" || key === "WIN") && e.metaKey) {
-                continue;
-            }
-            if (key === e.key.toUpperCase()) {
-                f(e);
-                break;
-            }
+        if (isShortcutPressed(shortcut, e)) {
+            f(e);
         }
     };
 
