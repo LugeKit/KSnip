@@ -4,6 +4,12 @@ export interface Point {
     y: number;
 }
 
+export interface MouseState {
+    isPressing: boolean;
+    pressPosition: Point | null;
+    mousePosition: Point | null;
+}
+
 export interface Rectangle {
     left: number;
     top: number;

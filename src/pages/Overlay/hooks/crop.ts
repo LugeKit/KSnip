@@ -1,8 +1,8 @@
 import { currentMonitor } from "@tauri-apps/api/window";
 import { useEffect, useRef, useState } from "react";
-import { MouseMoveType, Point, Rectangle, ResizeArea } from "../types";
+import { MouseMoveType, MouseState, Point, Rectangle, ResizeArea } from "../types";
 
-export function useCrop(isPressing: boolean, mousePosition: Point | null, pressPosition: Point | null) {
+export function useCrop(mouseState: MouseState) {
     const [cropArea, setCropArea] = useState<Rectangle | null>(null);
     const [mouseMoveType, setMouseMoveType] = useState<MouseMoveType>({ type: "cropping" });
     const startCropArea = useRef<Rectangle | null>(null);
@@ -135,21 +135,17 @@ export function useCrop(isPressing: boolean, mousePosition: Point | null, pressP
     };
 
     useEffect(() => {
-        if (isPressing) {
+        if (mouseState.isPressing) {
             startCropArea.current = cropArea;
         }
-    }, [isPressing]);
+    }, [mouseState.isPressing]);
 
     useEffect(() => {
-        if (!isPressing) {
+        if (!mouseState.isPressing || !mouseState.mousePosition || !mouseState.pressPosition) {
             return;
         }
-
-        if (!mousePosition || !pressPosition) {
-            return;
-        }
-        makingMouseMoveByType(mousePosition, pressPosition);
-    }, [isPressing, mousePosition, pressPosition]);
+        makingMouseMoveByType(mouseState.mousePosition, mouseState.pressPosition);
+    }, [mouseState]);
 
     const cancelCrop = () => {
         setCropArea(null);

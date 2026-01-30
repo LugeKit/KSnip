@@ -16,10 +16,10 @@ export default function OverlayPage() {
     const debugSetting = useSettingValue<SettingValueBoolean>(ENABLE_DEBUG_SETTING);
     const enableDebug = debugSetting?.value ?? false;
 
-    const { isPressing, pressPosition, mousePosition, handleMouseDown, handleMouseUp, handleMouseMove } =
-        useMouseEvent();
+    const { mouseState, handleMouseDown, handleMouseUp, handleMouseMove } = useMouseEvent();
+    const { isPressing, pressPosition, mousePosition } = mouseState;
 
-    const { cropArea, cancelCrop, setMouseType } = useCrop(isPressing, mousePosition, pressPosition);
+    const { cropArea, setMouseType } = useCrop(mouseState);
 
     const [pen, setPen] = useState(PenType.None);
 
@@ -27,6 +27,7 @@ export default function OverlayPage() {
         const appWindow = getCurrentWindow();
         appWindow.close();
     }, []);
+
     useWindowShortcut(SHORTCUT_SCREENSHOT_EXIT, closeOverlayPage);
 
     return (
@@ -74,13 +75,9 @@ export default function OverlayPage() {
                             cropArea={cropArea}
                             pen={pen}
                             onConfirm={closeOverlayPage}
-                            onCancel={cancelCrop}
+                            onCancel={closeOverlayPage}
                             onSelectPen={(newPen) => {
-                                if (pen === newPen) {
-                                    setPen(PenType.None);
-                                } else {
-                                    setPen(newPen);
-                                }
+                                setPen(newPen === pen ? PenType.None : newPen);
                             }}
                         />
                     </div>

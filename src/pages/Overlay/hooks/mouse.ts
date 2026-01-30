@@ -1,29 +1,38 @@
 import { useState } from "react";
-import { Point } from "../types";
+import { MouseState } from "../types";
 
 export function useMouseEvent() {
-    const [isPressing, setIsPressing] = useState(false);
-    const [pressPosition, setPressPosition] = useState<Point | null>(null);
-    const [mousePosition, setMousePosition] = useState<Point | null>(null);
+    const [mouseState, setMouseState] = useState<MouseState>({
+        isPressing: false,
+        pressPosition: null,
+        mousePosition: null,
+    });
 
     const handleMouseDown = (e: React.MouseEvent) => {
-        setIsPressing(true);
-        setPressPosition({ x: e.clientX, y: e.clientY });
+        setMouseState((prev) => ({
+            ...prev,
+            isPressing: true,
+            pressPosition: { x: e.clientX, y: e.clientY },
+        }));
     };
 
     const handleMouseMove = (e: React.MouseEvent) => {
-        setMousePosition({ x: e.clientX, y: e.clientY });
+        setMouseState((prev) => ({
+            ...prev,
+            mousePosition: { x: e.clientX, y: e.clientY },
+        }));
     };
 
     const handleMouseUp = (e: React.MouseEvent) => {
-        setPressPosition(null);
-        setIsPressing(false);
+        setMouseState((prev) => ({
+            ...prev,
+            isPressing: false,
+            pressPosition: null,
+        }));
     };
 
     return {
-        isPressing,
-        pressPosition,
-        mousePosition,
+        mouseState,
         handleMouseDown,
         handleMouseMove,
         handleMouseUp,
