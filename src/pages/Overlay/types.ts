@@ -1,3 +1,4 @@
+
 export interface Point {
     x: number;
     y: number;
@@ -8,12 +9,6 @@ export interface Rectangle {
     top: number;
     width: number;
     height: number;
-}
-
-export enum MouseMoveType {
-    Cropping,
-    Dragging,
-    Resizing,
 }
 
 export enum ResizeArea {
@@ -27,6 +22,11 @@ export enum ResizeArea {
     Top,
     Bottom,
 }
+
+export type MouseMoveType =
+    | { type: "cropping" }
+    | { type: "dragging" }
+    | { type: "resizing"; direction: ResizeArea };
 
 export enum PenType {
     None,

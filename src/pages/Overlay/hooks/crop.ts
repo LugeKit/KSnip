@@ -4,8 +4,7 @@ import { MouseMoveType, Point, Rectangle, ResizeArea } from "../types";
 
 export function useCrop(isPressing: boolean, mousePosition: Point | null, pressPosition: Point | null) {
     const [cropArea, setCropArea] = useState<Rectangle | null>(null);
-    const [resizeDirection, setResizeDirection] = useState<ResizeArea>(ResizeArea.None);
-    const [mouseMoveType, setMouseMoveType] = useState<MouseMoveType>(MouseMoveType.Cropping);
+    const [mouseMoveType, setMouseMoveType] = useState<MouseMoveType>({ type: "cropping" });
     const startCropArea = useRef<Rectangle | null>(null);
 
     const setCropAreaByPhysicalTruncate = async (rectangle: Rectangle) => {
@@ -13,22 +12,9 @@ export function useCrop(isPressing: boolean, mousePosition: Point | null, pressP
         setCropArea(truncatedCropArea);
     };
 
-    const startResize = (direction: ResizeArea) => {
-        setResizeDirection(direction);
-        setMouseMoveType(MouseMoveType.Resizing);
-    };
-
-    const startDrag = () => {
-        setMouseMoveType(MouseMoveType.Dragging);
-    };
-
-    const startCrop = () => {
-        setMouseMoveType(MouseMoveType.Cropping);
-    };
-
     const makingMouseMoveByType = (mousePosition: Point, pressPosition: Point) => {
-        switch (mouseMoveType) {
-            case MouseMoveType.Cropping: {
+        switch (mouseMoveType.type) {
+            case "cropping": {
                 const width = Math.abs(pressPosition.x - mousePosition.x);
                 const height = Math.abs(pressPosition.y - mousePosition.y);
                 if (width <= 0 || height <= 0) {
@@ -44,7 +30,7 @@ export function useCrop(isPressing: boolean, mousePosition: Point | null, pressP
                 });
                 break;
             }
-            case MouseMoveType.Dragging: {
+            case "dragging": {
                 if (!cropArea || !startCropArea.current) {
                     return;
                 }
@@ -57,15 +43,17 @@ export function useCrop(isPressing: boolean, mousePosition: Point | null, pressP
                 });
                 break;
             }
-            case MouseMoveType.Resizing: {
-                if (!cropArea || !resizeDirection || !startCropArea.current) {
+            case "resizing": {
+                if (!cropArea || !startCropArea.current) {
                     return;
                 }
+
+                const { direction } = mouseMoveType;
 
                 const xDiff = mousePosition.x - pressPosition.x;
                 const yDiff = mousePosition.y - pressPosition.y;
 
-                switch (resizeDirection) {
+                switch (direction) {
                     case ResizeArea.TopLeft: {
                         setCropAreaByPhysicalTruncate({
                             left: startCropArea.current.left + xDiff,
@@ -170,11 +158,8 @@ export function useCrop(isPressing: boolean, mousePosition: Point | null, pressP
     return {
         cropArea,
         cancelCrop,
-        resizeDirection,
         mouseMoveType,
-        startResize,
-        startDrag,
-        startCrop,
+        setMouseType: setMouseMoveType,
     };
 }
 

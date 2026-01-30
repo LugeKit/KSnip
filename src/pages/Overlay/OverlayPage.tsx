@@ -30,11 +30,7 @@ export default function OverlayPage() {
     const { isPressing, pressPosition, mousePosition, handleMouseDown, handleMouseUp, handleMouseMove } =
         useMouseEvent();
 
-    const { cropArea, cancelCrop, startResize, startDrag, startCrop } = useCrop(
-        isPressing,
-        mousePosition,
-        pressPosition,
-    );
+    const { cropArea, cancelCrop, setMouseType } = useCrop(isPressing, mousePosition, pressPosition);
 
     const [pen, setPen] = useState(PenType.None);
 
@@ -50,14 +46,18 @@ export default function OverlayPage() {
             onMouseDown={(e) => {
                 handleMouseDown(e);
                 if (e.target === e.currentTarget) {
-                    startCrop();
+                    setMouseType({ type: "cropping" });
                 }
             }}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
         >
             <CropArea cropArea={cropArea} />
-            <ResizeHandles cropArea={cropArea} onResizeStart={startResize} onDragStart={startDrag} />
+            <ResizeHandles
+                cropArea={cropArea}
+                onResizeStart={(direction) => setMouseType({ type: "resizing", direction })}
+                onDragStart={() => setMouseType({ type: "dragging" })}
+            />
             {enableDebug && (
                 <div
                     className="bg-black flex flex-col w-auto h-auto fixed"
