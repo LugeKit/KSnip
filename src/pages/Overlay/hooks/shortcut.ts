@@ -1,10 +1,15 @@
 import { isShortcutPressed } from "@/services/shortcut/shortcut";
 import { useShortcutStore } from "@/stores/useShortcutStore";
 import { debug, info } from "@tauri-apps/plugin-log";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export function useWindowShortcut(id: string, callback: (e: KeyboardEvent) => void) {
     const shortcut = useShortcutStore((state) => state.shortcuts[id]);
+    const callbackRef = useRef(callback);
+
+    useEffect(() => {
+        callbackRef.current = callback;
+    }, [callback]);
 
     useEffect(() => {
         if (!shortcut) {
@@ -19,7 +24,7 @@ export function useWindowShortcut(id: string, callback: (e: KeyboardEvent) => vo
 
         const handleKeyDown = (e: KeyboardEvent) => {
             if (isShortcutPressed(shortcut, e)) {
-                callback(e);
+                callbackRef.current(e);
             }
         };
 
@@ -29,5 +34,5 @@ export function useWindowShortcut(id: string, callback: (e: KeyboardEvent) => vo
             debug(`[useWindowShortcut] unregistering window shortcut [${id}]`);
             window.removeEventListener("keydown", handleKeyDown);
         };
-    }, [id, callback, shortcut]);
+    }, [id, shortcut]);
 }
