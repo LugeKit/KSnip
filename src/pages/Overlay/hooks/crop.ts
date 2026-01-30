@@ -7,6 +7,9 @@ export function useCrop(mouseState: MouseState) {
     const [mouseMoveType, setMouseMoveType] = useState<MouseMoveType>({ type: "cropping" });
     const startCropArea = useRef<Rectangle | null>(null);
 
+    // IMPORTANT:
+    // truncate logical crop area to physical,
+    // avoid physical pixel mistake when making screenshot
     const setCropAreaByPhysicalTruncate = async (rectangle: Rectangle) => {
         const truncatedCropArea = await physicalTruncate(rectangle);
         setCropArea(truncatedCropArea);
