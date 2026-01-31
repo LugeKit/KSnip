@@ -10,6 +10,7 @@ import {
     SHORTCUT_CREATE_PIN,
     SHORTCUT_RECORD_REGION,
     SHORTCUT_RECORD_REGION_CONFIRM,
+    SHORTCUT_REDO,
     SHORTCUT_SCREENSHOT_CONFIRM,
     SHORTCUT_SCREENSHOT_EXIT,
     SHORTCUT_TAKE_SCREENSHOT,
@@ -18,6 +19,7 @@ import {
     SHORTCUT_TOOL_LINE,
     SHORTCUT_TOOL_PEN,
     SHORTCUT_TOOL_RECTANGLE,
+    SHORTCUT_UNDO,
 } from "@/services/shortcut/const";
 import { Shortcut } from "@/services/shortcut/types";
 import { useShortcutStore } from "@/stores/useShortcutStore";
@@ -46,6 +48,8 @@ export default function ShortcutSetting() {
                     SHORTCUT_TOOL_ARROW,
                     SHORTCUT_TOOL_LINE,
                     SHORTCUT_TOOL_PEN,
+                    SHORTCUT_UNDO,
+                    SHORTCUT_REDO,
                 ],
             },
         ];

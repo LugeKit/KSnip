@@ -1,6 +1,6 @@
 import { ENABLE_DEBUG_SETTING } from "@/services/setting/const";
 import { SettingValueBoolean } from "@/services/setting/types";
-import { SHORTCUT_SCREENSHOT_EXIT } from "@/services/shortcut/const";
+import { SHORTCUT_REDO, SHORTCUT_SCREENSHOT_EXIT, SHORTCUT_UNDO } from "@/services/shortcut/const";
 import { useSettingValue } from "@/stores/useSettingStore";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useCallback, useEffect, useState } from "react";
@@ -9,9 +9,10 @@ import CropToolbar from "./components/CropToolbar";
 import PenHandles from "./components/PenHandles";
 import ResizeHandles from "./components/ResizeHandles";
 import { useCrop } from "./hooks/crop";
+import { useShapeHistory } from "./hooks/history";
 import { useMouseEvent } from "./hooks/mouse";
 import { useWindowShortcut } from "./hooks/shortcut";
-import { Pen, Shape } from "./types";
+import { Pen } from "./types";
 
 export default function OverlayPage() {
     const debugSetting = useSettingValue<SettingValueBoolean>(ENABLE_DEBUG_SETTING);
@@ -21,7 +22,11 @@ export default function OverlayPage() {
     const { cropArea, mouseMoveType, setMouseMoveType } = useCrop(mouseState);
 
     const [pen, setPen] = useState<Pen>({ type: "none" });
-    const [shapes, setShapes] = useState<Shape[]>([]);
+
+    const { shapes, addShape, undo, redo } = useShapeHistory();
+    useWindowShortcut(SHORTCUT_UNDO, undo);
+    useWindowShortcut(SHORTCUT_REDO, redo);
+
     useEffect(() => {
         if (pen.type === "none") {
             setMouseMoveType({ type: "idle" });
@@ -72,7 +77,7 @@ export default function OverlayPage() {
                     mouseState={mouseState}
                     pen={pen}
                     shapes={shapes}
-                    onAddShape={(shape) => setShapes((prev) => [...prev, shape])}
+                    onAddShape={addShape}
                 />
             )}
 
