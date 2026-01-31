@@ -11,7 +11,7 @@ import ResizeHandles from "./components/ResizeHandles";
 import { useCrop } from "./hooks/crop";
 import { useMouseEvent } from "./hooks/mouse";
 import { useWindowShortcut } from "./hooks/shortcut";
-import { PenType, Shape } from "./types";
+import { Pen, Shape } from "./types";
 
 export default function OverlayPage() {
     const debugSetting = useSettingValue<SettingValueBoolean>(ENABLE_DEBUG_SETTING);
@@ -20,15 +20,15 @@ export default function OverlayPage() {
     const { mouseState, handleMouseDown, handleMouseUp, handleMouseMove } = useMouseEvent();
     const { cropArea, mouseMoveType, setMouseMoveType } = useCrop(mouseState);
 
-    const [pen, setPen] = useState(PenType.None);
+    const [pen, setPen] = useState<Pen>({ type: "none" });
     const [shapes, setShapes] = useState<Shape[]>([]);
     useEffect(() => {
-        if (pen === PenType.None) {
+        if (pen.type === "none") {
             setMouseMoveType({ type: "idle" });
             return;
         }
 
-        setMouseMoveType({ type: "painting", pen: pen });
+        setMouseMoveType({ type: "painting" });
     }, [pen]);
 
     const closeOverlayPage = useCallback(() => {
@@ -114,7 +114,7 @@ export default function OverlayPage() {
                                 onConfirm={closeOverlayPage}
                                 onCancel={closeOverlayPage}
                                 onSelectPen={(newPen) => {
-                                    setPen(newPen === pen ? PenType.None : newPen);
+                                    setPen(newPen === pen ? { type: "none" } : newPen);
                                 }}
                             />
                         </div>

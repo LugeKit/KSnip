@@ -15,14 +15,14 @@ import { debug, error, info } from "@tauri-apps/plugin-log";
 import { CheckIcon, Disc, PinIcon, RectangleCircle, X } from "lucide-react";
 import React, { useState } from "react";
 import { useWindowShortcut } from "../hooks/shortcut";
-import { PenType, Rectangle } from "../types";
+import { Pen, Rectangle } from "../types";
 
 interface CropToolbarProps {
     cropArea: Rectangle;
-    pen: PenType;
+    pen: Pen;
     onConfirm: () => void;
     onCancel: () => void;
-    onSelectPen: (pen: PenType) => void;
+    onSelectPen: (pen: Pen) => void;
 }
 
 interface LogicalParam {
@@ -137,8 +137,8 @@ export default function CropToolbar({ cropArea, pen, onConfirm, onCancel, onSele
             <CommonButton onClick={takeScreenshot}>
                 <CheckIcon />
             </CommonButton>
-            <CommonButton onClick={() => onSelectPen(PenType.Rectangle)}>
-                {pen === PenType.Rectangle ? <RectangleCircle className="text-red-500" /> : <RectangleCircle />}
+            <CommonButton onClick={() => onSelectPen({ type: "rectangle", strokeColor: "red", strokeWidth: 2 })}>
+                {pen.type === "rectangle" ? <RectangleCircle className="text-red-500" /> : <RectangleCircle />}
             </CommonButton>
             <CommonButton onClick={createPin}>
                 <PinIcon />

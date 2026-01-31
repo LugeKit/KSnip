@@ -33,18 +33,19 @@ export type MouseMoveType =
     | { type: "cropping" }
     | { type: "dragging" }
     | { type: "resizing"; direction: ResizeArea }
-    | { type: "painting"; pen: PenType };
+    | { type: "painting" };
 
-export enum PenType {
-    None,
-    Rectangle,
-}
+export type Pen =
+    | { type: "none" }
+    | { type: "rectangle"; strokeColor: string; strokeWidth: number }
+    | { type: "free_line"; strokeColor: string; strokeWidth: number }
+    | { type: "straight_line"; strokeColor: string; strokeWidth: number };
 
 export interface Shape {
-    value: {
-        type: PenType.Rectangle;
-        rect: Rectangle;
-    };
+    value:
+        | { type: "rectangle"; rect: Rectangle }
+        | { type: "free_line"; line: string }
+        | { type: "straight_line"; start: Point; end: Point };
     strokeColor: string;
     strokeWidth: number;
 }
