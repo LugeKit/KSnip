@@ -210,19 +210,19 @@ function PenSettings({ pen, onChange }: { pen: Pen; onChange: (pen: Pen) => void
             className="flex flex-col gap-2 p-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md shadow-sm pointer-events-auto"
             onMouseDown={(e) => e.stopPropagation()}
         >
-            <div className="flex flex-wrap gap-1.5 items-center">
+            <div className="flex flex-wrap gap-2 items-center">
                 {colors.map((c) => (
                     <button
                         key={c}
-                        className={`w-5 h-5 rounded-full border border-gray-200 ${
+                        className={`w-5 h-5 rounded-full shadow-sm ${
                             pen.strokeColor === c ? "ring-2 ring-offset-1 ring-blue-500" : ""
-                        }`}
+                        } ${pen.strokeColor !== c ? "hover:ring-2 hover:ring-offset-1 hover:ring-blue-300" : ""}`}
                         style={{ backgroundColor: c }}
                         onClick={() => updateColor(c)}
                     />
                 ))}
                 <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-1" />
-                <div className="relative w-5 h-5 rounded-full overflow-hidden border border-gray-200">
+                <div className="relative w-5 h-5 rounded-full overflow-hidden">
                     <input
                         type="color"
                         value={pen.strokeColor}
