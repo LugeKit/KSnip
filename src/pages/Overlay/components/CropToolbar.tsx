@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
+import { Input } from "@/components/ui/input";
 import { registerGlobalShortcut, unregisterGlobalShortcut } from "@/lib/utils";
 import {
     SHORTCUT_CREATE_PIN,
@@ -23,6 +24,7 @@ interface CropToolbarProps {
     onConfirm: () => void;
     onCancel: () => void;
     onSelectPen: (pen: Pen) => void;
+    onPenUpdate?: (pen: Pen) => void;
 }
 
 interface LogicalParam {
@@ -46,7 +48,14 @@ function newLogicalParam(rect: Rectangle, monitor: Monitor): LogicalParam {
     };
 }
 
-export default function CropToolbar({ cropArea, pen, onConfirm, onCancel, onSelectPen }: CropToolbarProps) {
+export default function CropToolbar({
+    cropArea,
+    pen,
+    onConfirm,
+    onCancel,
+    onSelectPen,
+    onPenUpdate,
+}: CropToolbarProps) {
     const [isRecording, setRecording] = useState(false);
 
     const takeScreenshot = async () => {
@@ -128,34 +137,119 @@ export default function CropToolbar({ cropArea, pen, onConfirm, onCancel, onSele
     useWindowShortcut(SHORTCUT_CREATE_PIN, createPin);
     useWindowShortcut(SHORTCUT_RECORD_REGION, recordRegion);
 
+    const handlePenUpdate = (updatedPen: Pen) => {
+        if (onPenUpdate) {
+            onPenUpdate(updatedPen);
+        } else {
+            onSelectPen(updatedPen);
+        }
+    };
+
     return (
-        <ButtonGroup
-            onMouseDown={(e: React.MouseEvent) => {
-                e.stopPropagation();
-            }}
+        <div className="flex flex-col items-end gap-2">
+            <ButtonGroup
+                onMouseDown={(e: React.MouseEvent) => {
+                    e.stopPropagation();
+                }}
+            >
+                <CommonButton onClick={takeScreenshot}>
+                    <CheckIcon />
+                </CommonButton>
+                <CommonButton
+                    onClick={() => onSelectPen({ type: "rectangle", strokeColor: "#EF4444", strokeWidth: 2 })}
+                >
+                    <RectangleHorizontal className={pen.type === "rectangle" ? "text-red-500" : ""} />
+                </CommonButton>
+                <CommonButton
+                    onClick={() => onSelectPen({ type: "free_line", strokeColor: "#EF4444", strokeWidth: 2 })}
+                >
+                    <Pencil className={pen.type === "free_line" ? "text-red-500" : ""} />
+                </CommonButton>
+                <CommonButton
+                    onClick={() => onSelectPen({ type: "straight_line", strokeColor: "#EF4444", strokeWidth: 2 })}
+                >
+                    <Minus className={pen.type === "straight_line" ? "text-red-500" : ""} />
+                </CommonButton>
+                <CommonButton onClick={createPin}>
+                    <Pin />
+                </CommonButton>
+                <CommonButton onClick={recordRegion}>
+                    <Video className={isRecording ? "text-red-500" : ""} />
+                </CommonButton>
+                <CommonButton onClick={onCancel}>
+                    <X />
+                </CommonButton>
+            </ButtonGroup>
+            {pen.type !== "none" && <PenSettings pen={pen} onChange={handlePenUpdate} />}
+        </div>
+    );
+}
+
+function PenSettings({ pen, onChange }: { pen: Pen; onChange: (pen: Pen) => void }) {
+    if (pen.type === "none") return null;
+
+    const colors = [
+        "#EF4444", // Red
+        "#EAB308", // Yellow
+        "#22C55E", // Green
+        "#3B82F6", // Blue
+        "#000000", // Black
+        "#FFFFFF", // White
+    ];
+
+    const updateColor = (color: string) => {
+        onChange({ ...pen, strokeColor: color });
+    };
+
+    const updateWidth = (width: number) => {
+        onChange({ ...pen, strokeWidth: width });
+    };
+
+    return (
+        <div
+            className="flex flex-col gap-2 p-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-md shadow-sm pointer-events-auto"
+            onMouseDown={(e) => e.stopPropagation()}
         >
-            <CommonButton onClick={takeScreenshot}>
-                <CheckIcon />
-            </CommonButton>
-            <CommonButton onClick={() => onSelectPen({ type: "rectangle", strokeColor: "red", strokeWidth: 2 })}>
-                <RectangleHorizontal className={pen.type === "rectangle" ? "text-red-500" : ""} />
-            </CommonButton>
-            <CommonButton onClick={() => onSelectPen({ type: "free_line", strokeColor: "red", strokeWidth: 2 })}>
-                <Pencil className={pen.type === "free_line" ? "text-red-500" : ""} />
-            </CommonButton>
-            <CommonButton onClick={() => onSelectPen({ type: "straight_line", strokeColor: "red", strokeWidth: 2 })}>
-                <Minus className={pen.type === "straight_line" ? "text-red-500" : ""} />
-            </CommonButton>
-            <CommonButton onClick={createPin}>
-                <Pin />
-            </CommonButton>
-            <CommonButton onClick={recordRegion}>
-                <Video className={isRecording ? "text-red-500" : ""} />
-            </CommonButton>
-            <CommonButton onClick={onCancel}>
-                <X />
-            </CommonButton>
-        </ButtonGroup>
+            <div className="flex flex-wrap gap-1.5 items-center">
+                {colors.map((c) => (
+                    <button
+                        key={c}
+                        className={`w-5 h-5 rounded-full border border-gray-200 ${
+                            pen.strokeColor === c ? "ring-2 ring-offset-1 ring-blue-500" : ""
+                        }`}
+                        style={{ backgroundColor: c }}
+                        onClick={() => updateColor(c)}
+                    />
+                ))}
+                <div className="w-px h-5 bg-zinc-200 dark:bg-zinc-700 mx-1" />
+                <div className="relative w-5 h-5 rounded-full overflow-hidden border border-gray-200">
+                    <input
+                        type="color"
+                        value={pen.strokeColor}
+                        onChange={(e) => updateColor(e.target.value)}
+                        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] p-0 border-0 cursor-pointer"
+                    />
+                </div>
+            </div>
+            <div className="flex items-center gap-2">
+                <input
+                    type="range"
+                    min="1"
+                    max="20"
+                    value={pen.strokeWidth}
+                    onChange={(e) => updateWidth(Number(e.target.value))}
+                    className="flex-1 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                />
+                <Input
+                    type="number"
+                    min="1"
+                    max="20"
+                    value={pen.strokeWidth}
+                    onChange={(e) => updateWidth(Number(e.target.value))}
+                    className="w-10 h-6 px-1 text-center text-xs"
+                />
+            </div>
+        </div>
     );
 }
 

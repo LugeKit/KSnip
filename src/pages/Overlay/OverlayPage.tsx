@@ -117,6 +117,7 @@ export default function OverlayPage() {
                                 onSelectPen={(newPen) => {
                                     setPen(newPen.type === pen.type ? { type: "none" } : newPen);
                                 }}
+                                onPenUpdate={setPen}
                             />
                         </div>
                     </>
