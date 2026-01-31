@@ -240,6 +240,8 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
     );
 };
 
+export default PenHandles;
+
 function TextInput({
     shape,
     onChange,
@@ -538,8 +540,6 @@ function SequenceShape({
         </g>
     );
 }
-
-export default PenHandles;
 
 function TextShape({ point, text, fontSize, color }: { point: Point; text: string; fontSize: number; color: string }) {
     return (
