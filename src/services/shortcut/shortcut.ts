@@ -226,27 +226,47 @@ async function saveShortcut(shortcut: Shortcut) {
 
 export function isShortcutPressed(shortcut: Shortcut, e: KeyboardEvent): boolean {
     const keys = shortcut.keys;
+    let hasCtrl = false;
+    let hasShift = false;
+    let hasAlt = false;
+    let hasMeta = false;
+    let mainKey = "";
+
     for (const key of keys) {
-        if (key === "CTRL" && e.ctrlKey) {
-            continue;
-        }
-
-        if (key === "SHIFT" && e.shiftKey) {
-            continue;
-        }
-
-        if (key === "ALT" && e.altKey) {
-            continue;
-        }
-
-        if ((key === "CMD" || key === "WIN") && e.metaKey) {
-            continue;
-        }
-        if (key === e.key.toUpperCase()) {
-            return true;
+        if (key === "CTRL") {
+            hasCtrl = true;
+        } else if (key === "SHIFT") {
+            hasShift = true;
+        } else if (key === "ALT") {
+            hasAlt = true;
+        } else if (key === "CMD" || key === "WIN") {
+            hasMeta = true;
+        } else {
+            mainKey = key;
         }
     }
-    return false;
+
+    if (e.ctrlKey !== hasCtrl) {
+        return false;
+    }
+
+    if (e.shiftKey !== hasShift) {
+        return false;
+    }
+
+    if (e.altKey !== hasAlt) {
+        return false;
+    }
+
+    if (e.metaKey !== hasMeta) {
+        return false;
+    }
+
+    if (mainKey && e.key.toUpperCase() !== mainKey) {
+        return false;
+    }
+
+    return true;
 }
 
 export async function registerWindowShortcut(id: string, f: (e: KeyboardEvent) => void | Promise<void>) {

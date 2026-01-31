@@ -25,6 +25,12 @@ export default function App() {
             initSettings()
                 .then(() => info(`[App] init settings success`))
                 .catch((e) => error(`[App] failed in init settings: ${e}`));
+
+            window.addEventListener("keydown", (e) => {
+                if (e.ctrlKey && e.key.toLowerCase() === "r") {
+                    e.preventDefault();
+                }
+            });
         };
         init();
     }, []);
