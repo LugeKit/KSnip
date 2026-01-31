@@ -13,7 +13,17 @@ import { invoke } from "@tauri-apps/api/core";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { currentMonitor, getCurrentWindow, Monitor } from "@tauri-apps/api/window";
 import { debug, error, info } from "@tauri-apps/plugin-log";
-import { CheckIcon, Minus, MoveRight, Pen as Pencil, Pin, RectangleHorizontal, Video, X } from "lucide-react";
+import {
+    CheckIcon,
+    MoveRight,
+    MoveUpRight,
+    Pen as Pencil,
+    Pin,
+    RectangleHorizontal,
+    Slash,
+    Video,
+    X,
+} from "lucide-react";
 import React, { useState } from "react";
 import { useWindowShortcut } from "../hooks/shortcut";
 import { Pen, Rectangle } from "../types";
@@ -166,7 +176,13 @@ export default function CropToolbar({
                     selected={pen.type === "arrow"}
                     onClick={() => onSelectPen({ type: "arrow", strokeColor: "#EF4444", strokeWidth: 2 })}
                 >
-                    <MoveRight />
+                    <MoveUpRight />
+                </CommonButton>
+                <CommonButton
+                    selected={pen.type === "straight_line"}
+                    onClick={() => onSelectPen({ type: "straight_line", strokeColor: "#EF4444", strokeWidth: 2 })}
+                >
+                    <Slash />
                 </CommonButton>
                 <CommonButton
                     selected={pen.type === "free_line"}
@@ -174,14 +190,8 @@ export default function CropToolbar({
                 >
                     <Pencil />
                 </CommonButton>
-                <CommonButton
-                    selected={pen.type === "straight_line"}
-                    onClick={() => onSelectPen({ type: "straight_line", strokeColor: "#EF4444", strokeWidth: 2 })}
-                >
-                    <Minus />
-                </CommonButton>
                 <CommonButton onClick={createPin}>
-                    <Pin />
+                    <Pin style={{ transform: "rotate(45deg)" }} />
                 </CommonButton>
                 <CommonButton selected={isRecording} onClick={recordRegion}>
                     <Video />
