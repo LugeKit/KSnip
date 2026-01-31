@@ -4,13 +4,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs } from "@/components/ui/tabs.tsx";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { SettingTabsContent, TabsHeader, TabsHeaderData } from "@/pages/Main/components/Tab.tsx";
 import { ENABLE_DEBUG_SETTING, RECORDING_PATH_SETTING } from "@/services/setting/const";
 import { Setting, SettingValue, SettingValueBoolean, SettingValuePath } from "@/services/setting/types";
 import { useSettingStore } from "@/stores/useSettingStore";
 import { open } from "@tauri-apps/plugin-dialog";
 import { debug, error } from "@tauri-apps/plugin-log";
-import { FolderOpen } from "lucide-react";
+import { CircleAlert, FolderOpen } from "lucide-react";
 import { useMemo } from "react";
 
 type SettingData = {
@@ -99,8 +100,24 @@ function SettingTableRow({
     onValueChanged: (id: string, newValue: SettingValue) => void;
 }) {
     return (
-        <TableRow>
-            <TableCell>{item.name}</TableCell>
+        <TableRow className="h-14">
+            <TableCell>
+                <div className="flex items-center gap-2">
+                    {item.name}
+                    {item.description && (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <CircleAlert className="h-4 w-4 cursor-help text-muted-foreground" />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>{item.description}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
+                </div>
+            </TableCell>
             {item.type === "Boolean" && (
                 <BooleanSetting
                     id={item.id}
