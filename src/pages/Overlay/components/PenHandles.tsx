@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { warn } from "@tauri-apps/plugin-log";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { MouseState, Pen, Point, Rectangle, Shape } from "../types";
 
 interface PenHandlesProps {
@@ -14,12 +14,6 @@ interface PenHandlesProps {
 
 const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState, pen, shapes, onAddShape }) => {
     const [previewShape, setPreviewShape] = useState<Shape | null>(null);
-    const [editingText, setEditingText] = useState<{
-        point: Point;
-        text: string;
-        fontSize: number;
-        color: string;
-    } | null>(null);
 
     const setPreviewShapeRectangle = (
         pressPosition: Point,
@@ -175,34 +169,37 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
 
     useEffect(() => {
         if (!mouseState.isPressing && previewShape) {
-            onAddShape(previewShape);
-            setPreviewShape(null);
+            // For text tool, we don't finish on release, but on manual confirmation or switching
+            if (previewShape.value.type !== "text") {
+                onAddShape(previewShape);
+                setPreviewShape(null);
+            }
         }
     }, [mouseState.isPressing]);
 
     useEffect(() => {
         if (mouseState.isPressing && mouseState.pressPosition && pen.type === "text") {
-            if (editingText) {
-                if (editingText.text.trim()) {
-                    onAddShape({
-                        value: {
-                            type: "text",
-                            point: editingText.point,
-                            text: editingText.text,
-                            fontSize: editingText.fontSize,
-                            color: editingText.color,
-                        },
-                        strokeColor: editingText.color,
-                        strokeWidth: 0,
-                    });
+            if (previewShape && previewShape.value.type === "text") {
+                // If we are already editing text, finalize it first
+                if (previewShape.value.text.trim()) {
+                    onAddShape(previewShape);
                 }
+                // Don't return, proceed to create new one at new position
             }
 
-            setEditingText({
-                point: mouseState.pressPosition,
-                text: "",
-                fontSize: pen.fontSize,
-                color: pen.strokeColor,
+            setPreviewShape({
+                value: {
+                    type: "text",
+                    point: {
+                        x: mouseState.pressPosition.x - cropArea.left,
+                        y: mouseState.pressPosition.y - cropArea.top,
+                    },
+                    text: "",
+                    fontSize: pen.fontSize,
+                    color: pen.strokeColor,
+                },
+                strokeColor: pen.strokeColor,
+                strokeWidth: 0,
             });
         }
     }, [mouseState.isPressing]);
@@ -221,11 +218,108 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
                 {shapes.map((shape, i) => {
                     return <ShapeCollection shape={shape} key={i} />;
                 })}
-                {previewShape && <ShapeCollection shape={previewShape} />}
+                {previewShape && previewShape.value.type !== "text" && <ShapeCollection shape={previewShape} />}
             </svg>
+
+            {previewShape && previewShape.value.type === "text" && (
+                <TextInput
+                    shape={previewShape}
+                    onChange={(text) => {
+                        setPreviewShape((prev) =>
+                            prev ? ({ ...prev, value: { ...prev.value, text } } as Shape) : null,
+                        );
+                    }}
+                    onPositionChange={(point) => {
+                        setPreviewShape((prev) =>
+                            prev ? ({ ...prev, value: { ...prev.value, point } } as Shape) : null,
+                        );
+                    }}
+                />
+            )}
         </div>
     );
 };
+
+function TextInput({
+    shape,
+    onChange,
+    onPositionChange,
+}: {
+    shape: Shape;
+    onChange: (text: string) => void;
+    onPositionChange: (point: Point) => void;
+}) {
+    const inputRef = useRef<HTMLTextAreaElement>(null);
+    const draggingRef = useRef<{ startX: number; startY: number; startLeft: number; startTop: number } | null>(null);
+
+    useEffect(() => {
+        // Delay focus slightly to ensure it happens after the mouse event that created the input
+        const timer = setTimeout(() => {
+            if (inputRef.current) {
+                inputRef.current.focus();
+            }
+        }, 10);
+        return () => clearTimeout(timer);
+    }, []);
+
+    if (shape.value.type !== "text") return null;
+
+    const { point, text, fontSize, color } = shape.value;
+
+    const handleMouseDown = (e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent creating new text box
+        draggingRef.current = {
+            startX: e.clientX,
+            startY: e.clientY,
+            startLeft: point.x,
+            startTop: point.y,
+        };
+
+        const handleMouseMove = (ev: MouseEvent) => {
+            if (!draggingRef.current) return;
+            const dx = ev.clientX - draggingRef.current.startX;
+            const dy = ev.clientY - draggingRef.current.startY;
+            onPositionChange({
+                x: draggingRef.current.startLeft + dx,
+                y: draggingRef.current.startTop + dy,
+            });
+        };
+
+        const handleMouseUp = () => {
+            draggingRef.current = null;
+            window.removeEventListener("mousemove", handleMouseMove);
+            window.removeEventListener("mouseup", handleMouseUp);
+        };
+
+        window.addEventListener("mousemove", handleMouseMove);
+        window.addEventListener("mouseup", handleMouseUp);
+    };
+
+    return (
+        <textarea
+            ref={inputRef}
+            value={text}
+            onChange={(e) => onChange(e.target.value)}
+            onKeyDown={(e) => e.stopPropagation()}
+            onMouseDown={handleMouseDown}
+            className="absolute bg-transparent outline-none resize-none border border-dashed border-gray-400 p-0 m-0 overflow-hidden"
+            style={{
+                left: point.x,
+                top: point.y,
+                fontSize: fontSize,
+                color: color,
+                fontFamily: "inherit",
+                lineHeight: 1.2,
+                pointerEvents: "auto",
+                minWidth: "50px",
+                whiteSpace: "pre",
+                width: `${Math.max(text.length * (fontSize * 0.6), 100)}px`,
+                height: `${Math.max(text.split("\n").length * fontSize * 1.2, fontSize * 1.5)}px`,
+            }}
+            placeholder="Type here..."
+        />
+    );
+}
 
 function ShapeCollection({ shape }: { shape: Shape }) {
     if (!shape || !shape.value || !shape.value.type) {
@@ -294,7 +388,7 @@ function ShapeCollection({ shape }: { shape: Shape }) {
                     point={shape.value.point}
                     text={shape.value.text}
                     fontSize={shape.value.fontSize}
-                    color={"red"}
+                    color={shape.value.color}
                 />
             );
         }
