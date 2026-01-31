@@ -39,13 +39,15 @@ export type Pen =
     | { type: "none" }
     | { type: "rectangle"; strokeColor: string; strokeWidth: number }
     | { type: "free_line"; strokeColor: string; strokeWidth: number }
-    | { type: "straight_line"; strokeColor: string; strokeWidth: number };
+    | { type: "straight_line"; strokeColor: string; strokeWidth: number }
+    | { type: "arrow"; strokeColor: string; strokeWidth: number };
 
 export interface Shape {
     value:
         | { type: "rectangle"; rect: Rectangle }
         | { type: "free_line"; points: Point[] }
-        | { type: "straight_line"; start: Point; end: Point };
+        | { type: "straight_line"; start: Point; end: Point }
+        | { type: "arrow"; start: Point; end: Point };
     strokeColor: string;
     strokeWidth: number;
 }

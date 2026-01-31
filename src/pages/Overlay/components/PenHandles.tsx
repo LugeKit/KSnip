@@ -87,6 +87,22 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
         });
     };
 
+    const setPreviewShapeArrow = (
+        pressPosition: Point,
+        mousePosition: Point,
+        strokeColor: string,
+        strokeWidth: number,
+    ) => {
+        const start = { x: pressPosition.x - cropArea.left, y: pressPosition.y - cropArea.top };
+        const end = { x: mousePosition.x - cropArea.left, y: mousePosition.y - cropArea.top };
+
+        setPreviewShape({
+            value: { type: "arrow", start, end },
+            strokeColor: strokeColor,
+            strokeWidth: strokeWidth,
+        });
+    };
+
     useEffect(() => {
         if (!mouseState.isPressing || !mouseState.pressPosition || !mouseState.mousePosition) {
             return;
@@ -109,6 +125,11 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
                 pen.strokeColor,
                 pen.strokeWidth,
             );
+            return;
+        }
+
+        if (pen.type === "arrow") {
+            setPreviewShapeArrow(mouseState.pressPosition, mouseState.mousePosition, pen.strokeColor, pen.strokeWidth);
             return;
         }
 
@@ -170,6 +191,17 @@ function ShapeCollection({ shape }: { shape: Shape }) {
         case "straight_line": {
             return (
                 <StraightLineShape
+                    start={shape.value.start}
+                    end={shape.value.end}
+                    strokeColor={shape.strokeColor}
+                    strokeWidth={shape.strokeWidth}
+                />
+            );
+        }
+
+        case "arrow": {
+            return (
+                <ArrowShape
                     start={shape.value.start}
                     end={shape.value.end}
                     strokeColor={shape.strokeColor}
@@ -252,6 +284,51 @@ function FreeLineShape({
             strokeLinecap="round"
             strokeLinejoin="round"
         />
+    );
+}
+
+function ArrowShape({
+    start,
+    end,
+    strokeColor,
+    strokeWidth,
+}: {
+    start: Point;
+    end: Point;
+    strokeColor: string;
+    strokeWidth: number;
+}) {
+    const angle = Math.atan2(end.y - start.y, end.x - start.x);
+    const headLength = 15 + strokeWidth * 2; // Adjust head size based on stroke width
+    const arrowAngle = Math.PI / 6; // 30 degrees
+
+    const x1 = end.x - headLength * Math.cos(angle - arrowAngle);
+    const y1 = end.y - headLength * Math.sin(angle - arrowAngle);
+    const x2 = end.x - headLength * Math.cos(angle + arrowAngle);
+    const y2 = end.y - headLength * Math.sin(angle + arrowAngle);
+
+    return (
+        <g>
+            <line x1={start.x} y1={start.y} x2={end.x} y2={end.y} stroke={strokeColor} strokeWidth={strokeWidth} />
+            <line
+                x1={end.x}
+                y1={end.y}
+                x2={x1}
+                y2={y1}
+                stroke={strokeColor}
+                strokeWidth={strokeWidth}
+                strokeLinecap="round"
+            />
+            <line
+                x1={end.x}
+                y1={end.y}
+                x2={x2}
+                y2={y2}
+                stroke={strokeColor}
+                strokeWidth={strokeWidth}
+                strokeLinecap="round"
+            />
+        </g>
     );
 }
 

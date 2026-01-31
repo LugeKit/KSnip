@@ -13,7 +13,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { currentMonitor, getCurrentWindow, Monitor } from "@tauri-apps/api/window";
 import { debug, error, info } from "@tauri-apps/plugin-log";
-import { CheckIcon, Minus, Pen as Pencil, Pin, RectangleHorizontal, Video, X } from "lucide-react";
+import { CheckIcon, Minus, MoveRight, Pen as Pencil, Pin, RectangleHorizontal, Video, X } from "lucide-react";
 import React, { useState } from "react";
 import { useWindowShortcut } from "../hooks/shortcut";
 import { Pen, Rectangle } from "../types";
@@ -92,6 +92,7 @@ export default function CropToolbar({
         }
     };
 
+    const confirmShortcut = useShortcutStore((store) => store.getShortcut(SHORTCUT_RECORD_REGION_CONFIRM));
     const recordRegion = async () => {
         const monitor = await currentMonitor();
 
@@ -100,7 +101,6 @@ export default function CropToolbar({
         }
 
         try {
-            const confirmShortcut = useShortcutStore.getState().shortcuts[SHORTCUT_RECORD_REGION_CONFIRM];
             if (!confirmShortcut) {
                 error(`[CropToolbar] failed to get confirm shortcut`);
                 return;
@@ -124,6 +124,7 @@ export default function CropToolbar({
             });
             await window.setFocusable(false);
             await window.setIgnoreCursorEvents(true);
+            onSelectPen({ type: "none" });
             setRecording(true);
             await invoke("record_start", {
                 param: newLogicalParam(cropArea, monitor),
@@ -156,25 +157,34 @@ export default function CropToolbar({
                     <CheckIcon />
                 </CommonButton>
                 <CommonButton
+                    selected={pen.type === "rectangle"}
                     onClick={() => onSelectPen({ type: "rectangle", strokeColor: "#EF4444", strokeWidth: 2 })}
                 >
-                    <RectangleHorizontal className={pen.type === "rectangle" ? "text-red-500" : ""} />
+                    <RectangleHorizontal />
                 </CommonButton>
                 <CommonButton
+                    selected={pen.type === "arrow"}
+                    onClick={() => onSelectPen({ type: "arrow", strokeColor: "#EF4444", strokeWidth: 2 })}
+                >
+                    <MoveRight />
+                </CommonButton>
+                <CommonButton
+                    selected={pen.type === "free_line"}
                     onClick={() => onSelectPen({ type: "free_line", strokeColor: "#EF4444", strokeWidth: 2 })}
                 >
-                    <Pencil className={pen.type === "free_line" ? "text-red-500" : ""} />
+                    <Pencil />
                 </CommonButton>
                 <CommonButton
+                    selected={pen.type === "straight_line"}
                     onClick={() => onSelectPen({ type: "straight_line", strokeColor: "#EF4444", strokeWidth: 2 })}
                 >
-                    <Minus className={pen.type === "straight_line" ? "text-red-500" : ""} />
+                    <Minus />
                 </CommonButton>
                 <CommonButton onClick={createPin}>
                     <Pin />
                 </CommonButton>
-                <CommonButton onClick={recordRegion}>
-                    <Video className={isRecording ? "text-red-500" : ""} />
+                <CommonButton selected={isRecording} onClick={recordRegion}>
+                    <Video />
                 </CommonButton>
                 <CommonButton onClick={onCancel}>
                     <X />
@@ -253,8 +263,15 @@ function PenSettings({ pen, onChange }: { pen: Pen; onChange: (pen: Pen) => void
     );
 }
 
-function CommonButton(props: React.ComponentProps<typeof Button>) {
-    return <Button variant="outline" size="icon-sm" {...props} />;
+function CommonButton(props: React.ComponentProps<typeof Button> & { selected?: boolean }) {
+    return (
+        <Button
+            variant="outline"
+            size="icon-sm"
+            className={props.selected ? "text-red-500 bg-muted hover:text-red-500" : ""}
+            {...props}
+        />
+    );
 }
 
 function newPinPage(param: LogicalParam, pinID: number) {
