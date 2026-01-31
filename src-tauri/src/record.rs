@@ -3,7 +3,7 @@ use crate::{
     util,
 };
 use std::time::{SystemTime, UNIX_EPOCH};
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, Manager, State};
 use tauri_plugin_log::log::{info, warn};
 use tauri_plugin_shell::ShellExt;
 
@@ -11,9 +11,13 @@ use tauri_plugin_shell::ShellExt;
 pub fn record_start(
     app: AppHandle,
     param: LogicalParam,
+    save_path: Option<String>,
     state: State<'_, AppState>,
 ) -> Result<String, String> {
-    info!("[record_start] Called successfully, param: {:?}", param);
+    info!(
+        "[record_start] Called successfully, param: {:?}, save_path: {:?}",
+        param, save_path
+    );
     param.validate()?;
 
     // Stop existing recording if any
@@ -32,10 +36,19 @@ pub fn record_start(
         .map_err(|e| e.to_string())?;
     let timestamp = since_the_epoch.as_secs();
 
-    // Use current directory
-    let current_dir = std::env::current_dir().map_err(|e| e.to_string())?;
+    // Use save_path or default to document directory
+    let target_dir = if let Some(path_str) = save_path.filter(|s| !s.is_empty()) {
+        std::path::PathBuf::from(path_str)
+    } else {
+        app.path().document_dir().map_err(|e| e.to_string())?
+    };
+
+    if !target_dir.exists() {
+        std::fs::create_dir_all(&target_dir).map_err(|e| e.to_string())?;
+    }
+
     let file_name = format!("recording_{}.mp4", timestamp);
-    let file_path = current_dir.join(&file_name);
+    let file_path = target_dir.join(&file_name);
     let file_path_str = file_path.to_str().ok_or("Invalid path")?.to_string();
 
     let args = vec![

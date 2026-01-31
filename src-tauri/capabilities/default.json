@@ -31,6 +31,7 @@
         "global-shortcut:allow-register",
         "global-shortcut:allow-unregister",
         "macos-permissions:default",
-        "shell:allow-execute"
+        "shell:allow-execute",
+        "dialog:default"
     ]
 }

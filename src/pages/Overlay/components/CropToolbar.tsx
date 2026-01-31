@@ -35,6 +35,9 @@ import {
 import React, { useState } from "react";
 import { useWindowShortcut } from "../hooks/shortcut";
 import { Pen, Rectangle } from "../types";
+import { RECORDING_PATH_SETTING } from "@/services/setting/const";
+import { SettingValuePath } from "@/services/setting/types";
+import { useSettingValue } from "@/stores/useSettingStore";
 
 interface CropToolbarProps {
     cropArea: Rectangle;
@@ -75,6 +78,7 @@ export default function CropToolbar({
     onPenUpdate,
 }: CropToolbarProps) {
     const [isRecording, setRecording] = useState(false);
+    const recordingPathSetting = useSettingValue<SettingValuePath>(RECORDING_PATH_SETTING);
 
     const takeScreenshot = async () => {
         const monitor = await currentMonitor();
@@ -146,6 +150,7 @@ export default function CropToolbar({
             setRecording(true);
             await invoke("record_start", {
                 param: newLogicalParam(cropArea, monitor),
+                savePath: recordingPathSetting?.path,
             });
         } catch (e) {
             error(`[CropToolbar] failed to take gif: ${e}`);

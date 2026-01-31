@@ -35,10 +35,22 @@ export async function getAllSettings(): Promise<Record<string, Setting>> {
 
 export async function getSetting(id: string): Promise<Setting | undefined> {
     const allSettings = await getStoredSetting();
-    if (!allSettings) {
-        return enrichSavedSetting(DEFAULT_SETTING[id]);
+    const defaultSetting = DEFAULT_SETTING[id];
+
+    if (!defaultSetting) {
+        return undefined;
     }
-    return enrichSavedSetting(allSettings.settings[id]);
+
+    if (!allSettings) {
+        return enrichSavedSetting(defaultSetting);
+    }
+    
+    const storedSetting = allSettings.settings[id];
+    if (storedSetting) {
+        return enrichSavedSetting(storedSetting);
+    }
+
+    return enrichSavedSetting(defaultSetting);
 }
 
 export async function updateSetting(id: string, value: SettingValue): Promise<void> {

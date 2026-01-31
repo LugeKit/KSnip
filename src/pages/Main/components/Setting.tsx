@@ -1,12 +1,16 @@
 import Border from "@/components/ui/Border.tsx";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs } from "@/components/ui/tabs.tsx";
 import { SettingTabsContent, TabsHeader, TabsHeaderData } from "@/pages/Main/components/Tab.tsx";
-import { ENABLE_DEBUG_SETTING } from "@/services/setting/const";
-import { Setting, SettingValue, SettingValueBoolean } from "@/services/setting/types";
+import { ENABLE_DEBUG_SETTING, RECORDING_PATH_SETTING } from "@/services/setting/const";
+import { Setting, SettingValue, SettingValueBoolean, SettingValuePath } from "@/services/setting/types";
 import { useSettingStore } from "@/stores/useSettingStore";
+import { open } from "@tauri-apps/plugin-dialog";
 import { debug, error } from "@tauri-apps/plugin-log";
+import { FolderOpen } from "lucide-react";
 import { useMemo } from "react";
 
 type SettingData = {
@@ -22,7 +26,7 @@ export default function SettingComponent() {
             {
                 label: "全局设置",
                 page: "overall",
-                settingIds: [],
+                settingIds: [RECORDING_PATH_SETTING],
             },
             {
                 label: "调试设置",
@@ -104,6 +108,9 @@ function SettingTableRow({
                     onValueChanged={onValueChanged}
                 />
             )}
+            {item.type === "Path" && (
+                <PathSetting id={item.id} value={item.value as SettingValuePath} onValueChanged={onValueChanged} />
+            )}
         </TableRow>
     );
 }
@@ -124,6 +131,48 @@ function BooleanSetting({
                 checked={value.value}
                 onCheckedChange={(checked) => onValueChanged(id, new SettingValueBoolean(!!checked))}
             />
+        </TableCell>
+    );
+}
+
+function PathSetting({
+    id,
+    value,
+    onValueChanged,
+}: {
+    id: string;
+    value: SettingValuePath;
+    onValueChanged: (id: string, newValue: SettingValuePath) => void;
+}) {
+    const openDialog = async () => {
+        try {
+            const selected = await open({
+                directory: true,
+                multiple: false,
+                defaultPath: value.path || undefined,
+            });
+
+            if (selected && typeof selected === "string") {
+                onValueChanged(id, new SettingValuePath(selected));
+            }
+        } catch (e) {
+            error(`[PathSetting] failed to open dialog: ${e}`);
+        }
+    };
+
+    return (
+        <TableCell className="text-right">
+            <div className="flex items-center gap-2">
+                <Input
+                    className="w-full"
+                    placeholder="默认（文档文件夹）"
+                    value={value.path}
+                    onChange={(e) => onValueChanged(id, new SettingValuePath(e.target.value))}
+                />
+                <Button variant="outline" size="icon" onClick={openDialog}>
+                    <FolderOpen className="h-4 w-4" />
+                </Button>
+            </div>
         </TableCell>
     );
 }
