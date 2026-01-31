@@ -12,7 +12,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { currentMonitor, getCurrentWindow, Monitor } from "@tauri-apps/api/window";
 import { debug, error, info } from "@tauri-apps/plugin-log";
-import { CheckIcon, Disc, PenLine, PinIcon, RectangleCircle, X } from "lucide-react";
+import { CheckIcon, Minus, Pin, RectangleHorizontal, Video, X } from "lucide-react";
 import React, { useState } from "react";
 import { useWindowShortcut } from "../hooks/shortcut";
 import { Pen, Rectangle } from "../types";
@@ -138,16 +138,16 @@ export default function CropToolbar({ cropArea, pen, onConfirm, onCancel, onSele
                 <CheckIcon />
             </CommonButton>
             <CommonButton onClick={() => onSelectPen({ type: "rectangle", strokeColor: "red", strokeWidth: 2 })}>
-                {pen.type === "rectangle" ? <RectangleCircle className="text-red-500" /> : <RectangleCircle />}
+                <RectangleHorizontal className={pen.type === "rectangle" ? "text-red-500" : ""} />
             </CommonButton>
             <CommonButton onClick={() => onSelectPen({ type: "straight_line", strokeColor: "red", strokeWidth: 2 })}>
-                {pen.type === "straight_line" ? <PenLine className="text-red-500" /> : <PenLine />}
+                <Minus className={pen.type === "straight_line" ? "text-red-500" : ""} />
             </CommonButton>
             <CommonButton onClick={createPin}>
-                <PinIcon />
+                <Pin />
             </CommonButton>
             <CommonButton onClick={recordRegion}>
-                {isRecording ? <Disc className="text-red-500" /> : <Disc />}
+                <Video className={isRecording ? "text-red-500" : ""} />
             </CommonButton>
             <CommonButton onClick={onCancel}>
                 <X />
