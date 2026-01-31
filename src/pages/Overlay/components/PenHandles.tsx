@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import React, { useEffect, useState } from "react";
-import { MouseState, Pen, Rectangle, Shape } from "../types";
+import { MouseState, Pen, Point, Rectangle, Shape } from "../types";
 
 interface PenHandlesProps {
     cropArea: Rectangle;
@@ -13,22 +13,37 @@ interface PenHandlesProps {
 
 const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState, pen, shapes, onAddShape }) => {
     const [previewShape, setPreviewShape] = useState<Shape | null>(null);
+
+    const setPreviewShapeRectangle = (
+        pressPosition: Point,
+        mousePosition: Point,
+        strokeColor: string,
+        strokeWidth: number,
+    ) => {
+        const startX = pressPosition.x - cropArea.left;
+        const startY = pressPosition.y - cropArea.top;
+        const currentX = mousePosition.x - cropArea.left;
+        const currentY = mousePosition.y - cropArea.top;
+
+        const left = Math.min(startX, currentX);
+        const top = Math.min(startY, currentY);
+        const width = Math.abs(currentX - startX);
+        const height = Math.abs(currentY - startY);
+        setPreviewShape({
+            value: { type: "rectangle", rect: { left, top, width, height } },
+            strokeColor: strokeColor,
+            strokeWidth: strokeWidth,
+        });
+    };
+
     useEffect(() => {
         if (mouseState.isPressing && mouseState.pressPosition && mouseState.mousePosition && pen.type === "rectangle") {
-            const startX = mouseState.pressPosition.x - cropArea.left;
-            const startY = mouseState.pressPosition.y - cropArea.top;
-            const currentX = mouseState.mousePosition.x - cropArea.left;
-            const currentY = mouseState.mousePosition.y - cropArea.top;
-
-            const left = Math.min(startX, currentX);
-            const top = Math.min(startY, currentY);
-            const width = Math.abs(currentX - startX);
-            const height = Math.abs(currentY - startY);
-            setPreviewShape({
-                value: { type: "rectangle", rect: { left, top, width, height } },
-                strokeColor: pen.strokeColor,
-                strokeWidth: pen.strokeWidth,
-            });
+            setPreviewShapeRectangle(
+                mouseState.pressPosition,
+                mouseState.mousePosition,
+                pen.strokeColor,
+                pen.strokeWidth,
+            );
         }
     }, [mouseState]);
 

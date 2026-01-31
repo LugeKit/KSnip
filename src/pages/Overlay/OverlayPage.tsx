@@ -114,7 +114,7 @@ export default function OverlayPage() {
                                 onConfirm={closeOverlayPage}
                                 onCancel={closeOverlayPage}
                                 onSelectPen={(newPen) => {
-                                    setPen(newPen === pen ? { type: "none" } : newPen);
+                                    setPen(newPen.type === pen.type ? { type: "none" } : newPen);
                                 }}
                             />
                         </div>
