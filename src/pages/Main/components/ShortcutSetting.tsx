@@ -4,8 +4,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { TabsHeader } from "@/pages/Main/components/Tab.tsx";
+import { Tabs } from "@/components/ui/tabs";
+import { SettingTabsContent, TabsHeader } from "@/pages/Main/components/Tab.tsx";
 import {
     SHORTCUT_CREATE_PIN,
     SHORTCUT_RECORD_REGION,
@@ -68,21 +68,17 @@ export default function ShortcutSetting() {
 
     return (
         <div className="relative top-0 right-0 w-full h-full p-4">
-            <Tabs defaultValue="basic" className="w-full overflow-auto">
+            <Tabs defaultValue="basic" className="w-full max-h-full">
                 <TabsHeader headers={tabsData} />
                 <Border />
                 {Object.entries(shortcutItems).map(([page, pageShortcuts]) => {
                     return (
-                        <TabsContent
-                            key={page}
-                            value={page}
-                            className="[&_tr]:hover:bg-transparent bg-muted rounded-md pl-5 pr-5 overflow-y-auto min-h-0"
-                        >
+                        <SettingTabsContent key={page} value={page}>
                             <Table>
                                 <TabsContentHeader />
                                 <TabsContentBody shortcuts={pageShortcuts} />
                             </Table>
-                        </TabsContent>
+                        </SettingTabsContent>
                     );
                 })}
             </Tabs>

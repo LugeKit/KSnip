@@ -1,8 +1,8 @@
 import Border from "@/components/ui/Border.tsx";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Tabs, TabsContent } from "@/components/ui/tabs.tsx";
-import { TabsHeader, TabsHeaderData } from "@/pages/Main/components/Tab.tsx";
+import { Tabs } from "@/components/ui/tabs.tsx";
+import { SettingTabsContent, TabsHeader, TabsHeaderData } from "@/pages/Main/components/Tab.tsx";
 import { ENABLE_DEBUG_SETTING } from "@/services/setting/const";
 import { Setting, SettingValue, SettingValueBoolean } from "@/services/setting/types";
 import { useSettingStore } from "@/stores/useSettingStore";
@@ -55,16 +55,12 @@ export default function SettingComponent() {
 
     return (
         <div className="relative top-0 right-0 w-full h-full p-4">
-            <Tabs defaultValue={defaultValue} className="w-full">
+            <Tabs defaultValue={defaultValue} className="w-full max-h-full">
                 <TabsHeader headers={settingPages} />
                 <Border />
                 {Object.entries(settingItems).map(([page, items]) => {
                     return (
-                        <TabsContent
-                            key={page}
-                            value={page}
-                            className="[&_tr]:hover:bg-transparent bg-muted rounded-md pl-5 pr-5"
-                        >
+                        <SettingTabsContent key={page} value={page}>
                             <Table>
                                 <TabsContentHeader />
                                 <TableBody>
@@ -73,7 +69,7 @@ export default function SettingComponent() {
                                     })}
                                 </TableBody>
                             </Table>
-                        </TabsContent>
+                        </SettingTabsContent>
                     );
                 })}
             </Tabs>
