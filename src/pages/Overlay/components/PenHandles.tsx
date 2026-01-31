@@ -117,90 +117,78 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
         });
     };
 
+    const setPreviewShapeText = (pressPosition: Point, color: string, fontSize: number) => {
+        if (previewShape && previewShape.value.type === "text") {
+            // If we are already editing text, finalize it first
+            if (previewShape.value.text.trim()) {
+                onAddShape(previewShape);
+            }
+        }
+
+        setPreviewShape({
+            value: {
+                type: "text",
+                point: {
+                    x: pressPosition.x - cropArea.left,
+                    y: pressPosition.y - cropArea.top,
+                },
+                text: "",
+                fontSize: fontSize,
+                color: color,
+            },
+            strokeColor: color,
+            strokeWidth: 0,
+        });
+    };
+
     useEffect(() => {
         if (!mouseState.isPressing || !mouseState.pressPosition || !mouseState.mousePosition) {
             return;
         }
 
         if (pen.type === "sequence") {
-            setPreviewShapeSequence(mouseState.mousePosition, pen.strokeColor, pen.strokeWidth, pen.size);
+            setPreviewShapeSequence(mouseState.mousePosition, pen.color, pen.strokeWidth, pen.size);
             return;
         }
 
         if (pen.type === "text") {
+            setPreviewShapeText(mouseState.mousePosition, pen.color, pen.fontSize);
             return;
         }
 
         if (pen.type === "rectangle") {
-            setPreviewShapeRectangle(
-                mouseState.pressPosition,
-                mouseState.mousePosition,
-                pen.strokeColor,
-                pen.strokeWidth,
-            );
+            setPreviewShapeRectangle(mouseState.pressPosition, mouseState.mousePosition, pen.color, pen.strokeWidth);
             return;
         }
 
         if (pen.type === "straight_line") {
-            setPreviewShapeStraightLine(
-                mouseState.pressPosition,
-                mouseState.mousePosition,
-                pen.strokeColor,
-                pen.strokeWidth,
-            );
+            setPreviewShapeStraightLine(mouseState.pressPosition, mouseState.mousePosition, pen.color, pen.strokeWidth);
             return;
         }
 
         if (pen.type === "arrow") {
-            setPreviewShapeArrow(mouseState.pressPosition, mouseState.mousePosition, pen.strokeColor, pen.strokeWidth);
+            setPreviewShapeArrow(mouseState.pressPosition, mouseState.mousePosition, pen.color, pen.strokeWidth);
             return;
         }
 
         if (pen.type === "free_line") {
-            setPreviewShapeFreeLine(
-                mouseState.pressPosition,
-                mouseState.mousePosition,
-                pen.strokeColor,
-                pen.strokeWidth,
-            );
+            setPreviewShapeFreeLine(mouseState.pressPosition, mouseState.mousePosition, pen.color, pen.strokeWidth);
             return;
         }
     }, [mouseState]);
 
+    const finishShape = (shape: Shape | null) => {
+        if (!shape) return;
+        onAddShape(shape);
+        setPreviewShape(null);
+    };
+
     useEffect(() => {
-        if (!mouseState.isPressing && previewShape) {
+        if (!mouseState.isPressing) {
             // For text tool, we don't finish on release, but on manual confirmation or switching
-            if (previewShape.value.type !== "text") {
-                onAddShape(previewShape);
-                setPreviewShape(null);
+            if (previewShape?.value.type !== "text") {
+                finishShape(previewShape);
             }
-        }
-    }, [mouseState.isPressing]);
-
-    useEffect(() => {
-        if (mouseState.isPressing && mouseState.pressPosition && pen.type === "text") {
-            if (previewShape && previewShape.value.type === "text") {
-                // If we are already editing text, finalize it first
-                if (previewShape.value.text.trim()) {
-                    onAddShape(previewShape);
-                }
-                // Don't return, proceed to create new one at new position
-            }
-
-            setPreviewShape({
-                value: {
-                    type: "text",
-                    point: {
-                        x: mouseState.pressPosition.x - cropArea.left,
-                        y: mouseState.pressPosition.y - cropArea.top,
-                    },
-                    text: "",
-                    fontSize: pen.fontSize,
-                    color: pen.strokeColor,
-                },
-                strokeColor: pen.strokeColor,
-                strokeWidth: 0,
-            });
         }
     }, [mouseState.isPressing]);
 
@@ -234,6 +222,12 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
                             prev ? ({ ...prev, value: { ...prev.value, point } } as Shape) : null,
                         );
                     }}
+                    onCancel={() => {
+                        setPreviewShape(null);
+                    }}
+                    onConfirm={() => {
+                        finishShape(previewShape);
+                    }}
                 />
             )}
         </div>
@@ -245,80 +239,75 @@ export default PenHandles;
 function TextInput({
     shape,
     onChange,
-    onPositionChange,
+    onCancel,
+    onConfirm,
 }: {
     shape: Shape;
     onChange: (text: string) => void;
     onPositionChange: (point: Point) => void;
+    onCancel: () => void;
+    onConfirm: () => void;
 }) {
-    const inputRef = useRef<HTMLTextAreaElement>(null);
-    const draggingRef = useRef<{ startX: number; startY: number; startLeft: number; startTop: number } | null>(null);
-
-    useEffect(() => {
-        // Delay focus slightly to ensure it happens after the mouse event that created the input
-        const timer = setTimeout(() => {
-            if (inputRef.current) {
-                inputRef.current.focus();
-            }
-        }, 10);
-        return () => clearTimeout(timer);
-    }, []);
-
     if (shape.value.type !== "text") return null;
+
+    const ref = useRef<HTMLTextAreaElement | null>(null);
+    // Auto focus to input area
+    useEffect(() => {
+        const t = setTimeout(() => {
+            if (ref.current) {
+                ref.current.focus();
+            }
+        });
+        return () => {
+            clearTimeout(t);
+        };
+    }, []);
 
     const { point, text, fontSize, color } = shape.value;
 
+    // Adjust height when text changes
+    useEffect(() => {
+        if (ref.current) {
+            ref.current.style.height = "auto";
+            ref.current.style.height = `${ref.current.scrollHeight}px`;
+        }
+    }, [text]);
+
     const handleMouseDown = (e: React.MouseEvent) => {
-        e.stopPropagation(); // Prevent creating new text box
-        draggingRef.current = {
-            startX: e.clientX,
-            startY: e.clientY,
-            startLeft: point.x,
-            startTop: point.y,
-        };
+        e.stopPropagation();
+    };
 
-        const handleMouseMove = (ev: MouseEvent) => {
-            if (!draggingRef.current) return;
-            const dx = ev.clientX - draggingRef.current.startX;
-            const dy = ev.clientY - draggingRef.current.startY;
-            onPositionChange({
-                x: draggingRef.current.startLeft + dx,
-                y: draggingRef.current.startTop + dy,
-            });
-        };
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        e.stopPropagation();
 
-        const handleMouseUp = () => {
-            draggingRef.current = null;
-            window.removeEventListener("mousemove", handleMouseMove);
-            window.removeEventListener("mouseup", handleMouseUp);
-        };
+        if (e.key === "Escape") {
+            onCancel();
+        }
 
-        window.addEventListener("mousemove", handleMouseMove);
-        window.addEventListener("mouseup", handleMouseUp);
+        if (e.key === "Enter" && e.shiftKey) {
+            onConfirm();
+        }
     };
 
     return (
         <textarea
-            ref={inputRef}
+            ref={ref}
             value={text}
             onChange={(e) => onChange(e.target.value)}
-            onKeyDown={(e) => e.stopPropagation()}
+            onKeyDown={handleKeyDown}
             onMouseDown={handleMouseDown}
-            className="absolute bg-transparent outline-none resize-none border border-dashed border-gray-400 p-0 m-0 overflow-hidden"
+            className="absolute pointer-events-auto hover:border hover:border-dotted focus:border focus:border-dotted bg-transparent outline-none resize-none border-gray-400 p-0 m-0 overflow-hidden"
             style={{
                 left: point.x,
                 top: point.y,
                 fontSize: fontSize,
                 color: color,
                 fontFamily: "inherit",
-                lineHeight: 1.2,
-                pointerEvents: "auto",
                 minWidth: "50px",
                 whiteSpace: "pre",
-                width: `${Math.max(text.length * (fontSize * 0.6), 100)}px`,
-                height: `${Math.max(text.split("\n").length * fontSize * 1.2, fontSize * 1.5)}px`,
             }}
             placeholder="Type here..."
+            rows={1}
         />
     );
 }

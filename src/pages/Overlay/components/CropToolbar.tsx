@@ -159,16 +159,15 @@ export default function CropToolbar({
         }
     };
 
+    const rectanglePen: Pen = { type: "rectangle", color: "#EF4444", strokeWidth: 2 };
+    const arrowPen: Pen = { type: "arrow", color: "#EF4444", strokeWidth: 2 };
+    const straightLinePen: Pen = { type: "straight_line", color: "#EF4444", strokeWidth: 2 };
+    const freeLinePen: Pen = { type: "free_line", color: "#EF4444", strokeWidth: 2 };
+    const sequencePen: Pen = { type: "sequence", color: "#EF4444", strokeWidth: 2, size: 24 };
+    const textPen: Pen = { type: "text", color: "#EF4444", fontSize: 18 };
     useWindowShortcut(SHORTCUT_SCREENSHOT_CONFIRM, takeScreenshot);
     useWindowShortcut(SHORTCUT_CREATE_PIN, createPin);
     useWindowShortcut(SHORTCUT_RECORD_REGION, recordRegion);
-
-    const rectanglePen: Pen = { type: "rectangle", strokeColor: "#EF4444", strokeWidth: 2 };
-    const arrowPen: Pen = { type: "arrow", strokeColor: "#EF4444", strokeWidth: 2 };
-    const straightLinePen: Pen = { type: "straight_line", strokeColor: "#EF4444", strokeWidth: 2 };
-    const freeLinePen: Pen = { type: "free_line", strokeColor: "#EF4444", strokeWidth: 2 };
-    const sequencePen: Pen = { type: "sequence", strokeColor: "#EF4444", strokeWidth: 2, size: 24 };
-    const textPen: Pen = { type: "text", strokeColor: "#EF4444", fontSize: 12 };
     useWindowShortcut(SHORTCUT_TOOL_RECTANGLE, () => {
         onSelectPen(rectanglePen);
     });
@@ -183,6 +182,9 @@ export default function CropToolbar({
     });
     useWindowShortcut(SHORTCUT_TOOL_SEQUENCE, () => {
         onSelectPen(sequencePen);
+    });
+    useWindowShortcut(SHORTCUT_TOOL_TEXT, () => {
+        onSelectPen(textPen);
     });
 
     const screenshotConfirmShortcut = useShortcutStore((store) => store.getShortcut(SHORTCUT_SCREENSHOT_CONFIRM));
@@ -298,7 +300,7 @@ function PenSettings({ pen, onChange }: { pen: Pen; onChange: (pen: Pen) => void
     ];
 
     const updateColor = (color: string) => {
-        onChange({ ...pen, strokeColor: color });
+        onChange({ ...pen, color: color });
     };
 
     const updateWidth = (width: number) => {
@@ -324,8 +326,8 @@ function PenSettings({ pen, onChange }: { pen: Pen; onChange: (pen: Pen) => void
                     <button
                         key={c}
                         className={`w-5 h-5 rounded-full shadow-sm ${
-                            pen.strokeColor === c ? "ring-2 ring-offset-1 ring-blue-500" : ""
-                        } ${pen.strokeColor !== c ? "hover:ring-2 hover:ring-offset-1 hover:ring-blue-300" : ""}`}
+                            pen.color === c ? "ring-2 ring-offset-1 ring-blue-500" : ""
+                        } ${pen.color !== c ? "hover:ring-2 hover:ring-offset-1 hover:ring-blue-300" : ""}`}
                         style={{ backgroundColor: c }}
                         onClick={() => updateColor(c)}
                     />
@@ -334,7 +336,7 @@ function PenSettings({ pen, onChange }: { pen: Pen; onChange: (pen: Pen) => void
                 <div className="relative w-5 h-5 rounded-full overflow-hidden">
                     <input
                         type="color"
-                        value={pen.strokeColor}
+                        value={pen.color}
                         onChange={(e) => updateColor(e.target.value)}
                         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] p-0 border-0 cursor-pointer"
                     />

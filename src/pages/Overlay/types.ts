@@ -37,12 +37,12 @@ export type MouseMoveType =
 
 export type Pen =
     | { type: "none" }
-    | { type: "rectangle"; strokeColor: string; strokeWidth: number }
-    | { type: "free_line"; strokeColor: string; strokeWidth: number }
-    | { type: "straight_line"; strokeColor: string; strokeWidth: number }
-    | { type: "arrow"; strokeColor: string; strokeWidth: number }
-    | { type: "sequence"; strokeColor: string; strokeWidth: number; size: number }
-    | { type: "text"; strokeColor: string; fontSize: number };
+    | { type: "rectangle"; color: string; strokeWidth: number }
+    | { type: "free_line"; color: string; strokeWidth: number }
+    | { type: "straight_line"; color: string; strokeWidth: number }
+    | { type: "arrow"; color: string; strokeWidth: number }
+    | { type: "sequence"; color: string; strokeWidth: number; size: number }
+    | { type: "text"; color: string; fontSize: number };
 
 export interface Shape {
     value:
