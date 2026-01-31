@@ -8,7 +8,9 @@ import {
     SHORTCUT_RECORD_REGION,
     SHORTCUT_RECORD_REGION_CONFIRM,
     SHORTCUT_SCREENSHOT_CONFIRM,
+    SHORTCUT_SCREENSHOT_EXIT,
 } from "@/services/shortcut/const";
+import { Shortcut } from "@/services/shortcut/types";
 import { useShortcutStore } from "@/stores/useShortcutStore";
 import { invoke } from "@tauri-apps/api/core";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
@@ -93,7 +95,7 @@ export default function CropToolbar({
         }
     };
 
-    const confirmShortcut = useShortcutStore((store) => store.getShortcut(SHORTCUT_RECORD_REGION_CONFIRM));
+    const confirmRegionRecordShortcut = useShortcutStore((store) => store.getShortcut(SHORTCUT_RECORD_REGION_CONFIRM));
     const recordRegion = async () => {
         const monitor = await currentMonitor();
 
@@ -102,19 +104,19 @@ export default function CropToolbar({
         }
 
         try {
-            if (!confirmShortcut) {
+            if (!confirmRegionRecordShortcut) {
                 error(`[CropToolbar] failed to get confirm shortcut`);
                 return;
             }
 
             const window = getCurrentWindow();
-            registerGlobalShortcut(confirmShortcut.keys, async () => {
+            registerGlobalShortcut(confirmRegionRecordShortcut.keys, async () => {
                 try {
                     await Promise.all([
                         invoke("record_stop"),
                         window.setFocusable(true),
                         window.setIgnoreCursorEvents(false),
-                        unregisterGlobalShortcut(confirmShortcut.keys),
+                        unregisterGlobalShortcut(confirmRegionRecordShortcut.keys),
                     ]);
                 } catch (e) {
                     error(`[CropToolbar] failed to complete take gif: ${e}`);
@@ -139,6 +141,18 @@ export default function CropToolbar({
     useWindowShortcut(SHORTCUT_CREATE_PIN, createPin);
     useWindowShortcut(SHORTCUT_RECORD_REGION, recordRegion);
 
+    const screenshotConfirmShortcut = useShortcutStore((store) => store.getShortcut(SHORTCUT_SCREENSHOT_CONFIRM));
+    const createPinShortcut = useShortcutStore((store) => store.getShortcut(SHORTCUT_CREATE_PIN));
+    const recordRegionShortcut = useShortcutStore((store) => store.getShortcut(SHORTCUT_RECORD_REGION));
+    const exitShortcut = useShortcutStore((store) => store.getShortcut(SHORTCUT_SCREENSHOT_EXIT));
+
+    const getTooltips = (text: string, shortcut?: Shortcut) => {
+        if (shortcut && shortcut.keys && shortcut.keys.length > 0) {
+            return `${text} (${shortcut.keys.join(" + ")})`;
+        }
+        return text;
+    };
+
     const handlePenUpdate = (updatedPen: Pen) => {
         if (onPenUpdate) {
             onPenUpdate(updatedPen);
@@ -154,40 +168,51 @@ export default function CropToolbar({
                     e.stopPropagation();
                 }}
             >
-                <CommonButton onClick={takeScreenshot}>
+                <CommonButton onClick={takeScreenshot} tooltips={[getTooltips("完成截图", screenshotConfirmShortcut)]}>
                     <CheckIcon />
                 </CommonButton>
                 <CommonButton
                     selected={pen.type === "rectangle"}
                     onClick={() => onSelectPen({ type: "rectangle", strokeColor: "#EF4444", strokeWidth: 2 })}
+                    tooltips={[getTooltips("矩形工具")]}
                 >
                     <RectangleHorizontal />
                 </CommonButton>
                 <CommonButton
                     selected={pen.type === "arrow"}
                     onClick={() => onSelectPen({ type: "arrow", strokeColor: "#EF4444", strokeWidth: 2 })}
+                    tooltips={[getTooltips("箭头工具")]}
                 >
                     <MoveUpRight />
                 </CommonButton>
                 <CommonButton
                     selected={pen.type === "straight_line"}
                     onClick={() => onSelectPen({ type: "straight_line", strokeColor: "#EF4444", strokeWidth: 2 })}
+                    tooltips={[getTooltips("直线工具")]}
                 >
                     <Slash />
                 </CommonButton>
                 <CommonButton
                     selected={pen.type === "free_line"}
                     onClick={() => onSelectPen({ type: "free_line", strokeColor: "#EF4444", strokeWidth: 2 })}
+                    tooltips={[getTooltips("画笔工具")]}
                 >
                     <Pencil />
                 </CommonButton>
-                <CommonButton onClick={createPin}>
+                <CommonButton onClick={createPin} tooltips={[getTooltips("贴图", createPinShortcut)]}>
                     <Pin style={{ transform: "rotate(45deg)" }} />
                 </CommonButton>
-                <CommonButton selected={isRecording} onClick={recordRegion}>
+                <CommonButton
+                    selected={isRecording}
+                    onClick={recordRegion}
+                    tooltips={[
+                        getTooltips("区域录制", recordRegionShortcut),
+                        getTooltips("完成录制", confirmRegionRecordShortcut),
+                    ]}
+                >
                     <Video />
                 </CommonButton>
-                <CommonButton onClick={onCancel}>
+                <CommonButton onClick={onCancel} tooltips={[getTooltips("取消", exitShortcut)]}>
                     <X />
                 </CommonButton>
             </ButtonGroup>
@@ -264,20 +289,28 @@ function PenSettings({ pen, onChange }: { pen: Pen; onChange: (pen: Pen) => void
     );
 }
 
-function CommonButton(props: React.ComponentProps<typeof Button> & { selected?: boolean }) {
+function CommonButton({
+    tooltips,
+    selected,
+    ...props
+}: React.ComponentProps<typeof Button> & { selected?: boolean; tooltips?: string[] }) {
     return (
         <Tooltip>
             <TooltipTrigger asChild>
                 <Button
                     variant="outline"
                     size="icon-sm"
-                    className={props.selected ? "text-red-500 bg-muted hover:text-red-500" : ""}
+                    className={selected ? "text-red-500 bg-muted hover:text-red-500" : ""}
                     {...props}
                 />
             </TooltipTrigger>
-            <TooltipContent side={"bottom"}>
-                <p>hello world</p>
-            </TooltipContent>
+            {tooltips && (
+                <TooltipContent side={"bottom"}>
+                    {tooltips.map((tooltip) => {
+                        return <p>{tooltip}</p>;
+                    })}
+                </TooltipContent>
+            )}
         </Tooltip>
     );
 }
