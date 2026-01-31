@@ -39,3 +39,12 @@ export enum PenType {
     None,
     Rectangle,
 }
+
+export interface Shape {
+    value: {
+        type: PenType.Rectangle;
+        rect: Rectangle;
+    };
+    strokeColor: string;
+    strokeWidth: number;
+}

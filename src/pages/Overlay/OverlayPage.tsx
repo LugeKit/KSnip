@@ -11,7 +11,7 @@ import ResizeHandles from "./components/ResizeHandles";
 import { useCrop } from "./hooks/crop";
 import { useMouseEvent } from "./hooks/mouse";
 import { useWindowShortcut } from "./hooks/shortcut";
-import { PenType } from "./types";
+import { PenType, Shape } from "./types";
 
 export default function OverlayPage() {
     const debugSetting = useSettingValue<SettingValueBoolean>(ENABLE_DEBUG_SETTING);
@@ -21,6 +21,7 @@ export default function OverlayPage() {
     const { cropArea, mouseMoveType, setMouseMoveType } = useCrop(mouseState);
 
     const [pen, setPen] = useState(PenType.None);
+    const [shapes, setShapes] = useState<Shape[]>([]);
     useEffect(() => {
         if (pen === PenType.None) {
             setMouseMoveType({ type: "idle" });
@@ -65,7 +66,15 @@ export default function OverlayPage() {
                 )}
 
             {/* pen handles, for painting */}
-            {cropArea && mouseMoveType.type === "painting" && <PenHandles cropArea={cropArea} />}
+            {cropArea && mouseMoveType.type === "painting" && (
+                <PenHandles
+                    cropArea={cropArea}
+                    mouseState={mouseState}
+                    penType={pen}
+                    shapes={shapes}
+                    onAddShape={(shape) => setShapes((prev) => [...prev, shape])}
+                />
+            )}
 
             {/* debug panel */}
             {enableDebug && mouseState && (
