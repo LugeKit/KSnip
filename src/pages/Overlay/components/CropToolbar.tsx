@@ -9,6 +9,10 @@ import {
     SHORTCUT_RECORD_REGION_CONFIRM,
     SHORTCUT_SCREENSHOT_CONFIRM,
     SHORTCUT_SCREENSHOT_EXIT,
+    SHORTCUT_TOOL_ARROW,
+    SHORTCUT_TOOL_LINE,
+    SHORTCUT_TOOL_PEN,
+    SHORTCUT_TOOL_RECTANGLE,
 } from "@/services/shortcut/const";
 import { Shortcut } from "@/services/shortcut/types";
 import { useShortcutStore } from "@/stores/useShortcutStore";
@@ -141,10 +145,27 @@ export default function CropToolbar({
     useWindowShortcut(SHORTCUT_CREATE_PIN, createPin);
     useWindowShortcut(SHORTCUT_RECORD_REGION, recordRegion);
 
+    useWindowShortcut(SHORTCUT_TOOL_RECTANGLE, () => {
+        onSelectPen({ type: "rectangle", strokeColor: "#EF4444", strokeWidth: 2 });
+    });
+    useWindowShortcut(SHORTCUT_TOOL_ARROW, () => {
+        onSelectPen({ type: "arrow", strokeColor: "#EF4444", strokeWidth: 2 });
+    });
+    useWindowShortcut(SHORTCUT_TOOL_LINE, () => {
+        onSelectPen({ type: "straight_line", strokeColor: "#EF4444", strokeWidth: 2 });
+    });
+    useWindowShortcut(SHORTCUT_TOOL_PEN, () => {
+        onSelectPen({ type: "free_line", strokeColor: "#EF4444", strokeWidth: 2 });
+    });
+
     const screenshotConfirmShortcut = useShortcutStore((store) => store.getShortcut(SHORTCUT_SCREENSHOT_CONFIRM));
     const createPinShortcut = useShortcutStore((store) => store.getShortcut(SHORTCUT_CREATE_PIN));
     const recordRegionShortcut = useShortcutStore((store) => store.getShortcut(SHORTCUT_RECORD_REGION));
     const exitShortcut = useShortcutStore((store) => store.getShortcut(SHORTCUT_SCREENSHOT_EXIT));
+    const toolRectangleShortcut = useShortcutStore((store) => store.getShortcut(SHORTCUT_TOOL_RECTANGLE));
+    const toolArrowShortcut = useShortcutStore((store) => store.getShortcut(SHORTCUT_TOOL_ARROW));
+    const toolLineShortcut = useShortcutStore((store) => store.getShortcut(SHORTCUT_TOOL_LINE));
+    const toolPenShortcut = useShortcutStore((store) => store.getShortcut(SHORTCUT_TOOL_PEN));
 
     const getTooltips = (text: string, shortcut?: Shortcut) => {
         if (shortcut && shortcut.keys && shortcut.keys.length > 0) {
@@ -174,28 +195,28 @@ export default function CropToolbar({
                 <CommonButton
                     selected={pen.type === "rectangle"}
                     onClick={() => onSelectPen({ type: "rectangle", strokeColor: "#EF4444", strokeWidth: 2 })}
-                    tooltips={[getTooltips("矩形工具")]}
+                    tooltips={[getTooltips("矩形工具", toolRectangleShortcut)]}
                 >
                     <RectangleHorizontal />
                 </CommonButton>
                 <CommonButton
                     selected={pen.type === "arrow"}
                     onClick={() => onSelectPen({ type: "arrow", strokeColor: "#EF4444", strokeWidth: 2 })}
-                    tooltips={[getTooltips("箭头工具")]}
+                    tooltips={[getTooltips("箭头工具", toolArrowShortcut)]}
                 >
                     <MoveUpRight />
                 </CommonButton>
                 <CommonButton
                     selected={pen.type === "straight_line"}
                     onClick={() => onSelectPen({ type: "straight_line", strokeColor: "#EF4444", strokeWidth: 2 })}
-                    tooltips={[getTooltips("直线工具")]}
+                    tooltips={[getTooltips("直线工具", toolLineShortcut)]}
                 >
                     <Slash />
                 </CommonButton>
                 <CommonButton
                     selected={pen.type === "free_line"}
                     onClick={() => onSelectPen({ type: "free_line", strokeColor: "#EF4444", strokeWidth: 2 })}
-                    tooltips={[getTooltips("画笔工具")]}
+                    tooltips={[getTooltips("画笔工具", toolPenShortcut)]}
                 >
                     <Pencil />
                 </CommonButton>

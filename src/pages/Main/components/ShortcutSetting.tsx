@@ -14,6 +14,10 @@ import {
     SHORTCUT_SCREENSHOT_EXIT,
     SHORTCUT_TAKE_SCREENSHOT,
     SHORTCUT_TEST,
+    SHORTCUT_TOOL_ARROW,
+    SHORTCUT_TOOL_LINE,
+    SHORTCUT_TOOL_PEN,
+    SHORTCUT_TOOL_RECTANGLE,
 } from "@/services/shortcut/const";
 import { Shortcut } from "@/services/shortcut/types";
 import { useShortcutStore } from "@/stores/useShortcutStore";
@@ -38,6 +42,10 @@ export default function ShortcutSetting() {
                     SHORTCUT_CREATE_PIN,
                     SHORTCUT_RECORD_REGION,
                     SHORTCUT_RECORD_REGION_CONFIRM,
+                    SHORTCUT_TOOL_RECTANGLE,
+                    SHORTCUT_TOOL_ARROW,
+                    SHORTCUT_TOOL_LINE,
+                    SHORTCUT_TOOL_PEN,
                 ],
             },
         ];
@@ -48,9 +56,7 @@ export default function ShortcutSetting() {
     const shortcutItems = useMemo(() => {
         const shortcutsByPage: Record<string, Shortcut[]> = {};
         tabsData.forEach((tab) => {
-            const items = tab.shortcutIds
-                .map((id) => shortcuts[id])
-                .filter((item) => item !== undefined);
+            const items = tab.shortcutIds.map((id) => shortcuts[id]).filter((item) => item !== undefined);
             shortcutsByPage[tab.page] = items;
         });
         return shortcutsByPage;

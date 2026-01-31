@@ -9,6 +9,10 @@ export const SHORTCUT_SCREENSHOT_CONFIRM = "SHORTCUT_SCREENSHOT_CONFIRM";
 export const SHORTCUT_CREATE_PIN = "SHORTCUT_CREATE_PIN";
 export const SHORTCUT_RECORD_REGION = "SHORTCUT_RECORD_REGION";
 export const SHORTCUT_RECORD_REGION_CONFIRM = "SHORTCUT_RECORD_REGION_CONFIRM";
+export const SHORTCUT_TOOL_RECTANGLE = "SHORTCUT_TOOL_RECTANGLE";
+export const SHORTCUT_TOOL_ARROW = "SHORTCUT_TOOL_ARROW";
+export const SHORTCUT_TOOL_LINE = "SHORTCUT_TOOL_LINE";
+export const SHORTCUT_TOOL_PEN = "SHORTCUT_TOOL_PEN";
 
 export const DEFAULT_SHORTCUT_SETTING: ShortcutSetting = {
     shortcuts: {
@@ -47,6 +51,17 @@ export const DEFAULT_SHORTCUT_SETTING: ShortcutSetting = {
             "确认区域录屏",
             null,
         ),
+        [SHORTCUT_TOOL_RECTANGLE]: new Shortcut(
+            SHORTCUT_TOOL_RECTANGLE,
+            ["1"],
+            true,
+            "screenshot",
+            "矩形工具",
+            null,
+        ),
+        [SHORTCUT_TOOL_ARROW]: new Shortcut(SHORTCUT_TOOL_ARROW, ["2"], true, "screenshot", "箭头工具", null),
+        [SHORTCUT_TOOL_LINE]: new Shortcut(SHORTCUT_TOOL_LINE, ["3"], true, "screenshot", "直线工具", null),
+        [SHORTCUT_TOOL_PEN]: new Shortcut(SHORTCUT_TOOL_PEN, ["4"], true, "screenshot", "画笔工具", null),
     },
 };
 
