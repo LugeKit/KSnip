@@ -66,11 +66,11 @@ export default function OverlayPage() {
                 )}
 
             {/* pen handles, for painting */}
-            {cropArea && mouseMoveType.type === "painting" && (
+            {cropArea && (
                 <PenHandles
                     cropArea={cropArea}
                     mouseState={mouseState}
-                    penType={pen}
+                    pen={pen}
                     shapes={shapes}
                     onAddShape={(shape) => setShapes((prev) => [...prev, shape])}
                 />
