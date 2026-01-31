@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { warn } from "@tauri-apps/plugin-log";
 import React, { useEffect, useState } from "react";
 import { MouseState, Pen, Point, Rectangle, Shape } from "../types";
 
@@ -36,14 +37,45 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
         });
     };
 
+    const setPreviewShapeStraightLine = (
+        pressPosition: Point,
+        mousePosition: Point,
+        strokeColor: string,
+        strokeWidth: number,
+    ) => {
+        const start = { x: pressPosition.x - cropArea.left, y: pressPosition.y - cropArea.top };
+        const end = { x: mousePosition.x - cropArea.left, y: mousePosition.y - cropArea.top };
+
+        setPreviewShape({
+            value: { type: "straight_line", start, end },
+            strokeColor: strokeColor,
+            strokeWidth: strokeWidth,
+        });
+    };
+
     useEffect(() => {
-        if (mouseState.isPressing && mouseState.pressPosition && mouseState.mousePosition && pen.type === "rectangle") {
+        if (!mouseState.isPressing || !mouseState.pressPosition || !mouseState.mousePosition) {
+            return;
+        }
+
+        if (pen.type === "rectangle") {
             setPreviewShapeRectangle(
                 mouseState.pressPosition,
                 mouseState.mousePosition,
                 pen.strokeColor,
                 pen.strokeWidth,
             );
+            return;
+        }
+
+        if (pen.type === "straight_line") {
+            setPreviewShapeStraightLine(
+                mouseState.pressPosition,
+                mouseState.mousePosition,
+                pen.strokeColor,
+                pen.strokeWidth,
+            );
+            return;
         }
     }, [mouseState]);
 
@@ -66,29 +98,43 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
         >
             <svg width="100%" height="100%">
                 {shapes.map((shape, i) => {
-                    if (shape.value.type === "rectangle") {
-                        return (
-                            <RectangleShape
-                                key={i}
-                                rect={shape.value.rect}
-                                strokeColor={shape.strokeColor}
-                                strokeWidth={shape.strokeWidth}
-                            />
-                        );
-                    }
-                    return null;
+                    return <ShapeCollection shape={shape} key={i} />;
                 })}
-                {previewShape && previewShape.value.type === "rectangle" && (
-                    <RectangleShape
-                        rect={previewShape.value.rect}
-                        strokeColor={previewShape.strokeColor}
-                        strokeWidth={previewShape.strokeWidth}
-                    />
-                )}
+                {previewShape && <ShapeCollection shape={previewShape} />}
             </svg>
         </div>
     );
 };
+
+function ShapeCollection({ shape }: { shape: Shape }) {
+    if (!shape || !shape.value || !shape.value.type) {
+        warn(`[ShapeCollection] invalid shape: ${JSON.stringify(shape)}`);
+        return null;
+    }
+
+    switch (shape.value.type) {
+        case "rectangle": {
+            return (
+                <RectangleShape
+                    rect={shape.value.rect}
+                    strokeColor={shape.strokeColor}
+                    strokeWidth={shape.strokeWidth}
+                />
+            );
+        }
+
+        case "straight_line": {
+            return (
+                <StraightLineShape
+                    start={shape.value.start}
+                    end={shape.value.end}
+                    strokeColor={shape.strokeColor}
+                    strokeWidth={shape.strokeWidth}
+                />
+            );
+        }
+    }
+}
 
 function RectangleShape({
     rect,
@@ -110,6 +156,20 @@ function RectangleShape({
             fill="transparent"
         />
     );
+}
+
+function StraightLineShape({
+    start,
+    end,
+    strokeColor,
+    strokeWidth,
+}: {
+    start: Point;
+    end: Point;
+    strokeColor: string;
+    strokeWidth: number;
+}) {
+    return <line x1={start.x} y1={start.y} x2={end.x} y2={end.y} stroke={strokeColor} strokeWidth={strokeWidth} />;
 }
 
 export default PenHandles;
