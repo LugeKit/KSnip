@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Input } from "@/components/ui/input";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { registerGlobalShortcut, unregisterGlobalShortcut } from "@/lib/utils";
 import {
     SHORTCUT_CREATE_PIN,
@@ -13,17 +14,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { currentMonitor, getCurrentWindow, Monitor } from "@tauri-apps/api/window";
 import { debug, error, info } from "@tauri-apps/plugin-log";
-import {
-    CheckIcon,
-    MoveRight,
-    MoveUpRight,
-    Pen as Pencil,
-    Pin,
-    RectangleHorizontal,
-    Slash,
-    Video,
-    X,
-} from "lucide-react";
+import { CheckIcon, MoveUpRight, Pen as Pencil, Pin, RectangleHorizontal, Slash, Video, X } from "lucide-react";
 import React, { useState } from "react";
 import { useWindowShortcut } from "../hooks/shortcut";
 import { Pen, Rectangle } from "../types";
@@ -275,12 +266,19 @@ function PenSettings({ pen, onChange }: { pen: Pen; onChange: (pen: Pen) => void
 
 function CommonButton(props: React.ComponentProps<typeof Button> & { selected?: boolean }) {
     return (
-        <Button
-            variant="outline"
-            size="icon-sm"
-            className={props.selected ? "text-red-500 bg-muted hover:text-red-500" : ""}
-            {...props}
-        />
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <Button
+                    variant="outline"
+                    size="icon-sm"
+                    className={props.selected ? "text-red-500 bg-muted hover:text-red-500" : ""}
+                    {...props}
+                />
+            </TooltipTrigger>
+            <TooltipContent side={"bottom"}>
+                <p>hello world</p>
+            </TooltipContent>
+        </Tooltip>
     );
 }
 
