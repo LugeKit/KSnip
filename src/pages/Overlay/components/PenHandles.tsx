@@ -103,8 +103,27 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
         });
     };
 
+    const setPreviewShapeSequence = (mousePosition: Point, strokeColor: string, strokeWidth: number, size: number) => {
+        const point = {
+            x: mousePosition.x - cropArea.left,
+            y: mousePosition.y - cropArea.top,
+        };
+        const nextNumber = shapes.filter((s) => s.value.type === "sequence").length + 1;
+
+        setPreviewShape({
+            value: { type: "sequence", point, number: nextNumber, size },
+            strokeColor: strokeColor,
+            strokeWidth: strokeWidth,
+        });
+    };
+
     useEffect(() => {
         if (!mouseState.isPressing || !mouseState.pressPosition || !mouseState.mousePosition) {
+            return;
+        }
+
+        if (pen.type === "sequence") {
+            setPreviewShapeSequence(mouseState.mousePosition, pen.strokeColor, pen.strokeWidth, pen.size);
             return;
         }
 
@@ -219,6 +238,18 @@ function ShapeCollection({ shape }: { shape: Shape }) {
                 />
             );
         }
+
+        case "sequence": {
+            return (
+                <SequenceShape
+                    point={shape.value.point}
+                    number={shape.value.number}
+                    size={shape.value.size}
+                    strokeColor={shape.strokeColor}
+                    strokeWidth={shape.strokeWidth}
+                />
+            );
+        }
     }
 }
 
@@ -328,6 +359,40 @@ function ArrowShape({
                 strokeWidth={strokeWidth}
                 strokeLinecap="round"
             />
+        </g>
+    );
+}
+
+function SequenceShape({
+    point,
+    number,
+    size,
+    strokeColor,
+    strokeWidth,
+}: {
+    point: Point;
+    number: number;
+    size: number;
+    strokeColor: string;
+    strokeWidth: number;
+}) {
+    const radius = size / 2;
+    return (
+        <g transform={`translate(${point.x}, ${point.y})`}>
+            <circle r={radius} stroke={strokeColor} strokeWidth={strokeWidth} fill="transparent" />
+            <text
+                x="0"
+                y="0"
+                textAnchor="middle"
+                dominantBaseline="central"
+                fill={strokeColor}
+                fontSize={size * 0.6}
+                fontWeight="bold"
+                pointerEvents="none"
+                style={{ userSelect: "none" }}
+            >
+                {number}
+            </text>
         </g>
     );
 }
