@@ -68,7 +68,7 @@ export default function ShortcutSetting() {
 
     return (
         <div className="relative top-0 right-0 w-full h-full p-4">
-            <Tabs defaultValue="basic" className="w-full">
+            <Tabs defaultValue="basic" className="w-full overflow-auto">
                 <TabsHeader headers={tabsData} />
                 <Border />
                 {Object.entries(shortcutItems).map(([page, pageShortcuts]) => {
@@ -76,7 +76,7 @@ export default function ShortcutSetting() {
                         <TabsContent
                             key={page}
                             value={page}
-                            className="[&_tr]:hover:bg-transparent bg-muted rounded-md pl-5 pr-5"
+                            className="[&_tr]:hover:bg-transparent bg-muted rounded-md pl-5 pr-5 overflow-y-auto min-h-0"
                         >
                             <Table>
                                 <TabsContentHeader />
