@@ -145,17 +145,21 @@ export default function CropToolbar({
     useWindowShortcut(SHORTCUT_CREATE_PIN, createPin);
     useWindowShortcut(SHORTCUT_RECORD_REGION, recordRegion);
 
+    const rectanglePen: Pen = { type: "rectangle", strokeColor: "#EF4444", strokeWidth: 2 };
+    const arrowPen: Pen = { type: "arrow", strokeColor: "#EF4444", strokeWidth: 2 };
+    const straightLinePen: Pen = { type: "straight_line", strokeColor: "#EF4444", strokeWidth: 2 };
+    const freeLinePen: Pen = { type: "free_line", strokeColor: "#EF4444", strokeWidth: 2 };
     useWindowShortcut(SHORTCUT_TOOL_RECTANGLE, () => {
-        onSelectPen({ type: "rectangle", strokeColor: "#EF4444", strokeWidth: 2 });
+        onSelectPen(rectanglePen);
     });
     useWindowShortcut(SHORTCUT_TOOL_ARROW, () => {
-        onSelectPen({ type: "arrow", strokeColor: "#EF4444", strokeWidth: 2 });
+        onSelectPen(arrowPen);
     });
     useWindowShortcut(SHORTCUT_TOOL_LINE, () => {
-        onSelectPen({ type: "straight_line", strokeColor: "#EF4444", strokeWidth: 2 });
+        onSelectPen(straightLinePen);
     });
     useWindowShortcut(SHORTCUT_TOOL_PEN, () => {
-        onSelectPen({ type: "free_line", strokeColor: "#EF4444", strokeWidth: 2 });
+        onSelectPen(freeLinePen);
     });
 
     const screenshotConfirmShortcut = useShortcutStore((store) => store.getShortcut(SHORTCUT_SCREENSHOT_CONFIRM));
@@ -194,28 +198,28 @@ export default function CropToolbar({
                 </CommonButton>
                 <CommonButton
                     selected={pen.type === "rectangle"}
-                    onClick={() => onSelectPen({ type: "rectangle", strokeColor: "#EF4444", strokeWidth: 2 })}
+                    onClick={() => onSelectPen(rectanglePen)}
                     tooltips={[getTooltips("矩形工具", toolRectangleShortcut)]}
                 >
                     <RectangleHorizontal />
                 </CommonButton>
                 <CommonButton
                     selected={pen.type === "arrow"}
-                    onClick={() => onSelectPen({ type: "arrow", strokeColor: "#EF4444", strokeWidth: 2 })}
+                    onClick={() => onSelectPen(arrowPen)}
                     tooltips={[getTooltips("箭头工具", toolArrowShortcut)]}
                 >
                     <MoveUpRight />
                 </CommonButton>
                 <CommonButton
                     selected={pen.type === "straight_line"}
-                    onClick={() => onSelectPen({ type: "straight_line", strokeColor: "#EF4444", strokeWidth: 2 })}
+                    onClick={() => onSelectPen(straightLinePen)}
                     tooltips={[getTooltips("直线工具", toolLineShortcut)]}
                 >
                     <Slash />
                 </CommonButton>
                 <CommonButton
                     selected={pen.type === "free_line"}
-                    onClick={() => onSelectPen({ type: "free_line", strokeColor: "#EF4444", strokeWidth: 2 })}
+                    onClick={() => onSelectPen(freeLinePen)}
                     tooltips={[getTooltips("画笔工具", toolPenShortcut)]}
                 >
                     <Pencil />
