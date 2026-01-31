@@ -53,6 +53,40 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
         });
     };
 
+    const setPreviewShapeFreeLine = (
+        pressPosition: Point,
+        mousePosition: Point,
+        strokeColor: string,
+        strokeWidth: number,
+    ) => {
+        const startPoint = {
+            x: pressPosition.x - cropArea.left,
+            y: pressPosition.y - cropArea.top,
+        };
+        const currentPoint = {
+            x: mousePosition.x - cropArea.left,
+            y: mousePosition.y - cropArea.top,
+        };
+
+        setPreviewShape((prev) => {
+            if (!prev || !prev.value || prev.value.type !== "free_line") {
+                return {
+                    value: { type: "free_line", points: [startPoint, currentPoint] },
+                    strokeColor: strokeColor,
+                    strokeWidth: strokeWidth,
+                };
+            }
+
+            return {
+                ...prev,
+                value: {
+                    ...prev.value,
+                    points: [...prev.value.points, currentPoint],
+                },
+            };
+        });
+    };
+
     useEffect(() => {
         if (!mouseState.isPressing || !mouseState.pressPosition || !mouseState.mousePosition) {
             return;
@@ -70,6 +104,16 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
 
         if (pen.type === "straight_line") {
             setPreviewShapeStraightLine(
+                mouseState.pressPosition,
+                mouseState.mousePosition,
+                pen.strokeColor,
+                pen.strokeWidth,
+            );
+            return;
+        }
+
+        if (pen.type === "free_line") {
+            setPreviewShapeFreeLine(
                 mouseState.pressPosition,
                 mouseState.mousePosition,
                 pen.strokeColor,
@@ -133,6 +177,16 @@ function ShapeCollection({ shape }: { shape: Shape }) {
                 />
             );
         }
+
+        case "free_line": {
+            return (
+                <FreeLineShape
+                    points={shape.value.points}
+                    strokeColor={shape.strokeColor}
+                    strokeWidth={shape.strokeWidth}
+                />
+            );
+        }
     }
 }
 
@@ -170,6 +224,35 @@ function StraightLineShape({
     strokeWidth: number;
 }) {
     return <line x1={start.x} y1={start.y} x2={end.x} y2={end.y} stroke={strokeColor} strokeWidth={strokeWidth} />;
+}
+
+function FreeLineShape({
+    points,
+    strokeColor,
+    strokeWidth,
+}: {
+    points: Point[];
+    strokeColor: string;
+    strokeWidth: number;
+}) {
+    if (points.length < 2) return null;
+    const d =
+        `M ${points[0].x} ${points[0].y} ` +
+        points
+            .slice(1)
+            .map((p) => `L ${p.x} ${p.y}`)
+            .join(" ");
+
+    return (
+        <path
+            d={d}
+            stroke={strokeColor}
+            strokeWidth={strokeWidth}
+            fill="transparent"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        />
+    );
 }
 
 export default PenHandles;

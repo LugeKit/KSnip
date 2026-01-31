@@ -12,7 +12,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { currentMonitor, getCurrentWindow, Monitor } from "@tauri-apps/api/window";
 import { debug, error, info } from "@tauri-apps/plugin-log";
-import { CheckIcon, Minus, Pin, RectangleHorizontal, Video, X } from "lucide-react";
+import { CheckIcon, Minus, Pen as Pencil, Pin, RectangleHorizontal, Video, X } from "lucide-react";
 import React, { useState } from "react";
 import { useWindowShortcut } from "../hooks/shortcut";
 import { Pen, Rectangle } from "../types";
@@ -139,6 +139,9 @@ export default function CropToolbar({ cropArea, pen, onConfirm, onCancel, onSele
             </CommonButton>
             <CommonButton onClick={() => onSelectPen({ type: "rectangle", strokeColor: "red", strokeWidth: 2 })}>
                 <RectangleHorizontal className={pen.type === "rectangle" ? "text-red-500" : ""} />
+            </CommonButton>
+            <CommonButton onClick={() => onSelectPen({ type: "free_line", strokeColor: "red", strokeWidth: 2 })}>
+                <Pencil className={pen.type === "free_line" ? "text-red-500" : ""} />
             </CommonButton>
             <CommonButton onClick={() => onSelectPen({ type: "straight_line", strokeColor: "red", strokeWidth: 2 })}>
                 <Minus className={pen.type === "straight_line" ? "text-red-500" : ""} />
