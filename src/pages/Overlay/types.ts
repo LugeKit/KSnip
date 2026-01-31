@@ -41,7 +41,8 @@ export type Pen =
     | { type: "free_line"; strokeColor: string; strokeWidth: number }
     | { type: "straight_line"; strokeColor: string; strokeWidth: number }
     | { type: "arrow"; strokeColor: string; strokeWidth: number }
-    | { type: "sequence"; strokeColor: string; strokeWidth: number; size: number };
+    | { type: "sequence"; strokeColor: string; strokeWidth: number; size: number }
+    | { type: "text"; strokeColor: string; fontSize: number };
 
 export interface Shape {
     value:
@@ -49,7 +50,8 @@ export interface Shape {
         | { type: "free_line"; points: Point[] }
         | { type: "straight_line"; start: Point; end: Point }
         | { type: "arrow"; start: Point; end: Point }
-        | { type: "sequence"; point: Point; number: number; size: number };
+        | { type: "sequence"; point: Point; number: number; size: number }
+        | { type: "text"; point: Point; text: string; fontSize: number; color: string };
     strokeColor: string;
     strokeWidth: number;
 }

@@ -20,6 +20,7 @@ import {
     SHORTCUT_TOOL_PEN,
     SHORTCUT_TOOL_RECTANGLE,
     SHORTCUT_TOOL_SEQUENCE,
+    SHORTCUT_TOOL_TEXT,
     SHORTCUT_UNDO,
 } from "@/services/shortcut/const";
 import { Shortcut } from "@/services/shortcut/types";
@@ -45,6 +46,7 @@ export default function ShortcutSetting() {
                     SHORTCUT_CREATE_PIN,
                     SHORTCUT_RECORD_REGION,
                     SHORTCUT_RECORD_REGION_CONFIRM,
+                    SHORTCUT_TOOL_TEXT,
                     SHORTCUT_TOOL_RECTANGLE,
                     SHORTCUT_TOOL_ARROW,
                     SHORTCUT_TOOL_LINE,

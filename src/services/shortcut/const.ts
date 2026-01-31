@@ -16,6 +16,7 @@ export const SHORTCUT_TOOL_PEN = "SHORTCUT_TOOL_PEN";
 export const SHORTCUT_UNDO = "SHORTCUT_UNDO";
 export const SHORTCUT_REDO = "SHORTCUT_REDO";
 export const SHORTCUT_TOOL_SEQUENCE = "SHORTCUT_TOOL_SEQUENCE";
+export const SHORTCUT_TOOL_TEXT = "SHORTCUT_TOOL_TEXT";
 
 export const DEFAULT_SHORTCUT_SETTING: ShortcutSetting = {
     shortcuts: {
@@ -59,6 +60,7 @@ export const DEFAULT_SHORTCUT_SETTING: ShortcutSetting = {
         [SHORTCUT_TOOL_LINE]: new Shortcut(SHORTCUT_TOOL_LINE, ["3"], true, "screenshot", "直线工具", null),
         [SHORTCUT_TOOL_PEN]: new Shortcut(SHORTCUT_TOOL_PEN, ["4"], true, "screenshot", "画笔工具", null),
         [SHORTCUT_TOOL_SEQUENCE]: new Shortcut(SHORTCUT_TOOL_SEQUENCE, ["5"], true, "screenshot", "序号工具", null),
+        [SHORTCUT_TOOL_TEXT]: new Shortcut(SHORTCUT_TOOL_TEXT, ["Q"], true, "screenshot", "文字工具", null),
         [SHORTCUT_UNDO]: new Shortcut(SHORTCUT_UNDO, ["CTRL", "Z"], true, "screenshot", "撤销", null),
         [SHORTCUT_REDO]: new Shortcut(SHORTCUT_REDO, ["CTRL", "R"], true, "screenshot", "前进", null),
     },

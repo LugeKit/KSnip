@@ -14,6 +14,12 @@ interface PenHandlesProps {
 
 const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState, pen, shapes, onAddShape }) => {
     const [previewShape, setPreviewShape] = useState<Shape | null>(null);
+    const [editingText, setEditingText] = useState<{
+        point: Point;
+        text: string;
+        fontSize: number;
+        color: string;
+    } | null>(null);
 
     const setPreviewShapeRectangle = (
         pressPosition: Point,
@@ -127,6 +133,10 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
             return;
         }
 
+        if (pen.type === "text") {
+            return;
+        }
+
         if (pen.type === "rectangle") {
             setPreviewShapeRectangle(
                 mouseState.pressPosition,
@@ -167,6 +177,33 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
         if (!mouseState.isPressing && previewShape) {
             onAddShape(previewShape);
             setPreviewShape(null);
+        }
+    }, [mouseState.isPressing]);
+
+    useEffect(() => {
+        if (mouseState.isPressing && mouseState.pressPosition && pen.type === "text") {
+            if (editingText) {
+                if (editingText.text.trim()) {
+                    onAddShape({
+                        value: {
+                            type: "text",
+                            point: editingText.point,
+                            text: editingText.text,
+                            fontSize: editingText.fontSize,
+                            color: editingText.color,
+                        },
+                        strokeColor: editingText.color,
+                        strokeWidth: 0,
+                    });
+                }
+            }
+
+            setEditingText({
+                point: mouseState.pressPosition,
+                text: "",
+                fontSize: pen.fontSize,
+                color: pen.strokeColor,
+            });
         }
     }, [mouseState.isPressing]);
 
@@ -247,6 +284,17 @@ function ShapeCollection({ shape }: { shape: Shape }) {
                     size={shape.value.size}
                     strokeColor={shape.strokeColor}
                     strokeWidth={shape.strokeWidth}
+                />
+            );
+        }
+
+        case "text": {
+            return (
+                <TextShape
+                    point={shape.value.point}
+                    text={shape.value.text}
+                    fontSize={shape.value.fontSize}
+                    color={"red"}
                 />
             );
         }
@@ -398,3 +446,22 @@ function SequenceShape({
 }
 
 export default PenHandles;
+
+function TextShape({ point, text, fontSize, color }: { point: Point; text: string; fontSize: number; color: string }) {
+    return (
+        <text
+            x={point.x}
+            y={point.y}
+            fill={color}
+            fontSize={fontSize}
+            dominantBaseline="hanging"
+            style={{ whiteSpace: "pre", fontFamily: "inherit", lineHeight: 1.2 }}
+        >
+            {text.split("\n").map((line, i) => (
+                <tspan x={point.x} dy={i === 0 ? 0 : "1.2em"} key={i}>
+                    {line}
+                </tspan>
+            ))}
+        </text>
+    );
+}

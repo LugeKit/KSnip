@@ -3,6 +3,8 @@ import { ButtonGroup } from "@/components/ui/button-group";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { registerGlobalShortcut, unregisterGlobalShortcut } from "@/lib/utils";
+import { RECORDING_PATH_SETTING } from "@/services/setting/const";
+import { SettingValuePath } from "@/services/setting/types";
 import {
     SHORTCUT_CREATE_PIN,
     SHORTCUT_RECORD_REGION,
@@ -14,8 +16,10 @@ import {
     SHORTCUT_TOOL_PEN,
     SHORTCUT_TOOL_RECTANGLE,
     SHORTCUT_TOOL_SEQUENCE,
+    SHORTCUT_TOOL_TEXT,
 } from "@/services/shortcut/const";
 import { Shortcut } from "@/services/shortcut/types";
+import { useSettingValue } from "@/stores/useSettingStore";
 import { useShortcutStore } from "@/stores/useShortcutStore";
 import { invoke } from "@tauri-apps/api/core";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
@@ -29,15 +33,13 @@ import {
     Pin,
     RectangleHorizontal,
     Slash,
+    Text,
     Video,
     X,
 } from "lucide-react";
 import React, { useState } from "react";
 import { useWindowShortcut } from "../hooks/shortcut";
 import { Pen, Rectangle } from "../types";
-import { RECORDING_PATH_SETTING } from "@/services/setting/const";
-import { SettingValuePath } from "@/services/setting/types";
-import { useSettingValue } from "@/stores/useSettingStore";
 
 interface CropToolbarProps {
     cropArea: Rectangle;
@@ -166,6 +168,7 @@ export default function CropToolbar({
     const straightLinePen: Pen = { type: "straight_line", strokeColor: "#EF4444", strokeWidth: 2 };
     const freeLinePen: Pen = { type: "free_line", strokeColor: "#EF4444", strokeWidth: 2 };
     const sequencePen: Pen = { type: "sequence", strokeColor: "#EF4444", strokeWidth: 2, size: 24 };
+    const textPen: Pen = { type: "text", strokeColor: "#EF4444", fontSize: 12 };
     useWindowShortcut(SHORTCUT_TOOL_RECTANGLE, () => {
         onSelectPen(rectanglePen);
     });
@@ -186,6 +189,7 @@ export default function CropToolbar({
     const createPinShortcut = useShortcutStore((store) => store.getShortcut(SHORTCUT_CREATE_PIN));
     const recordRegionShortcut = useShortcutStore((store) => store.getShortcut(SHORTCUT_RECORD_REGION));
     const exitShortcut = useShortcutStore((store) => store.getShortcut(SHORTCUT_SCREENSHOT_EXIT));
+    const toolTextShortcut = useShortcutStore((store) => store.getShortcut(SHORTCUT_TOOL_TEXT));
     const toolRectangleShortcut = useShortcutStore((store) => store.getShortcut(SHORTCUT_TOOL_RECTANGLE));
     const toolArrowShortcut = useShortcutStore((store) => store.getShortcut(SHORTCUT_TOOL_ARROW));
     const toolLineShortcut = useShortcutStore((store) => store.getShortcut(SHORTCUT_TOOL_LINE));
@@ -216,6 +220,13 @@ export default function CropToolbar({
             >
                 <CommonButton onClick={takeScreenshot} tooltips={[getTooltips("完成截图", screenshotConfirmShortcut)]}>
                     <CheckIcon />
+                </CommonButton>
+                <CommonButton
+                    selected={pen.type === "text"}
+                    onClick={() => onSelectPen(textPen)}
+                    tooltips={[getTooltips("文字工具", toolTextShortcut)]}
+                >
+                    <Text />
                 </CommonButton>
                 <CommonButton
                     selected={pen.type === "rectangle"}
@@ -291,12 +302,15 @@ function PenSettings({ pen, onChange }: { pen: Pen; onChange: (pen: Pen) => void
     };
 
     const updateWidth = (width: number) => {
+        if (pen.type === "text") return;
         onChange({ ...pen, strokeWidth: width });
     };
 
     const updateSize = (size: number) => {
         if (pen.type === "sequence") {
             onChange({ ...pen, size: size });
+        } else if (pen.type === "text") {
+            onChange({ ...pen, fontSize: size });
         }
     };
 
@@ -326,31 +340,33 @@ function PenSettings({ pen, onChange }: { pen: Pen; onChange: (pen: Pen) => void
                     />
                 </div>
             </div>
-            <div className="flex items-center gap-2">
-                <input
-                    type="range"
-                    min="1"
-                    max="20"
-                    value={pen.strokeWidth}
-                    onChange={(e) => updateWidth(Number(e.target.value))}
-                    className="flex-1 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
-                />
-                <Input
-                    type="number"
-                    min="1"
-                    max="20"
-                    value={pen.strokeWidth}
-                    onChange={(e) => updateWidth(Number(e.target.value))}
-                    className="w-10 h-6 px-1 text-center text-xs"
-                />
-            </div>
-            {pen.type === "sequence" && (
+            {pen.type !== "text" && (
+                <div className="flex items-center gap-2">
+                    <input
+                        type="range"
+                        min="1"
+                        max="20"
+                        value={pen.strokeWidth}
+                        onChange={(e) => updateWidth(Number(e.target.value))}
+                        className="flex-1 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                    />
+                    <Input
+                        type="number"
+                        min="1"
+                        max="20"
+                        value={pen.strokeWidth}
+                        onChange={(e) => updateWidth(Number(e.target.value))}
+                        className="w-10 h-6 px-1 text-center text-xs"
+                    />
+                </div>
+            )}
+            {(pen.type === "sequence" || pen.type === "text") && (
                 <div className="flex items-center gap-2">
                     <input
                         type="range"
                         min="10"
                         max="100"
-                        value={pen.size}
+                        value={pen.type === "sequence" ? pen.size : pen.type === "text" ? pen.fontSize : 0}
                         onChange={(e) => updateSize(Number(e.target.value))}
                         className="flex-1 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
                     />
@@ -358,7 +374,7 @@ function PenSettings({ pen, onChange }: { pen: Pen; onChange: (pen: Pen) => void
                         type="number"
                         min="10"
                         max="100"
-                        value={pen.size}
+                        value={pen.type === "sequence" ? pen.size : pen.type === "text" ? pen.fontSize : 0}
                         onChange={(e) => updateSize(Number(e.target.value))}
                         className="w-10 h-6 px-1 text-center text-xs"
                     />
