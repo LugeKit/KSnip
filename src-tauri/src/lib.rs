@@ -1,8 +1,7 @@
 use tauri::{
     menu::{Menu, MenuItem},
-    tray::TrayIconBuilder,
-    Emitter,
-    Manager,
+    tray::{TrayIconBuilder, TrayIconEvent},
+    Emitter, Manager,
 };
 
 mod model;
@@ -33,6 +32,16 @@ pub fn run() {
                 .icon(app.default_window_icon().unwrap().clone())
                 .menu(&menu)
                 .show_menu_on_left_click(true)
+                .on_tray_icon_event(|icon, event| match event {
+                    TrayIconEvent::DoubleClick { .. } => {
+                        if let Some(window) = icon.app_handle().get_webview_window("main") {
+                            let _ = window.show();
+                            let _ = window.set_focus();
+                            let _ = window.emit("open-settings", ());
+                        }
+                    }
+                    _ => {}
+                })
                 .on_menu_event(|app, event| match event.id.as_ref() {
                     "quit" => app.exit(0),
                     "settings" => {
