@@ -117,7 +117,7 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
         });
     };
 
-    const setPreviewShapeText = (pressPosition: Point, color: string, fontSize: number) => {
+    const setPreviewShapeText = (pressPosition: Point) => {
         if (previewShape && previewShape.value.type === "text") {
             // If we are already editing text, finalize it first
             if (previewShape.value.text.trim()) {
@@ -133,10 +133,10 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
                     y: pressPosition.y - cropArea.top,
                 },
                 text: "",
-                fontSize: fontSize,
-                color: color,
+                fontSize: 18,
+                color: "red",
             },
-            strokeColor: color,
+            strokeColor: "",
             strokeWidth: 0,
         });
     };
@@ -152,7 +152,7 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
         }
 
         if (pen.type === "text") {
-            setPreviewShapeText(mouseState.mousePosition, pen.color, pen.fontSize);
+            setPreviewShapeText(mouseState.mousePosition);
             return;
         }
 

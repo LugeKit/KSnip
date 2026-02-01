@@ -164,7 +164,7 @@ export default function CropToolbar({
     const straightLinePen: Pen = { type: "straight_line", color: "#EF4444", strokeWidth: 2 };
     const freeLinePen: Pen = { type: "free_line", color: "#EF4444", strokeWidth: 2 };
     const sequencePen: Pen = { type: "sequence", color: "#EF4444", strokeWidth: 2, size: 24 };
-    const textPen: Pen = { type: "text", color: "#EF4444", fontSize: 18 };
+    const textPen: Pen = { type: "text" };
     useWindowShortcut(SHORTCUT_SCREENSHOT_CONFIRM, takeScreenshot);
     useWindowShortcut(SHORTCUT_CREATE_PIN, createPin);
     useWindowShortcut(SHORTCUT_RECORD_REGION, recordRegion);
@@ -288,7 +288,7 @@ export default function CropToolbar({
 }
 
 function PenSettings({ pen, onChange }: { pen: Pen; onChange: (pen: Pen) => void }) {
-    if (pen.type === "none") return null;
+    if (pen.type === "none" || pen.type === "text") return null;
 
     const colors = [
         "#EF4444", // Red
@@ -304,15 +304,12 @@ function PenSettings({ pen, onChange }: { pen: Pen; onChange: (pen: Pen) => void
     };
 
     const updateWidth = (width: number) => {
-        if (pen.type === "text") return;
         onChange({ ...pen, strokeWidth: width });
     };
 
     const updateSize = (size: number) => {
         if (pen.type === "sequence") {
             onChange({ ...pen, size: size });
-        } else if (pen.type === "text") {
-            onChange({ ...pen, fontSize: size });
         }
     };
 
@@ -342,7 +339,7 @@ function PenSettings({ pen, onChange }: { pen: Pen; onChange: (pen: Pen) => void
                     />
                 </div>
             </div>
-            {pen.type !== "text" && (
+            {
                 <div className="flex items-center gap-2">
                     <input
                         type="range"
@@ -361,14 +358,14 @@ function PenSettings({ pen, onChange }: { pen: Pen; onChange: (pen: Pen) => void
                         className="w-10 h-6 px-1 text-center text-xs"
                     />
                 </div>
-            )}
-            {(pen.type === "sequence" || pen.type === "text") && (
+            }
+            {pen.type === "sequence" && (
                 <div className="flex items-center gap-2">
                     <input
                         type="range"
                         min="10"
                         max="100"
-                        value={pen.type === "sequence" ? pen.size : pen.type === "text" ? pen.fontSize : 0}
+                        value={pen.type === "sequence" ? pen.size : 0}
                         onChange={(e) => updateSize(Number(e.target.value))}
                         className="flex-1 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
                     />
@@ -376,7 +373,7 @@ function PenSettings({ pen, onChange }: { pen: Pen; onChange: (pen: Pen) => void
                         type="number"
                         min="10"
                         max="100"
-                        value={pen.type === "sequence" ? pen.size : pen.type === "text" ? pen.fontSize : 0}
+                        value={pen.type === "sequence" ? pen.size : 0}
                         onChange={(e) => updateSize(Number(e.target.value))}
                         className="w-10 h-6 px-1 text-center text-xs"
                     />

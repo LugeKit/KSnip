@@ -42,7 +42,7 @@ export type Pen =
     | { type: "straight_line"; color: string; strokeWidth: number }
     | { type: "arrow"; color: string; strokeWidth: number }
     | { type: "sequence"; color: string; strokeWidth: number; size: number }
-    | { type: "text"; color: string; fontSize: number };
+    | { type: "text" };
 
 export interface Shape {
     value:
