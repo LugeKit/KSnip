@@ -202,19 +202,10 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
                 height: cropArea.height,
             }}
         >
-            <svg width="100%" height="100%">
-                {shapes.map((shape, i) => {
-                    if (shape.value.type === "text") return null;
-                    return <ShapeCollection shape={shape} key={i} />;
-                })}
-                {previewShape && previewShape.value.type !== "text" && <ShapeCollection shape={previewShape} />}
-            </svg>
-
             {shapes.map((shape, i) => {
-                if (shape.value.type !== "text") return null;
-                return <HtmlTextShape shape={shape} key={i} />;
+                return <ShapeCollection shape={shape} key={i} />;
             })}
-
+            {previewShape && previewShape.value.type !== "text" && <ShapeCollection shape={previewShape} />}
             {previewShape && previewShape.value.type === "text" && (
                 <TextInput
                     shape={previewShape}
@@ -326,6 +317,21 @@ function ShapeCollection({ shape }: { shape: Shape }) {
         return null;
     }
 
+    switch (shape.value.type) {
+        case "text": {
+            return <HtmlTextShape shape={shape} />;
+        }
+        default: {
+            return (
+                <svg className="absolute top-0 left-0 bg-transparent w-full h-full">
+                    <SVGShapeCollection shape={shape} />
+                </svg>
+            );
+        }
+    }
+}
+
+function SVGShapeCollection({ shape }: { shape: Shape }) {
     switch (shape.value.type) {
         case "rectangle": {
             return (
