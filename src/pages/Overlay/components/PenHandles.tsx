@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { warn } from "@tauri-apps/plugin-log";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { MouseState, Pen, Point, Rectangle, Shape } from "../types";
 
 interface PenHandlesProps {
@@ -248,6 +248,7 @@ function TextInput({
     if (shape.value.type !== "text") return null;
 
     const ref = useRef<HTMLTextAreaElement | null>(null);
+    const preRef = useRef<HTMLPreElement | null>(null);
     // Auto focus to input area
     useEffect(() => {
         const t = setTimeout(() => {
@@ -263,10 +264,12 @@ function TextInput({
     const { point, text, fontSize, color } = shape.value;
 
     // Adjust height when text changes
-    useEffect(() => {
+    useLayoutEffect(() => {
         if (ref.current) {
             ref.current.style.height = "auto";
             ref.current.style.height = `${ref.current.scrollHeight}px`;
+            // Add a small buffer to the width to account for borders/padding and prevent jitter
+            ref.current.style.width = (preRef.current?.offsetWidth ?? 40) + 8 + "px";
         }
     }, [text]);
 
@@ -287,26 +290,40 @@ function TextInput({
     };
 
     return (
-        <textarea
-            ref={ref}
-            value={text}
-            onBlur={onConfirm}
-            onChange={(e) => onChange(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onMouseDown={handleMouseDown}
-            className="absolute pointer-events-auto hover:border hover:border-dotted focus:border focus:border-dotted bg-transparent outline-none resize-none border-gray-400 p-0 m-0 overflow-hidden"
-            style={{
-                left: point.x,
-                top: point.y,
-                fontSize: fontSize,
-                color: color,
-                fontFamily: "inherit",
-                minWidth: "50px",
-                whiteSpace: "pre",
-            }}
-            placeholder="Type here..."
-            rows={1}
-        />
+        <div>
+            <pre
+                ref={preRef}
+                className="absolute top-0 left-0 min-w-10 outline-none"
+                style={{
+                    left: point.x,
+                    top: point.y,
+                    fontSize: fontSize,
+                    color: color,
+                    fontFamily: "inherit",
+                    visibility: "hidden",
+                }}
+            >
+                {text}
+            </pre>
+            <textarea
+                ref={ref}
+                value={text}
+                onBlur={onConfirm}
+                onChange={(e) => onChange(e.target.value)}
+                onKeyDown={handleKeyDown}
+                onMouseDown={handleMouseDown}
+                className="absolute top-0 left-0 min-w-10 pointer-events-auto hover:border hover:border-dotted focus:border focus:border-dotted bg-transparent outline-none resize-none border-gray-400 overflow-hidden whitespace-pre"
+                style={{
+                    left: point.x,
+                    top: point.y,
+                    fontSize: fontSize,
+                    color: color,
+                    fontFamily: "inherit",
+                }}
+                placeholder="Type here..."
+                rows={1}
+            />
+        </div>
     );
 }
 
@@ -404,9 +421,8 @@ function HtmlTextShape({ shape }: { shape: Shape }) {
                 fontSize: fontSize,
                 color: color,
                 fontFamily: "inherit",
-                whiteSpace: "pre",
             }}
-            className="absolute pointer-events-none border border-transparent p-0 m-0 overflow-visible"
+            className="absolute pointer-events-none border border-transparent overflow-visible whitespace-pre"
         >
             {text}
         </div>
