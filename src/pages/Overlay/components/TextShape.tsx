@@ -54,10 +54,12 @@ export function TextInput({
     // Adjust height when text changes
     useLayoutEffect(() => {
         if (ref.current) {
-            ref.current.style.height = "auto";
             ref.current.style.height = `${ref.current.scrollHeight}px`;
-            // Add a small buffer to the width to account for borders/padding and prevent jitter
-            ref.current.style.width = (preRef.current?.offsetWidth ?? 40) + 8 + "px";
+        }
+
+        if (ref.current && preRef.current) {
+            const newWidth = Math.max(preRef.current.offsetWidth, 100) + 10;
+            ref.current.style.width = `${newWidth}px`;
         }
     }, [text]);
 
@@ -69,7 +71,7 @@ export function TextInput({
         e.stopPropagation();
 
         if (e.key === "Escape") {
-            onCancel();
+            onConfirm();
         }
 
         if (e.key === "Enter" && e.shiftKey) {
@@ -81,7 +83,7 @@ export function TextInput({
         <div>
             <pre
                 ref={preRef}
-                className="absolute top-0 left-0 min-w-10 outline-none"
+                className="absolute top-0 left-0 outline-none"
                 style={{
                     left: point.x,
                     top: point.y,
@@ -100,7 +102,7 @@ export function TextInput({
                 onChange={(e) => onChange(e.target.value)}
                 onKeyDown={handleKeyDown}
                 onMouseDown={handleMouseDown}
-                className="absolute top-0 left-0 min-w-10 pointer-events-auto hover:border hover:border-dotted focus:border focus:border-dotted bg-transparent outline-none resize-none border-gray-400 overflow-hidden whitespace-pre"
+                className="absolute top-0 left-0 min-w-10 pointer-events-auto focus:border focus:border-dotted bg-transparent outline-none resize-none border-gray-400 overflow-hidden whitespace-pre"
                 style={{
                     left: point.x,
                     top: point.y,

@@ -9,6 +9,8 @@ export function useMouseEvent() {
     });
 
     const handleMouseDown = (e: React.MouseEvent) => {
+        // Prevent default behavior to avoid focus stealing from TextInput
+        e.preventDefault();
         setMouseState((prev) => ({
             ...prev,
             isPressing: true,
