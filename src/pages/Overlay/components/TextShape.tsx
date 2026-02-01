@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Point, Shape } from "../types";
 
 export function TextShape({ shape }: { shape: Shape }) {
@@ -14,7 +14,7 @@ export function TextShape({ shape }: { shape: Shape }) {
                 color: color,
                 fontFamily: "inherit",
             }}
-            className="absolute pointer-events-none border border-transparent overflow-visible whitespace-pre"
+            className="absolute p-1 pointer-events-none border border-transparent overflow-visible whitespace-pre"
         >
             {text}
         </div>
@@ -51,18 +51,6 @@ export function TextInput({
 
     const { point, text, fontSize, color } = shape;
 
-    // Adjust height when text changes
-    useLayoutEffect(() => {
-        if (ref.current) {
-            ref.current.style.height = `${ref.current.scrollHeight}px`;
-        }
-
-        if (ref.current && preRef.current) {
-            const newWidth = Math.max(preRef.current.offsetWidth, 100) + 10;
-            ref.current.style.width = `${newWidth}px`;
-        }
-    }, [text]);
-
     const handleMouseDown = (e: React.MouseEvent) => {
         e.stopPropagation();
     };
@@ -80,20 +68,26 @@ export function TextInput({
     };
 
     return (
-        <div>
+        <div
+            className="relative inline-grid border border-gray-400 border-dotted p-1 pr-2"
+            style={{
+                left: point.x,
+                top: point.y,
+                gridTemplateColumns: "1fr",
+            }}
+        >
             <pre
                 ref={preRef}
-                className="absolute top-0 left-0 outline-none"
+                aria-hidden={true}
+                className="invisible outline-none col-start-1 row-start-1"
                 style={{
-                    left: point.x,
-                    top: point.y,
                     fontSize: fontSize,
                     color: color,
                     fontFamily: "inherit",
-                    visibility: "hidden",
                 }}
             >
-                {text}
+                {text || " "}
+                {"\n"}
             </pre>
             <textarea
                 ref={ref}
@@ -102,10 +96,8 @@ export function TextInput({
                 onChange={(e) => onChange(e.target.value)}
                 onKeyDown={handleKeyDown}
                 onMouseDown={handleMouseDown}
-                className="absolute top-0 left-0 min-w-10 pointer-events-auto focus:border focus:border-dotted bg-transparent outline-none resize-none border-gray-400 overflow-hidden whitespace-pre"
+                className="col-start-1 row-start-1 min-w-10 pointer-events-auto bg-transparent outline-none resize-none overflow-hidden whitespace-pre"
                 style={{
-                    left: point.x,
-                    top: point.y,
                     fontSize: fontSize,
                     color: color,
                     fontFamily: "inherit",
