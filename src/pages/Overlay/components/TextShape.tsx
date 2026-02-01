@@ -69,12 +69,12 @@ export function TextInput({
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         e.stopPropagation();
-
-        if (e.key === "Escape") {
-            onConfirm();
+        if (e.key === "Escape" && e.shiftKey) {
+            onCancel();
+            return;
         }
 
-        if (e.key === "Enter" && e.shiftKey) {
+        if (e.key === "Escape") {
             onConfirm();
         }
     };
