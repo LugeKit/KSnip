@@ -126,7 +126,7 @@ function TabsContentBody({ shortcuts }: { shortcuts: Shortcut[] }) {
                     {/* 启用列 */}
                     <TableCell className="text-center">
                         <Checkbox
-                            className="data-[state=checked]:bg-transparent data-[state=checked]:text-black border-black mr-1"
+                            className="data-[state=checked]:bg-transparent data-[state=checked]:text-black border-black mr-1 align-middle"
                             checked={shortcut.enabled}
                             onCheckedChange={(checked) => onChecked(shortcut.id, !!checked)}
                         />
