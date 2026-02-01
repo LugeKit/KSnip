@@ -23,7 +23,7 @@
             }
         ],
         "security": {
-            "csp": "default-src 'self'; img-src 'self' ksnip:; connect-src 'self' ksnip:;"
+            "csp": "default-src 'self'; img-src 'self' ksnip: http://ksnip.localhost; connect-src 'self' ksnip: http://ksnip.localhost;"
         }
     },
     "bundle": {
