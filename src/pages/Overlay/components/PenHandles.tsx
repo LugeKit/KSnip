@@ -179,6 +179,7 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
     }, [mouseState]);
 
     const finishShape = (shape: Shape | null) => {
+        setPreviewShape(null);
         if (!shape) return;
 
         // For text shape, no text means cancel
@@ -188,8 +189,13 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
             }
         }
 
+        if (shape.type === "rectangle") {
+            if (!shape.rect || shape.rect.width === 0 || shape.rect.height === 0) {
+                return;
+            }
+        }
+
         onAddShape(shape);
-        setPreviewShape(null);
     };
 
     useEffect(() => {
