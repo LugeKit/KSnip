@@ -75,6 +75,7 @@ export function TextInput({
                 top: point.y,
                 gridTemplateColumns: "1fr",
             }}
+            onBlur={onConfirm}
         >
             <pre
                 ref={preRef}
@@ -92,7 +93,6 @@ export function TextInput({
             <textarea
                 ref={ref}
                 value={text}
-                onBlur={onConfirm}
                 onChange={(e) => onChange(e.target.value)}
                 onKeyDown={handleKeyDown}
                 onMouseDown={handleMouseDown}
