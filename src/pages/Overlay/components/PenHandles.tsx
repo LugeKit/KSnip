@@ -118,13 +118,6 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
     };
 
     const setPreviewShapeText = (pressPosition: Point) => {
-        if (previewShape && previewShape.value.type === "text") {
-            // If we are already editing text, finalize it first
-            if (previewShape.value.text.trim()) {
-                onAddShape(previewShape);
-            }
-        }
-
         setPreviewShape({
             value: {
                 type: "text",
@@ -144,6 +137,13 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
     useEffect(() => {
         if (!mouseState.isPressing || !mouseState.pressPosition || !mouseState.mousePosition) {
             return;
+        }
+
+        if (previewShape && previewShape.value.type === "text") {
+            // If we are already editing text, finalize it first
+            if (previewShape.value.text.trim()) {
+                finishShape(previewShape);
+            }
         }
 
         if (pen.type === "sequence") {
@@ -186,7 +186,7 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
     useEffect(() => {
         if (!mouseState.isPressing) {
             // For text tool, we don't finish on release, but on manual confirmation or switching
-            if (previewShape?.value.type !== "text") {
+            if (previewShape && previewShape.value.type !== "text") {
                 finishShape(previewShape);
             }
         }
@@ -293,6 +293,7 @@ function TextInput({
         <textarea
             ref={ref}
             value={text}
+            onBlur={onConfirm}
             onChange={(e) => onChange(e.target.value)}
             onKeyDown={handleKeyDown}
             onMouseDown={handleMouseDown}
@@ -537,7 +538,6 @@ function TextShape({ point, text, fontSize, color }: { point: Point; text: strin
             y={point.y}
             fill={color}
             fontSize={fontSize}
-            dominantBaseline="hanging"
             style={{ whiteSpace: "pre", fontFamily: "inherit", lineHeight: 1.2 }}
         >
             {text.split("\n").map((line, i) => (
