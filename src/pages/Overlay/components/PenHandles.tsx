@@ -300,7 +300,6 @@ function TextInput({
                 top: point.y,
                 fontSize: fontSize,
                 color: color,
-                lineHeight: 1.2,
                 fontFamily: "inherit",
                 minWidth: "50px",
                 whiteSpace: "pre",
@@ -405,7 +404,6 @@ function HtmlTextShape({ shape }: { shape: Shape }) {
                 fontSize: fontSize,
                 color: color,
                 fontFamily: "inherit",
-                lineHeight: 1.2,
                 whiteSpace: "pre",
             }}
             className="absolute pointer-events-none border border-transparent p-0 m-0 overflow-visible"
