@@ -95,6 +95,13 @@ export default function OverlayPage() {
                     <span className="text-white">{`Mouse position: ${mouseState.mousePosition?.x ?? 0}, ${mouseState.mousePosition?.y ?? 0}`}</span>
                     <span className="text-white">{`Press position: ${mouseState.pressPosition?.x ?? 0}, ${mouseState.pressPosition?.y ?? 0}`}</span>
                     <span className="text-white">{`Crop area: left: ${cropArea?.left ?? 0}, top: ${cropArea?.top ?? 0}, width: ${cropArea?.width ?? 0}, height: ${cropArea?.height ?? 0}`}</span>
+                    {shapes.map((shape, i) => {
+                        return (
+                            <span className="text-white">
+                                shape_{i}: {JSON.stringify(shape)}
+                            </span>
+                        );
+                    })}
                 </div>
             )}
 
