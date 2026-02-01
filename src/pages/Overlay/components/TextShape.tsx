@@ -76,9 +76,7 @@ export function TextInput({
                     top: point.y,
                     transform: "translate(-100%, 0%)",
                 }}
-            >
-                123
-            </span>
+            ></span>
             <span
                 className="absolute pointer-events-auto"
                 onMouseDown={(e) => {
@@ -89,9 +87,7 @@ export function TextInput({
                     top: point.y,
                     transform: "translate(0%, -100%)",
                 }}
-            >
-                1234
-            </span>
+            ></span>
             <div
                 className="absolute inline-grid border border-gray-400 border-dotted p-1 pr-2"
                 style={{
