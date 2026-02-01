@@ -68,43 +68,67 @@ export function TextInput({
     };
 
     return (
-        <div
-            className="relative inline-grid border border-gray-400 border-dotted p-1 pr-2"
-            style={{
-                left: point.x,
-                top: point.y,
-                gridTemplateColumns: "1fr",
-            }}
-            onBlur={onConfirm}
-        >
-            <pre
-                ref={preRef}
-                aria-hidden={true}
-                className="invisible outline-none col-start-1 row-start-1"
+        <div>
+            <span
+                className="absolute"
                 style={{
-                    fontSize: fontSize,
-                    color: color,
-                    fontFamily: "inherit",
+                    left: point.x,
+                    top: point.y,
+                    transform: "translate(-100%, 0%)",
                 }}
             >
-                {text || " "}
-                {"\n"}
-            </pre>
-            <textarea
-                ref={ref}
-                value={text}
-                onChange={(e) => onChange(e.target.value)}
-                onKeyDown={handleKeyDown}
-                onMouseDown={handleMouseDown}
-                className="col-start-1 row-start-1 min-w-10 pointer-events-auto bg-transparent outline-none resize-none overflow-hidden whitespace-pre"
-                style={{
-                    fontSize: fontSize,
-                    color: color,
-                    fontFamily: "inherit",
+                123
+            </span>
+            <span
+                className="absolute pointer-events-auto"
+                onMouseDown={(e) => {
+                    e.stopPropagation();
                 }}
-                placeholder="Type here..."
-                rows={1}
-            />
+                style={{
+                    left: point.x,
+                    top: point.y,
+                    transform: "translate(0%, -100%)",
+                }}
+            >
+                1234
+            </span>
+            <div
+                className="absolute inline-grid border border-gray-400 border-dotted p-1 pr-2"
+                style={{
+                    left: point.x,
+                    top: point.y,
+                    gridTemplateColumns: "1fr",
+                }}
+            >
+                <pre
+                    ref={preRef}
+                    aria-hidden={true}
+                    className="invisible outline-none col-start-1 row-start-1"
+                    style={{
+                        fontSize: fontSize,
+                        color: color,
+                        fontFamily: "inherit",
+                    }}
+                >
+                    {text || " "}
+                    {"\n"}
+                </pre>
+                <textarea
+                    ref={ref}
+                    value={text}
+                    onChange={(e) => onChange(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    onMouseDown={handleMouseDown}
+                    className="col-start-1 row-start-1 min-w-10 pointer-events-auto bg-transparent outline-none resize-none overflow-hidden whitespace-pre"
+                    style={{
+                        fontSize: fontSize,
+                        color: color,
+                        fontFamily: "inherit",
+                    }}
+                    placeholder="Type here..."
+                    rows={1}
+                />
+            </div>
         </div>
     );
 }

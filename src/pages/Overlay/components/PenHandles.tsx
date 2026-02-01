@@ -144,7 +144,7 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
         }
 
         if (previewShape && previewShape.type === "text") {
-            finishShape(previewShape);
+            finishShape();
         }
 
         if (pen.type === "sequence") {
@@ -178,7 +178,14 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
         }
     }, [mouseState]);
 
-    const finishShape = (shape: Shape | null) => {
+    useEffect(() => {
+        if (previewShape && previewShape.type === "text") {
+            finishShape();
+        }
+    }, [pen]);
+
+    const finishShape = () => {
+        const shape = previewShape;
         setPreviewShape(null);
         if (!shape) return;
 
@@ -208,7 +215,7 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
         if (!mouseState.isPressing) {
             // For text tool, we don't finish on release, but on manual confirmation or switching
             if (previewShape && previewShape.type !== "text") {
-                finishShape(previewShape);
+                finishShape();
             }
         }
     }, [mouseState.isPressing]);
@@ -240,7 +247,7 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
                         setPreviewShape(null);
                     }}
                     onConfirm={() => {
-                        finishShape(previewShape);
+                        finishShape();
                     }}
                 />
             )}
