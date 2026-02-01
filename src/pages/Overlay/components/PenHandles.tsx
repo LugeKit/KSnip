@@ -261,7 +261,7 @@ function TextInput({
         return () => {
             clearTimeout(t);
         };
-    }, []);
+    }, [shape]);
 
     const { point, text, fontSize, color } = shape.value;
 
