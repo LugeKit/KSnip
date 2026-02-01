@@ -195,6 +195,12 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
             }
         }
 
+        if (shape.type === "straight_line") {
+            if (!shape.start || !shape.end || (shape.start.x === shape.end.x && shape.start.y === shape.end.y)) {
+                return;
+            }
+        }
+
         onAddShape(shape);
     };
 
