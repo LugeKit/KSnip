@@ -144,7 +144,7 @@ function BooleanSetting({
     return (
         <TableCell className="text-right">
             <Checkbox
-                className="data-[state=checked]:bg-transparent data-[state=checked]:text-black border-black mr-4"
+                className="data-[state=checked]:bg-transparent data-[state=checked]:text-black border-black mr-4 align-middle"
                 checked={value.value}
                 onCheckedChange={(checked) => onValueChanged(id, new SettingValueBoolean(!!checked))}
             />
