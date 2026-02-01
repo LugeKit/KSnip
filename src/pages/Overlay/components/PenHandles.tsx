@@ -142,10 +142,7 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
         }
 
         if (previewShape && previewShape.value.type === "text") {
-            // If we are already editing text, finalize it first
-            if (previewShape.value.text.trim()) {
-                finishShape(previewShape);
-            }
+            finishShape(previewShape);
         }
 
         if (pen.type === "sequence") {
@@ -181,6 +178,14 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
 
     const finishShape = (shape: Shape | null) => {
         if (!shape) return;
+
+        // For text shape, no text means cancel
+        if (shape.value.type === "text") {
+            if (!shape.value.text.trim()) {
+                return;
+            }
+        }
+
         onAddShape(shape);
         setPreviewShape(null);
     };
