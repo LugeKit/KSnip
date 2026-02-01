@@ -2,8 +2,8 @@ import { useEffect, useLayoutEffect, useRef } from "react";
 import { Point, Shape } from "../types";
 
 export function TextShape({ shape }: { shape: Shape }) {
-    if (shape.value.type !== "text") return null;
-    const { point, text, fontSize, color } = shape.value;
+    if (shape.type !== "text") return null;
+    const { point, text, fontSize, color } = shape;
 
     return (
         <div
@@ -33,7 +33,7 @@ export function TextInput({
     onCancel: () => void;
     onConfirm: () => void;
 }) {
-    if (shape.value.type !== "text") return null;
+    if (shape.type !== "text") return null;
 
     const ref = useRef<HTMLTextAreaElement | null>(null);
     const preRef = useRef<HTMLPreElement | null>(null);
@@ -49,7 +49,7 @@ export function TextInput({
         };
     }, [shape]);
 
-    const { point, text, fontSize, color } = shape.value;
+    const { point, text, fontSize, color } = shape;
 
     // Adjust height when text changes
     useLayoutEffect(() => {

@@ -33,7 +33,8 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
         const width = Math.abs(currentX - startX);
         const height = Math.abs(currentY - startY);
         setPreviewShape({
-            value: { type: "rectangle", rect: { left, top, width, height } },
+            type: "rectangle",
+            rect: { left, top, width, height },
             strokeColor: strokeColor,
             strokeWidth: strokeWidth,
         });
@@ -49,7 +50,9 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
         const end = { x: mousePosition.x - cropArea.left, y: mousePosition.y - cropArea.top };
 
         setPreviewShape({
-            value: { type: "straight_line", start, end },
+            type: "straight_line",
+            start,
+            end,
             strokeColor: strokeColor,
             strokeWidth: strokeWidth,
         });
@@ -71,9 +74,10 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
         };
 
         setPreviewShape((prev) => {
-            if (!prev || !prev.value || prev.value.type !== "free_line") {
+            if (!prev || prev.type !== "free_line") {
                 return {
-                    value: { type: "free_line", points: [startPoint, currentPoint] },
+                    type: "free_line",
+                    points: [startPoint, currentPoint],
                     strokeColor: strokeColor,
                     strokeWidth: strokeWidth,
                 };
@@ -81,10 +85,7 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
 
             return {
                 ...prev,
-                value: {
-                    ...prev.value,
-                    points: [...prev.value.points, currentPoint],
-                },
+                points: [...prev.points, currentPoint],
             };
         });
     };
@@ -99,7 +100,9 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
         const end = { x: mousePosition.x - cropArea.left, y: mousePosition.y - cropArea.top };
 
         setPreviewShape({
-            value: { type: "arrow", start, end },
+            type: "arrow",
+            start,
+            end,
             strokeColor: strokeColor,
             strokeWidth: strokeWidth,
         });
@@ -110,10 +113,13 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
             x: mousePosition.x - cropArea.left,
             y: mousePosition.y - cropArea.top,
         };
-        const nextNumber = shapes.filter((s) => s.value.type === "sequence").length + 1;
+        const nextNumber = shapes.filter((s) => s.type === "sequence").length + 1;
 
         setPreviewShape({
-            value: { type: "sequence", point, number: nextNumber, size },
+            type: "sequence",
+            point,
+            number: nextNumber,
+            size,
             strokeColor: strokeColor,
             strokeWidth: strokeWidth,
         });
@@ -121,18 +127,14 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
 
     const setPreviewShapeText = (pressPosition: Point) => {
         setPreviewShape({
-            value: {
-                type: "text",
-                point: {
-                    x: pressPosition.x - cropArea.left,
-                    y: pressPosition.y - cropArea.top,
-                },
-                text: "",
-                fontSize: 18,
-                color: "red",
+            type: "text",
+            point: {
+                x: pressPosition.x - cropArea.left,
+                y: pressPosition.y - cropArea.top,
             },
-            strokeColor: "",
-            strokeWidth: 0,
+            text: "",
+            fontSize: 18,
+            color: "red",
         });
     };
 
@@ -141,7 +143,7 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
             return;
         }
 
-        if (previewShape && previewShape.value.type === "text") {
+        if (previewShape && previewShape.type === "text") {
             finishShape(previewShape);
         }
 
@@ -180,8 +182,8 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
         if (!shape) return;
 
         // For text shape, no text means cancel
-        if (shape.value.type === "text") {
-            if (!shape.value.text.trim()) {
+        if (shape.type === "text") {
+            if (!shape.text.trim()) {
                 return;
             }
         }
@@ -193,7 +195,7 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
     useEffect(() => {
         if (!mouseState.isPressing) {
             // For text tool, we don't finish on release, but on manual confirmation or switching
-            if (previewShape && previewShape.value.type !== "text") {
+            if (previewShape && previewShape.type !== "text") {
                 finishShape(previewShape);
             }
         }
@@ -212,19 +214,15 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
             {shapes.map((shape, i) => {
                 return <ShapeCollection shape={shape} key={i} />;
             })}
-            {previewShape && previewShape.value.type !== "text" && <ShapeCollection shape={previewShape} />}
-            {previewShape && previewShape.value.type === "text" && (
+            {previewShape && previewShape.type !== "text" && <ShapeCollection shape={previewShape} />}
+            {previewShape && previewShape.type === "text" && (
                 <TextInput
                     shape={previewShape}
                     onChange={(text) => {
-                        setPreviewShape((prev) =>
-                            prev ? ({ ...prev, value: { ...prev.value, text } } as Shape) : null,
-                        );
+                        setPreviewShape((prev) => (prev && prev.type === "text" ? { ...prev, text } : null));
                     }}
                     onPositionChange={(point) => {
-                        setPreviewShape((prev) =>
-                            prev ? ({ ...prev, value: { ...prev.value, point } } as Shape) : null,
-                        );
+                        setPreviewShape((prev) => (prev && prev.type === "text" ? { ...prev, point } : null));
                     }}
                     onCancel={() => {
                         setPreviewShape(null);
@@ -241,12 +239,12 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
 export default PenHandles;
 
 function ShapeCollection({ shape }: { shape: Shape }) {
-    if (!shape || !shape.value || !shape.value.type) {
+    if (!shape || !shape.type) {
         warn(`[ShapeCollection] invalid shape: ${JSON.stringify(shape)}`);
         return null;
     }
 
-    switch (shape.value.type) {
+    switch (shape.type) {
         case "text": {
             return <TextShape shape={shape} />;
         }

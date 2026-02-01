@@ -25,7 +25,7 @@ export function useMouseEvent() {
         }));
     };
 
-    const handleMouseUp = (e: React.MouseEvent) => {
+    const handleMouseUp = (_: React.MouseEvent) => {
         setMouseState((prev) => ({
             ...prev,
             isPressing: false,

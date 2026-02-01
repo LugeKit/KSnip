@@ -1,22 +1,16 @@
 import { Point, Rectangle, Shape } from "../types";
 
 export function SVGShape({ shape }: { shape: Shape }) {
-    switch (shape.value.type) {
+    switch (shape.type) {
         case "rectangle": {
-            return (
-                <RectangleShape
-                    rect={shape.value.rect}
-                    strokeColor={shape.strokeColor}
-                    strokeWidth={shape.strokeWidth}
-                />
-            );
+            return <RectangleShape rect={shape.rect} strokeColor={shape.strokeColor} strokeWidth={shape.strokeWidth} />;
         }
 
         case "straight_line": {
             return (
                 <StraightLineShape
-                    start={shape.value.start}
-                    end={shape.value.end}
+                    start={shape.start}
+                    end={shape.end}
                     strokeColor={shape.strokeColor}
                     strokeWidth={shape.strokeWidth}
                 />
@@ -26,8 +20,8 @@ export function SVGShape({ shape }: { shape: Shape }) {
         case "arrow": {
             return (
                 <ArrowShape
-                    start={shape.value.start}
-                    end={shape.value.end}
+                    start={shape.start}
+                    end={shape.end}
                     strokeColor={shape.strokeColor}
                     strokeWidth={shape.strokeWidth}
                 />
@@ -36,20 +30,16 @@ export function SVGShape({ shape }: { shape: Shape }) {
 
         case "free_line": {
             return (
-                <FreeLineShape
-                    points={shape.value.points}
-                    strokeColor={shape.strokeColor}
-                    strokeWidth={shape.strokeWidth}
-                />
+                <FreeLineShape points={shape.points} strokeColor={shape.strokeColor} strokeWidth={shape.strokeWidth} />
             );
         }
 
         case "sequence": {
             return (
                 <SequenceShape
-                    point={shape.value.point}
-                    number={shape.value.number}
-                    size={shape.value.size}
+                    point={shape.point}
+                    number={shape.number}
+                    size={shape.size}
                     strokeColor={shape.strokeColor}
                     strokeWidth={shape.strokeWidth}
                 />
