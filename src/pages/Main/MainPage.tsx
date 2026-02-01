@@ -5,16 +5,21 @@ import AppHeader from "../../components/ui/AppHeader";
 import AppSidebar, { MenuKey } from "./components/AppSidebar";
 import SettingComponent from "./components/Setting";
 import ShortcutSetting from "./components/ShortcutSetting";
+import About from "./components/About";
 
 export default function MainPage() {
-    const [activeMenu, setActiveMenu] = useState<MenuKey>(MenuKey.Settings);
+    const [activeMenu, setActiveMenu] = useState<MenuKey>(MenuKey.About);
 
     useEffect(() => {
-        const unlisten = listen("open-settings", () => {
+        const unlistenSettings = listen("open-settings", () => {
             setActiveMenu(MenuKey.Settings);
         });
+        const unlistenAbout = listen("open-about", () => {
+            setActiveMenu(MenuKey.About);
+        });
         return () => {
-            unlisten.then((f) => f());
+            unlistenSettings.then((f) => f());
+            unlistenAbout.then((f) => f());
         };
     }, []);
 
@@ -26,6 +31,7 @@ export default function MainPage() {
                     <div className="flex flex-col flex-1">
                         <AppHeader />
                         <main className="flex-1 overflow-hidden">
+                            {activeMenu === MenuKey.About && <About />}
                             {activeMenu === MenuKey.Settings && <SettingComponent />}
                             {activeMenu === MenuKey.Shortcuts && <ShortcutSetting />}
                         </main>

@@ -27,7 +27,8 @@ pub fn run() {
         .setup(|app| {
             let quit_i = MenuItem::with_id(app, "quit", "退出", true, None::<&str>)?;
             let settings_i = MenuItem::with_id(app, "settings", "设置", true, None::<&str>)?;
-            let menu = Menu::with_items(app, &[&settings_i, &quit_i])?;
+            let about_i = MenuItem::with_id(app, "about", "关于", true, None::<&str>)?;
+            let menu = Menu::with_items(app, &[&about_i, &settings_i, &quit_i])?;
             let _tray = TrayIconBuilder::new()
                 .icon(app.default_window_icon().unwrap().clone())
                 .menu(&menu)
@@ -37,13 +38,20 @@ pub fn run() {
                         if let Some(window) = icon.app_handle().get_webview_window("main") {
                             let _ = window.show();
                             let _ = window.set_focus();
-                            let _ = window.emit("open-settings", ());
+                            let _ = window.emit("open-about", ());
                         }
                     }
                     _ => {}
                 })
                 .on_menu_event(|app, event| match event.id.as_ref() {
                     "quit" => app.exit(0),
+                    "about" => {
+                        if let Some(window) = app.get_webview_window("main") {
+                            let _ = window.show();
+                            let _ = window.set_focus();
+                            let _ = window.emit("open-about", ());
+                        }
+                    }
                     "settings" => {
                         if let Some(window) = app.get_webview_window("main") {
                             let _ = window.show();

@@ -10,9 +10,10 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from "@/components/ui/sidebar";
-import { Keyboard, Scissors, Settings } from "lucide-react";
+import { Keyboard, Scissors, Settings, Info } from "lucide-react";
 
 export enum MenuKey {
+    About = "about",
     Settings = "settings",
     Shortcuts = "shortcuts",
 }
@@ -28,6 +29,11 @@ export default function AppSidebar({
 }: AppSidebarProps) {
     const { toggleSidebar } = useSidebar();
     const items = [
+        {
+            title: "关于",
+            icon: Info,
+            key: MenuKey.About,
+        },
         {
             title: "设置",
             icon: Settings,
