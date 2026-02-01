@@ -51,6 +51,7 @@ pub fn record_start(
     let file_path = target_dir.join(&file_name);
     let file_path_str = file_path.to_str().ok_or("Invalid path")?.to_string();
 
+    #[cfg(target_os = "windows")]
     let args = vec![
         "-f".to_string(),
         "gdigrab".to_string(),
@@ -71,6 +72,30 @@ pub fn record_start(
         "-y".to_string(),
         file_path_str.clone(),
     ];
+
+    #[cfg(target_os = "macos")]
+    let args = vec![
+        "-f".to_string(),
+        "avfoundation".to_string(),
+        "-framerate".to_string(),
+        "30".to_string(),
+        "-i".to_string(),
+        "1".to_string(), // TODO: Dynamically select monitor index. Currently defaults to first screen.
+        "-vf".to_string(),
+        format!(
+            "crop={}:{}:{}:{}",
+            physical_param.width, physical_param.height, physical_param.left, physical_param.top
+        ),
+        "-c:v".to_string(),
+        "libx264".to_string(),
+        "-preset".to_string(),
+        "ultrafast".to_string(),
+        "-y".to_string(),
+        file_path_str.clone(),
+    ];
+
+    #[cfg(not(any(target_os = "windows", target_os = "macos")))]
+    let args: Vec<String> = vec![];
 
     info!("[record_start] spawning ffmpeg with args: {:?}", args);
 
