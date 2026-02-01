@@ -204,10 +204,16 @@ const PenHandles: React.FC<PenHandlesProps> = ({ cropArea, className, mouseState
         >
             <svg width="100%" height="100%">
                 {shapes.map((shape, i) => {
+                    if (shape.value.type === "text") return null;
                     return <ShapeCollection shape={shape} key={i} />;
                 })}
                 {previewShape && previewShape.value.type !== "text" && <ShapeCollection shape={previewShape} />}
             </svg>
+
+            {shapes.map((shape, i) => {
+                if (shape.value.type !== "text") return null;
+                return <HtmlTextShape shape={shape} key={i} />;
+            })}
 
             {previewShape && previewShape.value.type === "text" && (
                 <TextInput
@@ -303,6 +309,7 @@ function TextInput({
                 top: point.y,
                 fontSize: fontSize,
                 color: color,
+                lineHeight: 1.2,
                 fontFamily: "inherit",
                 minWidth: "50px",
                 whiteSpace: "pre",
@@ -375,16 +382,31 @@ function ShapeCollection({ shape }: { shape: Shape }) {
         }
 
         case "text": {
-            return (
-                <TextShape
-                    point={shape.value.point}
-                    text={shape.value.text}
-                    fontSize={shape.value.fontSize}
-                    color={shape.value.color}
-                />
-            );
+            return null;
         }
     }
+}
+
+function HtmlTextShape({ shape }: { shape: Shape }) {
+    if (shape.value.type !== "text") return null;
+    const { point, text, fontSize, color } = shape.value;
+
+    return (
+        <div
+            style={{
+                left: point.x,
+                top: point.y,
+                fontSize: fontSize,
+                color: color,
+                fontFamily: "inherit",
+                lineHeight: 1.2,
+                whiteSpace: "pre",
+            }}
+            className="absolute pointer-events-none border border-transparent p-0 m-0 overflow-visible"
+        >
+            {text}
+        </div>
+    );
 }
 
 function RectangleShape({
@@ -528,23 +550,5 @@ function SequenceShape({
                 {number}
             </text>
         </g>
-    );
-}
-
-function TextShape({ point, text, fontSize, color }: { point: Point; text: string; fontSize: number; color: string }) {
-    return (
-        <text
-            x={point.x}
-            y={point.y}
-            fill={color}
-            fontSize={fontSize}
-            style={{ whiteSpace: "pre", fontFamily: "inherit", lineHeight: 1.2 }}
-        >
-            {text.split("\n").map((line, i) => (
-                <tspan x={point.x} dy={i === 0 ? 0 : "1.2em"} key={i}>
-                    {line}
-                </tspan>
-            ))}
-        </text>
     );
 }
