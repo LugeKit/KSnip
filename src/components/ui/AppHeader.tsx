@@ -43,7 +43,7 @@ export default function AppHeader() {
                 >
                     <RectangleEllipsis />
                 </Button>
-                <Button variant={"ghost"} className="hover:text-red-500" onClick={() => appWindow.close()}>
+                <Button variant={"ghost"} className="hover:text-red-500" onClick={() => appWindow.hide()}>
                     <X />
                 </Button>
             </ButtonGroup>
